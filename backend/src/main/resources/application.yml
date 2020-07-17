@@ -1,0 +1,43 @@
+spring:
+  profiles:
+    active: dev
+  mvc:
+    throw-exception-if-no-handler-found: true
+    static-path-pattern: /static/**
+    locale-resolver: fixed
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      indent_output: true
+  flyway:
+    check-location: false
+
+---
+
+spring:
+  profiles: dev
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:dev
+  flyway:
+    locations: classpath:dev/db/migration
+    clean-on-validation-error: true
+server:
+  error:
+    include-exception: true
+    include-stacktrace: on_trace_param
+management:
+  endpoints:
+    web:
+      exposure:
+        include: flyway, loggers, scheduledtasks, httptrace
+
+---
+
+spring:
+  profiles: prod
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://127.0.0.1:5432/postgres
+    username: username
+    password: password

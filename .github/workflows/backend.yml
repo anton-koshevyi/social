@@ -1,0 +1,45 @@
+name: Backend
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - backend/**
+
+jobs:
+  main:
+    runs-on: ubuntu-18.04
+    env:
+      REPORTS_PATH: reports-${{github.sha}}/backend
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build
+        run: ./gradlew backend:testClasses
+
+      - name: Test
+        run: |
+          ./gradlew backend:test
+          ./gradlew backend:jacocoTestReport
+
+      - name: Check
+        run: ./gradlew backend:check
+
+      - name: Report
+        run: |
+          mkdir --parents ${{env.REPORTS_PATH}}
+          mv backend/build/reports/* ${{env.REPORTS_PATH}}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: Reports-${{github.sha}}
+          path: ${{env.REPORTS_PATH}}
