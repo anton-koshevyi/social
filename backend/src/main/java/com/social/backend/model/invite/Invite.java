@@ -24,10 +24,10 @@ public abstract class Invite<R extends Invitable, S extends Invitable> {
     @Column(name = "creation_milli", nullable = false)
     private Long creationMilli;
     
-    @ManyToOne
+    @ManyToOne(targetEntity = Invitable.class)
     private R receiver;
     
-    @ManyToOne
+    @ManyToOne(targetEntity = Invitable.class)
     private S sender;
     
     @Override
