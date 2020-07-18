@@ -14,13 +14,14 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.social.backend.model.conversation.Conversation;
+import com.social.backend.model.invite.Invitable;
 import com.social.backend.model.invite.Invite;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Invitable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -42,10 +43,10 @@ public class User {
     private String password;
     
     @OneToMany(mappedBy = "sender")
-    private List<Invite<?, User>> sentInvites;
+    private List<Invite<? extends Invitable, User>> sentInvites;
     
     @OneToMany(mappedBy = "receiver")
-    private List<Invite<User, ?>> receivedInvites;
+    private List<Invite<User, ? extends Invitable>> receivedInvites;
     
     @ManyToMany(mappedBy = "members")
     private List<Conversation> conversations;
@@ -132,12 +133,12 @@ public class User {
         return this;
     }
     
-    public User setSentInvites(List<Invite<?, User>> sentInvites) {
+    public User setSentInvites(List<Invite<? extends Invitable, User>> sentInvites) {
         this.sentInvites = sentInvites;
         return this;
     }
     
-    public User setReceivedInvites(List<Invite<User, ?>> receivedInvites) {
+    public User setReceivedInvites(List<Invite<User, ? extends Invitable>> receivedInvites) {
         this.receivedInvites = receivedInvites;
         return this;
     }
@@ -191,11 +192,11 @@ public class User {
         return password;
     }
     
-    public List<Invite<?, User>> getSentInvites() {
+    public List<Invite<? extends Invitable, User>> getSentInvites() {
         return sentInvites;
     }
     
-    public List<Invite<User, ?>> getReceivedInvites() {
+    public List<Invite<User, ? extends Invitable>> getReceivedInvites() {
         return receivedInvites;
     }
     
