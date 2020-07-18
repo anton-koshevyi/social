@@ -13,12 +13,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 import com.social.backend.model.user.User;
 
-@Entity(name = "conversations")
+@Entity
+@Table(name = "conversations")
 @Inheritance
-@DiscriminatorColumn(name = "type")
+@DiscriminatorColumn
 public abstract class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
