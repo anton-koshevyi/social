@@ -2,15 +2,19 @@ package com.social.backend.model.invite;
 
 import java.util.Objects;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Table(name = "invites")
+@Inheritance
+@DiscriminatorColumn
 public abstract class Invite<R extends Invitable, S extends Invitable> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,13 +24,11 @@ public abstract class Invite<R extends Invitable, S extends Invitable> {
     @Column(name = "creation_milli", nullable = false)
     private Long creationMilli;
     
-    public abstract Invite<R, S> setReceiver(R receiver);
+    @ManyToOne
+    private R receiver;
     
-    public abstract R getReceiver();
-    
-    public abstract Invite<R, S> setSender(S sender);
-    
-    public abstract S getSender();
+    @ManyToOne
+    private S sender;
     
     @Override
     public boolean equals(Object o) {
@@ -37,12 +39,14 @@ public abstract class Invite<R extends Invitable, S extends Invitable> {
             return false;
         }
         Invite<?, ?> invite = (Invite<?, ?>) o;
-        return Objects.equals(creationMilli, invite.creationMilli);
+        return Objects.equals(creationMilli, invite.creationMilli)
+                && Objects.equals(receiver, invite.receiver)
+                && Objects.equals(sender, invite.sender);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli);
+        return Objects.hash(creationMilli, receiver, sender);
     }
     
     public Invite<R, S> setId(Long id) {
@@ -55,11 +59,29 @@ public abstract class Invite<R extends Invitable, S extends Invitable> {
         return this;
     }
     
+    public Invite<R, S> setReceiver(R receiver) {
+        this.receiver = receiver;
+        return this;
+    }
+    
+    public Invite<R, S> setSender(S sender) {
+        this.sender = sender;
+        return this;
+    }
+    
     public Long getId() {
         return id;
     }
     
     public Long getCreationMilli() {
         return creationMilli;
+    }
+    
+    public R getReceiver() {
+        return receiver;
+    }
+    
+    public S getSender() {
+        return sender;
     }
 }
