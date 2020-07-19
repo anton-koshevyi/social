@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.model.user.Publicity;
@@ -14,12 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserRepositoryTest {
     @Autowired
-    private TestEntityManager entityManager;
+    private UserRepository userRepository;
     
     @Autowired
-    private UserRepository userRepository;
+    private TestEntityManager entityManager;
     
     @Test
     public void findByEmail_emptyOptional_onNull() {
