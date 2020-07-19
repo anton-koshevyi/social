@@ -74,13 +74,13 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return moder == user.moder &&
-                admin == user.admin &&
-                Objects.equals(email, user.email) &&
-                Objects.equals(username, user.username) &&
-                Objects.equals(firstName, user.firstName) &&
-                Objects.equals(lastName, user.lastName) &&
-                Objects.equals(publicity, user.publicity);
+        return moder == user.moder
+                && admin == user.admin
+                && Objects.equals(email, user.email)
+                && Objects.equals(username, user.username)
+                && Objects.equals(firstName, user.firstName)
+                && Objects.equals(lastName, user.lastName)
+                && Objects.equals(publicity, user.publicity);
     }
     
     @Override
