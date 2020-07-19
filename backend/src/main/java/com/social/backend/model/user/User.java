@@ -27,6 +27,9 @@ public class User implements Invitable {
     @Column(name = "id")
     private Long id;
     
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
+    
     @Column(name = "username", unique = true, nullable = false)
     private String username;
     
@@ -73,7 +76,8 @@ public class User implements Invitable {
             return false;
         }
         User user = (User) o;
-        return Objects.equals(username, user.username)
+        return Objects.equals(email, user.email)
+                && Objects.equals(username, user.username)
                 && Objects.equals(firstName, user.firstName)
                 && Objects.equals(lastName, user.lastName)
                 && Objects.equals(publicity, user.publicity)
@@ -89,7 +93,8 @@ public class User implements Invitable {
     
     @Override
     public int hashCode() {
-        return Objects.hash(username,
+        return Objects.hash(email,
+                username,
                 firstName,
                 lastName,
                 publicity,
@@ -105,6 +110,11 @@ public class User implements Invitable {
     
     public User setId(Long id) {
         this.id = id;
+        return this;
+    }
+    
+    public User setEmail(String email) {
+        this.email = email;
         return this;
     }
     
@@ -170,6 +180,10 @@ public class User implements Invitable {
     
     public Long getId() {
         return id;
+    }
+    
+    public String getEmail() {
+        return email;
     }
     
     public String getUsername() {
