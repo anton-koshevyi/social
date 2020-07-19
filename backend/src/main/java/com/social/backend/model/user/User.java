@@ -43,6 +43,12 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
     
+    @Column(name = "role_moder", nullable = false)
+    private boolean moder;
+    
+    @Column(name = "role_admin", nullable = false)
+    private boolean admin;
+    
     @ManyToMany(mappedBy = "members")
     private List<Conversation> conversations;
     
@@ -68,16 +74,18 @@ public class User {
             return false;
         }
         User user = (User) o;
-        return Objects.equals(email, user.email)
-                && Objects.equals(username, user.username)
-                && Objects.equals(firstName, user.firstName)
-                && Objects.equals(lastName, user.lastName)
-                && Objects.equals(publicity, user.publicity);
+        return moder == user.moder &&
+                admin == user.admin &&
+                Objects.equals(email, user.email) &&
+                Objects.equals(username, user.username) &&
+                Objects.equals(firstName, user.firstName) &&
+                Objects.equals(lastName, user.lastName) &&
+                Objects.equals(publicity, user.publicity);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(email, username, firstName, lastName, publicity);
+        return Objects.hash(email, username, firstName, lastName, publicity, moder, admin);
     }
     
     public User setId(Long id) {
@@ -112,6 +120,16 @@ public class User {
     
     public User setPassword(String password) {
         this.password = password;
+        return this;
+    }
+    
+    public User setModer(boolean moder) {
+        this.moder = moder;
+        return this;
+    }
+    
+    public User setAdmin(boolean admin) {
+        this.admin = admin;
         return this;
     }
     
@@ -166,6 +184,14 @@ public class User {
     
     public String getPassword() {
         return password;
+    }
+    
+    public boolean isModer() {
+        return moder;
+    }
+    
+    public boolean isAdmin() {
+        return admin;
     }
     
     public List<Conversation> getConversations() {
