@@ -59,6 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
     
     public static final class Authority {
+        public static final String MODER = "ROLE_MODER";
         public static final String ADMIN = "ROLE_ADMIN";
         
         private Authority() {}
