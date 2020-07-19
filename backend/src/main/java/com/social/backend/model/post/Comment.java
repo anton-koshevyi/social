@@ -23,6 +23,9 @@ public class Comment {
     @Column(name = "creation_milli", nullable = false)
     private Long creationMilli;
     
+    @Column(name = "update_milli")
+    private Long updateMilli;
+    
     @Column(name = "body", nullable = false)
     private String body;
     
@@ -44,6 +47,7 @@ public class Comment {
         }
         Comment comment = (Comment) o;
         return Objects.equals(creationMilli, comment.creationMilli)
+                && Objects.equals(updateMilli, comment.updateMilli)
                 && Objects.equals(body, comment.body)
                 && Objects.equals(post, comment.post)
                 && Objects.equals(author, comment.author);
@@ -51,7 +55,7 @@ public class Comment {
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli, body, post, author);
+        return Objects.hash(creationMilli, updateMilli, body, post, author);
     }
     
     public Comment setId(Long id) {
@@ -61,6 +65,11 @@ public class Comment {
     
     public Comment setCreationMilli(Long creationMilli) {
         this.creationMilli = creationMilli;
+        return this;
+    }
+    
+    public Comment setUpdateMilli(Long updateMilli) {
+        this.updateMilli = updateMilli;
         return this;
     }
     

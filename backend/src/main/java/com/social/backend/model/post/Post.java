@@ -25,6 +25,9 @@ public class Post {
     @Column(name = "creation_milli", nullable = false)
     private Long creationMilli;
     
+    @Column(name = "update_milli")
+    private Long updateMilli;
+    
     @Column(name = "body", nullable = false)
     private String body;
     
@@ -45,6 +48,7 @@ public class Post {
         }
         Post post = (Post) o;
         return Objects.equals(creationMilli, post.creationMilli)
+                && Objects.equals(updateMilli, post.updateMilli)
                 && Objects.equals(body, post.body)
                 && Objects.equals(comments, post.comments)
                 && Objects.equals(author, post.author);
@@ -52,7 +56,7 @@ public class Post {
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli, body, comments, author);
+        return Objects.hash(creationMilli, updateMilli, body, comments, author);
     }
     
     public Post setId(Long id) {
@@ -62,6 +66,11 @@ public class Post {
     
     public Post setCreationMilli(Long creationMilli) {
         this.creationMilli = creationMilli;
+        return this;
+    }
+    
+    public Post setUpdateMilli(Long updateMilli) {
+        this.updateMilli = updateMilli;
         return this;
     }
     
@@ -86,6 +95,10 @@ public class Post {
     
     public Long getCreationMilli() {
         return creationMilli;
+    }
+    
+    public Long getUpdateMilli() {
+        return updateMilli;
     }
     
     public String getBody() {
