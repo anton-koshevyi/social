@@ -80,32 +80,12 @@ public class User implements Invitable {
                 && Objects.equals(username, user.username)
                 && Objects.equals(firstName, user.firstName)
                 && Objects.equals(lastName, user.lastName)
-                && Objects.equals(publicity, user.publicity)
-                && Objects.equals(password, user.password)
-                && Objects.equals(sentInvites, user.sentInvites)
-                && Objects.equals(receivedInvites, user.receivedInvites)
-                && Objects.equals(conversations, user.conversations)
-                && Objects.equals(instance, user.instance)
-                && Objects.equals(friends, user.friends)
-                && Objects.equals(posts, user.posts)
-                && Objects.equals(comments, user.comments);
+                && Objects.equals(publicity, user.publicity);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(email,
-                username,
-                firstName,
-                lastName,
-                publicity,
-                password,
-                sentInvites,
-                receivedInvites,
-                conversations,
-                instance,
-                friends,
-                posts,
-                comments);
+        return Objects.hash(email, username, firstName, lastName, publicity);
     }
     
     public User setId(Long id) {
