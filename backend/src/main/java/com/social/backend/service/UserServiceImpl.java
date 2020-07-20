@@ -86,27 +86,27 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public void addFriend(Long id, Long friendId) {
+    public void addFriend(Long id, Long targetId) {
         User entity = this.findById(id);
-        User target = this.findById(friendId);
-        
+        User target = this.findById(targetId);
+    
         if (target.getPublicity() == Publicity.PRIVATE) {
-            throw new NotAvailableException("notAvailable.privateAccount", friendId);
+            throw new NotAvailableException("notAvailable.user.privateAccount", targetId);
         }
-        
+    
         List<User> friends = entity.getFriends();
         friends.add(target);
         userRepository.save(entity);
     }
     
     @Override
-    public void removeFriend(Long id, Long friendId) {
+    public void removeFriend(Long id, Long targetId) {
         User entity = this.findById(id);
-        User target = this.findById(friendId);
+        User target = this.findById(targetId);
         List<User> friends = entity.getFriends();
         
         if (!friends.contains(target)) {
-            throw new NotAvailableException("notAvailable.absentFriend", friendId);
+            throw new NotAvailableException("notAvailable.user.absentFriend", targetId);
         }
         
         friends.remove(target);

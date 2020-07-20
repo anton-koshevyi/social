@@ -21,9 +21,9 @@ public interface UserService {
     
     void delete(Long id, DeleteDto dto);
     
-    void addFriend(Long id, Long friendId);
+    void addFriend(Long id, Long targetId);
     
-    void removeFriend(Long id, Long friendId);
+    void removeFriend(Long id, Long targetId);
     
     Page<User> getFriends(Long id, Pageable pageable);
     
