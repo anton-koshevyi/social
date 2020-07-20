@@ -60,6 +60,7 @@ public class UserServiceTest {
         
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
@@ -95,9 +96,10 @@ public class UserServiceTest {
                 .setLastName("new")
                 .setPublicity(Publicity.INTERNAL);
         userService.update(1L, dto);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("new@mail.com")
@@ -129,9 +131,10 @@ public class UserServiceTest {
         
         RoleDto dto = new RoleDto().setModer(true);
         userService.updateRole(1L, dto);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
@@ -188,9 +191,10 @@ public class UserServiceTest {
                 .setActual("password")
                 .setChange("change");
         userService.changePassword(1L, dto);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
@@ -318,10 +322,11 @@ public class UserServiceTest {
                 .setPassword("encoded"));
         
         userService.addFriend(1L, 2L);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .describedAs("Should add target to entity friends")
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
                 .isEqualTo(new User()
                         .setId(1L)
@@ -342,6 +347,7 @@ public class UserServiceTest {
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should add entity to target friends")
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
                 .isEqualTo(new User()
                         .setId(2L)
@@ -449,10 +455,11 @@ public class UserServiceTest {
                         .setPassword("encoded")))));
         
         userService.removeFriend(1L, 2L);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .describedAs("Should remove target from entity friends")
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
                 .isEqualTo(new User()
                         .setId(1L)
@@ -465,6 +472,7 @@ public class UserServiceTest {
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should remove entity from target friends")
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
                 .isEqualTo(new User()
                         .setId(2L)
@@ -515,17 +523,17 @@ public class UserServiceTest {
                         .setLastName("last")
                         .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"))));
-        
+    
         assertThat(userService.getFriends(1L, PageRequest.of(0, 1)))
                 .usingRecursiveFieldByFieldElementComparator()
-                .containsExactly(new User()
+                .isEqualTo(ImmutableList.of(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
                         .setPublicity(Publicity.PUBLIC)
-                        .setPassword("encoded"));
+                        .setPassword("encoded")));
     }
     
     @Test
@@ -545,9 +553,10 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        
+    
         assertThat(userService.findById(1L))
                 .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
@@ -574,16 +583,16 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        
+    
         assertThat(userService.findAll(PageRequest.of(0, 1)))
                 .usingRecursiveFieldByFieldElementComparator()
-                .containsExactly(new User()
+                .isEqualTo(ImmutableList.of(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
                         .setPublicity(Publicity.PRIVATE)
-                        .setPassword("encoded"));
+                        .setPassword("encoded")));
     }
 }
