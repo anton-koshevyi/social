@@ -1,6 +1,7 @@
 package com.social.backend.service;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -87,6 +88,10 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public void addFriend(Long id, Long targetId) {
+        if (Objects.equals(id, targetId)) {
+            throw new NotAvailableException("notAvailable.user.addHimself");
+        }
+    
         User entity = this.findById(id);
         User target = this.findById(targetId);
     
@@ -101,14 +106,18 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public void removeFriend(Long id, Long targetId) {
+        if (Objects.equals(id, targetId)) {
+            throw new NotAvailableException("notAvailable.user.removeHimself", targetId);
+        }
+    
         User entity = this.findById(id);
         User target = this.findById(targetId);
         List<User> friends = entity.getFriends();
-        
+    
         if (!friends.contains(target)) {
             throw new NotAvailableException("notAvailable.user.absentFriend", targetId);
         }
-        
+    
         friends.remove(target);
         userRepository.save(entity);
     }
