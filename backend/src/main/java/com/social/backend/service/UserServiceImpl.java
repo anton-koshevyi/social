@@ -99,6 +99,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
     
+        if (entity.getFriends().contains(target)) {
+            throw new IllegalActionException("illegalAction.user.addPresent", targetId);
+        }
+    
         entity.getFriends().add(target);
         target.getFriends().add(entity);
         userRepository.save(entity);

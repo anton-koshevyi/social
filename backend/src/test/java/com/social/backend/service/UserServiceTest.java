@@ -297,11 +297,51 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        
+    
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPrivate"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+    }
+    
+    @Test
+    public void addFriend_exception_whenFriendAlreadyPresent() {
+        entityManager.persist(new User()
+                .setEmail("email_1@mail.com")
+                .setUsername("username_1")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PRIVATE)
+                .setPassword("encoded")
+                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                        .setId(2L)
+                        .setEmail("email_2@mail.com")
+                        .setUsername("username_2")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPublicity(Publicity.PUBLIC)
+                        .setPassword("encoded")))));
+        entityManager.persist(new User()
+                .setEmail("email_2@mail.com")
+                .setUsername("username_2")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("encoded")
+                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                        .setId(1L)
+                        .setEmail("email_1@mail.com")
+                        .setUsername("username_1")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPublicity(Publicity.PRIVATE)
+                        .setPassword("encoded")))));
+        
+        assertThatThrownBy(() -> userService.addFriend(1L, 2L))
+                .isExactlyInstanceOf(IllegalActionException.class)
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+        ;
     }
     
     @Test
@@ -322,12 +362,12 @@ public class UserServiceTest {
                 .setPassword("encoded"));
         
         userService.addFriend(1L, 2L);
-    
+        
         assertThat(entityManager.find(User.class, 1L))
                 .describedAs("Should add target to entity friends")
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .ignoringFields("friendFor")
+                .ignoringFields("friends.friends", "friendFor")
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
@@ -348,7 +388,7 @@ public class UserServiceTest {
                 .describedAs("Should add entity to target friends")
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .ignoringFields("friendFor")
+                .ignoringFields("friends.friends", "friendFor")
                 .isEqualTo(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
