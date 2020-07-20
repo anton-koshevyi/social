@@ -1,7 +1,6 @@
 package com.social.backend.model.post;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -38,25 +37,10 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User author;
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Comment comment = (Comment) o;
-        return Objects.equals(created, comment.created)
-                && Objects.equals(updated, comment.updated)
-                && Objects.equals(body, comment.body)
-                && Objects.equals(post, comment.post)
-                && Objects.equals(author, comment.author);
-    }
+    public Comment() {}
     
-    @Override
-    public int hashCode() {
-        return Objects.hash(created, updated, body, post, author);
+    public Comment(Long id) {
+        this.id = id;
     }
     
     public Comment setId(Long id) {

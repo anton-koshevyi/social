@@ -2,7 +2,6 @@ package com.social.backend.model.conversation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
@@ -35,23 +34,6 @@ public abstract class Conversation {
     
     @OneToMany(mappedBy = "conversation")
     private List<Message> messages = new ArrayList<>();
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Conversation that = (Conversation) o;
-        return Objects.equals(members, that.members);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(members);
-    }
     
     public Conversation setId(Long id) {
         this.id = id;

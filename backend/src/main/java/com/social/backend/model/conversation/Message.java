@@ -1,6 +1,5 @@
 package com.social.backend.model.conversation;
 
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,23 +27,10 @@ public class Message {
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Message message = (Message) o;
-        return Objects.equals(creationMilli, message.creationMilli)
-                && Objects.equals(body, message.body)
-                && Objects.equals(conversation, message.conversation);
-    }
+    public Message() {}
     
-    @Override
-    public int hashCode() {
-        return Objects.hash(creationMilli, body, conversation);
+    public Message(Long id) {
+        this.id = id;
     }
     
     public Message setId(Long id) {

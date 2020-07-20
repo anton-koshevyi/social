@@ -2,7 +2,6 @@ package com.social.backend.model.user;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -63,27 +62,10 @@ public class User {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        User user = (User) o;
-        return moder == user.moder
-                && admin == user.admin
-                && Objects.equals(email, user.email)
-                && Objects.equals(username, user.username)
-                && Objects.equals(firstName, user.firstName)
-                && Objects.equals(lastName, user.lastName)
-                && Objects.equals(publicity, user.publicity);
-    }
+    public User() {}
     
-    @Override
-    public int hashCode() {
-        return Objects.hash(email, username, firstName, lastName, publicity, moder, admin);
+    public User(Long id) {
+        this.id = id;
     }
     
     public User setId(Long id) {
