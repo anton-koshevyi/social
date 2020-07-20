@@ -8,8 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -52,11 +52,10 @@ public class User {
     @ManyToMany(mappedBy = "members")
     private List<Conversation> conversations;
     
-    @ManyToOne
-    @JoinColumn(name = "instance", referencedColumnName = "id")
-    private User instance;
-    
-    @OneToMany(mappedBy = "instance")
+    @ManyToMany
+    @JoinTable(name = "user_friends",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "friend_id"))
     private List<User> friends;
     
     @OneToMany(mappedBy = "author")
@@ -138,11 +137,6 @@ public class User {
         return this;
     }
     
-    public User setInstance(User instance) {
-        this.instance = instance;
-        return this;
-    }
-    
     public User setFriends(List<User> friends) {
         this.friends = friends;
         return this;
@@ -196,10 +190,6 @@ public class User {
     
     public List<Conversation> getConversations() {
         return conversations;
-    }
-    
-    public User getInstance() {
-        return instance;
     }
     
     public List<User> getFriends() {
