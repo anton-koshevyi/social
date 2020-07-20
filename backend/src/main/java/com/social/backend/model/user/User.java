@@ -1,5 +1,6 @@
 package com.social.backend.model.user;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -49,20 +50,20 @@ public class User {
     @Column(name = "role_admin", nullable = false)
     private boolean admin;
     
-    @ManyToMany(mappedBy = "members")
-    private List<Conversation> conversations;
-    
     @ManyToMany
     @JoinTable(name = "user_friends",
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    private List<User> friends;
+    private List<User> friends = new ArrayList<>();
+    
+    @ManyToMany(mappedBy = "members")
+    private List<Conversation> conversations = new ArrayList<>();
     
     @OneToMany(mappedBy = "author")
-    private List<Post> posts;
+    private List<Post> posts = new ArrayList<>();
     
     @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
     
     @Override
     public boolean equals(Object o) {
@@ -132,13 +133,13 @@ public class User {
         return this;
     }
     
-    public User setConversations(List<Conversation> conversations) {
-        this.conversations = conversations;
+    public User setFriends(List<User> friends) {
+        this.friends = friends;
         return this;
     }
     
-    public User setFriends(List<User> friends) {
-        this.friends = friends;
+    public User setConversations(List<Conversation> conversations) {
+        this.conversations = conversations;
         return this;
     }
     
@@ -188,12 +189,12 @@ public class User {
         return admin;
     }
     
-    public List<Conversation> getConversations() {
-        return conversations;
-    }
-    
     public List<User> getFriends() {
         return friends;
+    }
+    
+    public List<Conversation> getConversations() {
+        return conversations;
     }
     
     public List<Post> getPosts() {
