@@ -99,9 +99,10 @@ public class UserServiceImpl implements UserService {
             throw new IllegalActionException("illegalAction.user.privateAccount", targetId);
         }
     
-        List<User> friends = entity.getFriends();
-        friends.add(target);
+        entity.getFriends().add(target);
+        target.getFriends().add(entity);
         userRepository.save(entity);
+        userRepository.save(target);
     }
     
     @Override
@@ -112,14 +113,16 @@ public class UserServiceImpl implements UserService {
     
         User entity = this.findById(id);
         User target = this.findById(targetId);
-        List<User> friends = entity.getFriends();
+        List<User> entityFriends = entity.getFriends();
     
-        if (!friends.contains(target)) {
+        if (!entityFriends.contains(target)) {
             throw new IllegalActionException("illegalAction.user.absentFriend", targetId);
         }
     
-        friends.remove(target);
+        entityFriends.remove(target);
+        target.getFriends().remove(entity);
         userRepository.save(entity);
+        userRepository.save(target);
     }
     
     @Override
