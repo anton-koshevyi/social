@@ -96,6 +96,7 @@ public class PostRepositoryTest {
                         .setAuthor(new User(1L))));
     }
     
+    @SuppressWarnings("checkstyle:AvoidInlineConditionals")
     private static <T> Comparator<T> notNullActual() {
         return (T actual, T expected) -> (actual != null) ? 0 : 1;
     }

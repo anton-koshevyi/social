@@ -341,7 +341,6 @@ public class UserServiceTest {
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-        ;
     }
     
     @Test
