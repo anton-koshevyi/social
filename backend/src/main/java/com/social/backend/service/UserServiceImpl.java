@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserService {
         User target = this.findById(targetId);
     
         if (target.getPublicity() == Publicity.PRIVATE) {
-            throw new IllegalActionException("illegalAction.user.privateAccount", targetId);
+            throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
     
         entity.getFriends().add(target);
@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
         List<User> entityFriends = entity.getFriends();
     
         if (!entityFriends.contains(target)) {
-            throw new IllegalActionException("illegalAction.user.absentFriend", targetId);
+            throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
     
         entityFriends.remove(target);
