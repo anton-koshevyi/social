@@ -1,5 +1,6 @@
 package com.social.backend.model.post;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -32,7 +33,7 @@ public class Post {
     private String body;
     
     @OneToMany(mappedBy = "post")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -50,13 +51,12 @@ public class Post {
         return Objects.equals(creationMilli, post.creationMilli)
                 && Objects.equals(updateMilli, post.updateMilli)
                 && Objects.equals(body, post.body)
-                && Objects.equals(comments, post.comments)
                 && Objects.equals(author, post.author);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli, updateMilli, body, comments, author);
+        return Objects.hash(creationMilli, updateMilli, body, author);
     }
     
     public Post setId(Long id) {

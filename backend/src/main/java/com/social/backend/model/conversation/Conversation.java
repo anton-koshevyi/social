@@ -1,5 +1,6 @@
 package com.social.backend.model.conversation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Column;
@@ -30,10 +31,10 @@ public abstract class Conversation {
     @ManyToMany
     @JoinTable(joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "conversation_id"))
-    private List<User> members;
+    private List<User> members = new ArrayList<>();
     
     @OneToMany(mappedBy = "conversation")
-    private List<Message> messages;
+    private List<Message> messages = new ArrayList<>();
     
     @Override
     public boolean equals(Object o) {
@@ -44,13 +45,12 @@ public abstract class Conversation {
             return false;
         }
         Conversation that = (Conversation) o;
-        return Objects.equals(members, that.members)
-                && Objects.equals(messages, that.messages);
+        return Objects.equals(members, that.members);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(members, messages);
+        return Objects.hash(members);
     }
     
     public Conversation setId(Long id) {
