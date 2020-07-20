@@ -15,7 +15,7 @@ import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
 import com.social.backend.dto.user.RoleDto;
 import com.social.backend.dto.user.UpdateDto;
-import com.social.backend.exception.NotAvailableException;
+import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
@@ -89,14 +89,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addFriend(Long id, Long targetId) {
         if (Objects.equals(id, targetId)) {
-            throw new NotAvailableException("notAvailable.user.addHimself");
+            throw new IllegalActionException("illegalAction.user.addHimself");
         }
     
         User entity = this.findById(id);
         User target = this.findById(targetId);
     
         if (target.getPublicity() == Publicity.PRIVATE) {
-            throw new NotAvailableException("notAvailable.user.privateAccount", targetId);
+            throw new IllegalActionException("illegalAction.user.privateAccount", targetId);
         }
     
         List<User> friends = entity.getFriends();
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void removeFriend(Long id, Long targetId) {
         if (Objects.equals(id, targetId)) {
-            throw new NotAvailableException("notAvailable.user.removeHimself", targetId);
+            throw new IllegalActionException("illegalAction.user.removeHimself", targetId);
         }
     
         User entity = this.findById(id);
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
         List<User> friends = entity.getFriends();
     
         if (!friends.contains(target)) {
-            throw new NotAvailableException("notAvailable.user.absentFriend", targetId);
+            throw new IllegalActionException("illegalAction.user.absentFriend", targetId);
         }
     
         friends.remove(target);

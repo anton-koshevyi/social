@@ -2,20 +2,20 @@ package com.social.backend.exception;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class NotAvailableException extends LocalizedException {
-    public NotAvailableException(String code, Object[] args, Throwable cause) {
+public class IllegalActionException extends LocalizedException {
+    public IllegalActionException(String code, Object[] args, Throwable cause) {
         super(code, args, cause);
     }
     
-    public NotAvailableException(String code) {
+    public IllegalActionException(String code) {
         super(code);
     }
     
-    public NotAvailableException(String code, Throwable cause) {
+    public IllegalActionException(String code, Throwable cause) {
         super(code, cause);
     }
     
-    public NotAvailableException(String code, Object... args) {
+    public IllegalActionException(String code, Object... args) {
         super(code, args);
     }
     
