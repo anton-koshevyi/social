@@ -39,39 +39,6 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User author;
     
-    // @Override
-    // public boolean equals(Object o) {
-    //     if (this == o) {
-    //         return true;
-    //     }
-    //     if (o == null || getClass() != o.getClass()) {
-    //         return false;
-    //     }
-    //     Post post = (Post) o;
-    //     return Objects.equals(created, post.created)
-    //             && Objects.equals(updated, post.updated)
-    //             && Objects.equals(body, post.body)
-    //             && Objects.equals(comments, post.comments)
-    //             && Objects.equals(author, post.author);
-    // }
-    
-    @Override
-    public String toString() {
-        return "Post{" +
-                "id=" + id +
-                ", created=" + created +
-                ", updated=" + updated +
-                ", body='" + body + '\'' +
-                ", comments=" + comments +
-                ", author=" + author +
-                '}';
-    }
-    
-    // @Override
-    // public int hashCode() {
-    //     return Objects.hash(created, updated, body,comments, author);
-    // }
-    
     public Post setId(Long id) {
         this.id = id;
         return this;
