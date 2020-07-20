@@ -1,5 +1,6 @@
 package com.social.backend.model.post;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,11 +24,11 @@ public class Post {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "creation_milli", nullable = false)
-    private Long creationMilli;
+    @Column(name = "created", nullable = false)
+    private ZonedDateTime created;
     
-    @Column(name = "update_milli")
-    private Long updateMilli;
+    @Column(name = "updated")
+    private ZonedDateTime updated;
     
     @Column(name = "body", nullable = false)
     private String body;
@@ -48,15 +49,15 @@ public class Post {
             return false;
         }
         Post post = (Post) o;
-        return Objects.equals(creationMilli, post.creationMilli)
-                && Objects.equals(updateMilli, post.updateMilli)
+        return Objects.equals(created, post.created)
+                && Objects.equals(updated, post.updated)
                 && Objects.equals(body, post.body)
                 && Objects.equals(author, post.author);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli, updateMilli, body, author);
+        return Objects.hash(created, updated, body, author);
     }
     
     public Post setId(Long id) {
@@ -64,13 +65,13 @@ public class Post {
         return this;
     }
     
-    public Post setCreationMilli(Long creationMilli) {
-        this.creationMilli = creationMilli;
+    public Post setCreated(ZonedDateTime created) {
+        this.created = created;
         return this;
     }
     
-    public Post setUpdateMilli(Long updateMilli) {
-        this.updateMilli = updateMilli;
+    public Post setUpdated(ZonedDateTime updated) {
+        this.updated = updated;
         return this;
     }
     
@@ -93,12 +94,12 @@ public class Post {
         return id;
     }
     
-    public Long getCreationMilli() {
-        return creationMilli;
+    public ZonedDateTime getCreated() {
+        return created;
     }
     
-    public Long getUpdateMilli() {
-        return updateMilli;
+    public ZonedDateTime getUpdated() {
+        return updated;
     }
     
     public String getBody() {

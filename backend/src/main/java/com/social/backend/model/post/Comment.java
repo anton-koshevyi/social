@@ -1,5 +1,6 @@
 package com.social.backend.model.post;
 
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,11 +21,11 @@ public class Comment {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "creation_milli", nullable = false)
-    private Long creationMilli;
+    @Column(name = "created", nullable = false)
+    private ZonedDateTime created;
     
-    @Column(name = "update_milli")
-    private Long updateMilli;
+    @Column(name = "updated")
+    private ZonedDateTime updated;
     
     @Column(name = "body", nullable = false)
     private String body;
@@ -46,8 +47,8 @@ public class Comment {
             return false;
         }
         Comment comment = (Comment) o;
-        return Objects.equals(creationMilli, comment.creationMilli)
-                && Objects.equals(updateMilli, comment.updateMilli)
+        return Objects.equals(created, comment.created)
+                && Objects.equals(updated, comment.updated)
                 && Objects.equals(body, comment.body)
                 && Objects.equals(post, comment.post)
                 && Objects.equals(author, comment.author);
@@ -55,7 +56,7 @@ public class Comment {
     
     @Override
     public int hashCode() {
-        return Objects.hash(creationMilli, updateMilli, body, post, author);
+        return Objects.hash(created, updated, body, post, author);
     }
     
     public Comment setId(Long id) {
@@ -63,13 +64,13 @@ public class Comment {
         return this;
     }
     
-    public Comment setCreationMilli(Long creationMilli) {
-        this.creationMilli = creationMilli;
+    public Comment setCreated(ZonedDateTime creationMilli) {
+        this.created = creationMilli;
         return this;
     }
     
-    public Comment setUpdateMilli(Long updateMilli) {
-        this.updateMilli = updateMilli;
+    public Comment setUpdated(ZonedDateTime updateMilli) {
+        this.updated = updateMilli;
         return this;
     }
     
@@ -92,8 +93,12 @@ public class Comment {
         return id;
     }
     
-    public Long getCreationMilli() {
-        return creationMilli;
+    public ZonedDateTime getCreated() {
+        return created;
+    }
+    
+    public ZonedDateTime getUpdated() {
+        return updated;
     }
     
     public String getBody() {
