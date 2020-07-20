@@ -32,28 +32,32 @@ public class UserRepositoryTest {
     
     @Test
     public void findByEmail_emptyOptional_whenNoEntityWithEmail() {
-        assertThat(userRepository.findByEmail("email"))
+        assertThat(userRepository.findByEmail("email@mail.com"))
                 .isEmpty();
     }
     
     @Test
     public void findByEmail() {
         entityManager.persist(new User()
-                .setEmail("email")
+                .setEmail("email@mail.com")
                 .setUsername("username")
-                .setPassword("password")
-                .setPublicity(Publicity.PUBLIC)
                 .setFirstName("first")
-                .setLastName("last"));
-        
-        assertThat(userRepository.findByEmail("email"))
-                .contains(new User()
-                        .setEmail("email")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
+    
+        assertThat(userRepository.findByEmail("email@mail.com"))
+                .get()
+                .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
+                .isEqualTo(new User()
+                        .setId(1L)
+                        .setEmail("email@mail.com")
                         .setUsername("username")
-                        .setPassword("password")
-                        .setPublicity(Publicity.PUBLIC)
                         .setFirstName("first")
-                        .setLastName("last"));
+                        .setLastName("last")
+                        .setPublicity(Publicity.PUBLIC)
+                        .setPassword("password"));
     }
     
     @Test
@@ -71,21 +75,25 @@ public class UserRepositoryTest {
     @Test
     public void findByUsername() {
         entityManager.persist(new User()
-                .setEmail("email")
+                .setEmail("email@mail.com")
                 .setUsername("username")
-                .setPassword("password")
-                .setPublicity(Publicity.PUBLIC)
                 .setFirstName("first")
-                .setLastName("last"));
-        
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
+    
         assertThat(userRepository.findByUsername("username"))
-                .contains(new User()
-                        .setEmail("email")
+                .get()
+                .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
+                .isEqualTo(new User()
+                        .setId(1L)
+                        .setEmail("email@mail.com")
                         .setUsername("username")
-                        .setPassword("password")
-                        .setPublicity(Publicity.PUBLIC)
                         .setFirstName("first")
-                        .setLastName("last"));
+                        .setLastName("last")
+                        .setPublicity(Publicity.PUBLIC)
+                        .setPassword("password"));
     }
     
     @Test
@@ -96,21 +104,21 @@ public class UserRepositoryTest {
     
     @Test
     public void existsByEmail_false_whenNoEntityWithEmail() {
-        assertThat(userRepository.existsByEmail("email"))
+        assertThat(userRepository.existsByEmail("email@mail.com"))
                 .isFalse();
     }
     
     @Test
     public void existsByEmail() {
         entityManager.persist(new User()
-                .setEmail("email")
+                .setEmail("email@mail.com")
                 .setUsername("username")
-                .setPassword("password")
-                .setPublicity(Publicity.PUBLIC)
                 .setFirstName("first")
-                .setLastName("last"));
-        
-        assertThat(userRepository.existsByEmail("email"))
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
+    
+        assertThat(userRepository.existsByEmail("email@mail.com"))
                 .isTrue();
     }
     
@@ -129,12 +137,12 @@ public class UserRepositoryTest {
     @Test
     public void existsByUsername() {
         entityManager.persist(new User()
-                .setEmail("email")
+                .setEmail("email@mail.com")
                 .setUsername("username")
-                .setPassword("password")
-                .setPublicity(Publicity.PUBLIC)
                 .setFirstName("first")
-                .setLastName("last"));
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
         
         assertThat(userRepository.existsByUsername("username"))
                 .isTrue();
