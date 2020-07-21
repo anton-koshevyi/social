@@ -5,7 +5,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("group")
+@DiscriminatorValue(ConversationType.GROUP)
 public class GroupConversation extends Conversation {
     @Column(name = "name", nullable = false)
     private String name;
