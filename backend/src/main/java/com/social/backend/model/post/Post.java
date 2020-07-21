@@ -39,6 +39,12 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User author;
     
+    public Post() {}
+    
+    public Post(Long id) {
+        this.id = id;
+    }
+    
     public Post setId(Long id) {
         this.id = id;
         return this;
