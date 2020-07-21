@@ -63,7 +63,7 @@ public class PostServiceTest {
         assertThatThrownBy(() -> postService.update(1L, 1L, new ContentDto()))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
     }
     
     @Test
