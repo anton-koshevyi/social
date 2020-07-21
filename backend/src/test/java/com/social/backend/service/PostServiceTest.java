@@ -60,10 +60,10 @@ public class PostServiceTest {
     
     @Test
     public void update_exception_whenNoPostWithIdAndAuthorId() {
-        assertThatThrownBy(() -> postService.update(1L, 1L, new ContentDto()))
+        assertThatThrownBy(() -> postService.update(1L, 2L, new ContentDto()))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
     }
     
     @Test

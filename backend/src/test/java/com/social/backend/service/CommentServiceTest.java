@@ -66,10 +66,10 @@ public class CommentServiceTest {
     
     @Test
     public void update_exception_whenNoCommentWithIdAndAuthorId() {
-        assertThatThrownBy(() -> commentService.update(1L, 1L, new ContentDto()))
+        assertThatThrownBy(() -> commentService.update(1L, 2L, new ContentDto()))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
     }
     
     @Test
