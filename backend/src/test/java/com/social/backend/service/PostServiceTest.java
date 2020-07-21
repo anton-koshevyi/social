@@ -47,7 +47,7 @@ public class PostServiceTest {
         
         ContentDto dto = new ContentDto().setBody("body");
         postService.create(1L, dto);
-        
+    
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
@@ -56,6 +56,14 @@ public class PostServiceTest {
                         .setId(1L)
                         .setBody("body")
                         .setAuthor(new User(1L)));
+    }
+    
+    @Test
+    public void update_exception_whenNoPostWithIdAndAuthorId() {
+        assertThatThrownBy(() -> postService.update(1L, 1L, new ContentDto()))
+                .isExactlyInstanceOf(NotFoundException.class)
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
     }
     
     @Test
