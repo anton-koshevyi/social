@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.dto.user.CreateDto;
 import com.social.backend.dto.user.DeleteDto;
@@ -23,6 +24,7 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -99,7 +101,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
     
-        if (entity.getFriends().contains(target)) {
+        if (userRepository.existsByIdAndFriendsContaining(id, target)) {
             throw new IllegalActionException("illegalAction.user.addPresent", targetId);
         }
     
@@ -117,13 +119,12 @@ public class UserServiceImpl implements UserService {
     
         User entity = this.findById(id);
         User target = this.findById(targetId);
-        List<User> entityFriends = entity.getFriends();
     
-        if (!entityFriends.contains(target)) {
+        if (!userRepository.existsByIdAndFriendsContaining(id, target)) {
             throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
     
-        entityFriends.remove(target);
+        entity.getFriends().remove(target);
         target.getFriends().remove(entity);
         userRepository.save(entity);
         userRepository.save(target);
