@@ -3,6 +3,7 @@ package com.social.backend.model.user;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -51,13 +52,13 @@ public class User {
     @ManyToMany
     private List<User> friends = new ArrayList<>();
     
-    @ManyToMany(mappedBy = "friends")
+    @ManyToMany(mappedBy = "friends", cascade = CascadeType.REMOVE)
     private List<User> friendFor = new ArrayList<>();
     
     @ManyToMany(mappedBy = "members")
     private List<Conversation> conversations = new ArrayList<>();
     
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
     private List<Post> posts = new ArrayList<>();
     
     @OneToMany(mappedBy = "author")

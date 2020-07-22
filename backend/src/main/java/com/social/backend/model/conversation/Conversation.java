@@ -2,6 +2,7 @@ package com.social.backend.model.conversation;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
@@ -32,7 +33,7 @@ public abstract class Conversation {
                inverseJoinColumns = @JoinColumn(name = "conversation_id"))
     private List<User> members = new ArrayList<>();
     
-    @OneToMany(mappedBy = "conversation")
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.REMOVE)
     private List<Message> messages = new ArrayList<>();
     
     public Conversation setId(Long id) {
