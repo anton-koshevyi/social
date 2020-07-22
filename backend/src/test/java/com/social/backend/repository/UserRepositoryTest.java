@@ -1,5 +1,6 @@
 package com.social.backend.repository;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,8 +120,66 @@ public class UserRepositoryTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PUBLIC)
                 .setPassword("password"));
-        
+    
         assertThat(userRepository.existsByUsername("username"))
+                .isTrue();
+    }
+    
+    @Test
+    public void existsByIdAndFriendsContaining_false_whenUsersAreNotFriends() {
+        entityManager.persist(new User()
+                .setEmail("email_1@mail.com")
+                .setUsername("username_1")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
+        User user = entityManager.persist(new User()
+                .setEmail("email_2@mail.com")
+                .setUsername("username_2")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("password"));
+        
+        assertThat(userRepository.existsByIdAndFriendsContaining(1L, user))
+                .isFalse();
+    }
+    
+    @Test
+    public void existsByIdAndFriendsContaining() {
+        entityManager.persist(new User()
+                .setEmail("email_1@mail.com")
+                .setUsername("username_1")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PRIVATE)
+                .setPassword("encoded")
+                .setFriends(ImmutableList.of(new User()
+                        .setId(2L)
+                        .setEmail("email_2@mail.com")
+                        .setUsername("username_2")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPublicity(Publicity.PUBLIC)
+                        .setPassword("encoded"))));
+        User friend = entityManager.persist(new User()
+                .setEmail("email_2@mail.com")
+                .setUsername("username_2")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("encoded")
+                .setFriends(ImmutableList.of(new User()
+                        .setId(1L)
+                        .setEmail("email_1@mail.com")
+                        .setUsername("username_1")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPublicity(Publicity.PRIVATE)
+                        .setPassword("encoded"))));
+        
+        assertThat(userRepository.existsByIdAndFriendsContaining(1L, friend))
                 .isTrue();
     }
 }
