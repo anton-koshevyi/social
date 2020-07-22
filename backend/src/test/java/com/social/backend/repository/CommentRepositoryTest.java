@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,12 +30,6 @@ public class CommentRepositoryTest {
     
     @Autowired
     private TestEntityManager entityManager;
-    
-    @Test
-    public void findByIdAndAuthorId_emptyOptional_onNulls() {
-        assertThat(commentRepository.findByIdAndAuthorId(null, null))
-                .isEmpty();
-    }
     
     @Test
     public void findByIdAndAuthorId_emptyOptional_whenNoPostWithIdAndAuthorId() {
@@ -75,12 +69,6 @@ public class CommentRepositoryTest {
     }
     
     @Test
-    public void findAllByPostId_empty_onNullPostId() {
-        assertThat(commentRepository.findAllByPostId(null, PageRequest.of(0, 1)))
-                .isEmpty();
-    }
-    
-    @Test
     public void findAllByPostId() {
         entityManager.persist(new User()
                 .setEmail("email@mail.com")
@@ -98,8 +86,8 @@ public class CommentRepositoryTest {
                 .setBody("comment body")
                 .setPost(new Post(1L))
                 .setAuthor(new User(1L)));
-        
-        assertThat(commentRepository.findAllByPostId(1L, PageRequest.of(0, 1)))
+    
+        assertThat(commentRepository.findAllByPostId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .isEqualTo(ImmutableList.of(new Comment()

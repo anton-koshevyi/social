@@ -25,12 +25,6 @@ public class UserRepositoryTest {
     private TestEntityManager entityManager;
     
     @Test
-    public void findByEmail_emptyOptional_onNull() {
-        assertThat(userRepository.findByEmail(null))
-                .isEmpty();
-    }
-    
-    @Test
     public void findByEmail_emptyOptional_whenNoEntityWithEmail() {
         assertThat(userRepository.findByEmail("email@mail.com"))
                 .isEmpty();
@@ -58,12 +52,6 @@ public class UserRepositoryTest {
                         .setLastName("last")
                         .setPublicity(Publicity.PUBLIC)
                         .setPassword("password"));
-    }
-    
-    @Test
-    public void findByUsername_emptyOptional_onNull() {
-        assertThat(userRepository.findByUsername(null))
-                .isEmpty();
     }
     
     @Test
@@ -97,12 +85,6 @@ public class UserRepositoryTest {
     }
     
     @Test
-    public void existsByEmail_false_onNull() {
-        assertThat(userRepository.existsByEmail(null))
-                .isFalse();
-    }
-    
-    @Test
     public void existsByEmail_false_whenNoEntityWithEmail() {
         assertThat(userRepository.existsByEmail("email@mail.com"))
                 .isFalse();
@@ -120,12 +102,6 @@ public class UserRepositoryTest {
     
         assertThat(userRepository.existsByEmail("email@mail.com"))
                 .isTrue();
-    }
-    
-    @Test
-    public void existsByUsername_false_onNull() {
-        assertThat(userRepository.existsByUsername(null))
-                .isFalse();
     }
     
     @Test
