@@ -19,7 +19,6 @@ import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
 
@@ -42,7 +41,6 @@ public class UserServiceImpl implements UserService {
                 .setUsername(dto.getUsername())
                 .setFirstName(dto.getFirstName())
                 .setLastName(dto.getLastName())
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword(passwordEncoder.encode(dto.getPassword()));
         return userRepository.save(entity);
     }
@@ -97,11 +95,11 @@ public class UserServiceImpl implements UserService {
         User entity = this.findById(id);
         User target = this.findById(targetId);
     
-        if (target.getPublicity() == Publicity.PRIVATE) {
+        if (target.isPrivate()) {
             throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
     
-        if (userRepository.existsByIdAndFriendsContaining(id, target)) {
+        if (entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.addPresent", targetId);
         }
     
@@ -120,12 +118,12 @@ public class UserServiceImpl implements UserService {
         User entity = this.findById(id);
         User target = this.findById(targetId);
     
-        if (!userRepository.existsByIdAndFriendsContaining(id, target)) {
+        if (!entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
     
-        entity.getFriends().remove(target);
-        target.getFriends().remove(entity);
+        removeFriend(entity, target);
+        removeFriend(target, entity);
         userRepository.save(entity);
         userRepository.save(target);
     }
@@ -147,5 +145,18 @@ public class UserServiceImpl implements UserService {
     public Page<User> findAll(Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return userRepository.findAll(pageable);
+    }
+    
+    private static void removeFriend(User user, User target) {
+        List<User> friends = user.getFriends();
+        
+        for (int i = 0; i < friends.size(); i++) {
+            User friend = friends.get(i);
+            
+            if (Objects.equals(friend.getId(), target.getId())) {
+                friends.remove(i);
+                return;
+            }
+        }
     }
 }
