@@ -24,11 +24,11 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Post create(Long authorId, ContentDto dto) {
+    public Post create(User author, ContentDto dto) {
         Post entity = new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody(dto.getBody())
-                .setAuthor(new User(authorId));
+                .setAuthor(author);
         return postRepository.save(entity);
     }
     
@@ -59,14 +59,14 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
-        return postRepository.findAllByAuthorId(authorId, pageable);
-    }
-    
-    @Override
     public Page<Post> findAll(Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return postRepository.findAll(pageable);
+    }
+    
+    @Override
+    public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
+        Objects.requireNonNull(pageable, "Pageable must not be null");
+        return postRepository.findAllByAuthorId(authorId, pageable);
     }
 }

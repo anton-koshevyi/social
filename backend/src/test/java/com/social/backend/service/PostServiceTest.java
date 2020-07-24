@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,16 +37,16 @@ public class PostServiceTest {
     
     @Test
     public void create() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        
+    
         ContentDto dto = new ContentDto().setBody("body");
-        postService.create(1L, dto);
+        postService.create(author, dto);
     
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
@@ -55,7 +55,14 @@ public class PostServiceTest {
                 .isEqualTo(new Post()
                         .setId(1L)
                         .setBody("body")
-                        .setAuthor(new User(1L)));
+                        .setAuthor(new User()
+                                .setId(1L)
+                                .setEmail("email@mail.com")
+                                .setUsername("username")
+                                .setFirstName("first")
+                                .setLastName("last")
+                                .setPublicity(Publicity.PRIVATE)
+                                .setPassword("encoded")));
     }
     
     @Test
@@ -186,36 +193,6 @@ public class PostServiceTest {
     }
     
     @Test
-    public void findAllByAuthorId_exception_onNullPageable() {
-        assertThatThrownBy(() -> postService.findAllByAuthorId(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
-    public void findAllByAuthorId() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
-                .setBody("body")
-                .setAuthor(new User(1L)));
-        
-        assertThat(postService.findAllByAuthorId(1L, PageRequest.of(0, 1)))
-                .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
-                .isEqualTo(ImmutableList.of(new Post()
-                        .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L))));
-    }
-    
-    @Test
     public void findAll_exception_onNull() {
         assertThatThrownBy(() -> postService.findAll(null))
                 .isExactlyInstanceOf(NullPointerException.class)
@@ -236,7 +213,37 @@ public class PostServiceTest {
                 .setBody("body")
                 .setAuthor(new User(1L)));
         
-        assertThat(postService.findAll(PageRequest.of(0, 1)))
+        assertThat(postService.findAll(Pageable.unpaged()))
+                .usingRecursiveFieldByFieldElementComparator()
+                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
+                .isEqualTo(ImmutableList.of(new Post()
+                        .setId(1L)
+                        .setBody("body")
+                        .setAuthor(new User(1L))));
+    }
+    
+    @Test
+    public void findAllByAuthorId_exception_onNullPageable() {
+        assertThatThrownBy(() -> postService.findAllByAuthorId(1L, null))
+                .isExactlyInstanceOf(NullPointerException.class)
+                .hasMessage("Pageable must not be null");
+    }
+    
+    @Test
+    public void findAllByAuthorId() {
+        entityManager.persist(new User()
+                .setEmail("email@mail.com")
+                .setUsername("username")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PRIVATE)
+                .setPassword("encoded"));
+        entityManager.persist(new Post()
+                .setCreated(ZonedDateTime.now())
+                .setBody("body")
+                .setAuthor(new User(1L)));
+        
+        assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .isEqualTo(ImmutableList.of(new Post()

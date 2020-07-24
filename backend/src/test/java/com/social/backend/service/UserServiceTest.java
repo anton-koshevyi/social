@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -313,14 +313,14 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(ImmutableList.of(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
                         .setPublicity(Publicity.PUBLIC)
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
         entityManager.persist(new User()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
@@ -328,14 +328,14 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(ImmutableList.of(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
                         .setPublicity(Publicity.PRIVATE)
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
         
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
@@ -563,7 +563,7 @@ public class UserServiceTest {
                         .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"))));
     
-        assertThat(userService.getFriends(1L, PageRequest.of(0, 1)))
+        assertThat(userService.getFriends(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .isEqualTo(ImmutableList.of(new User()
                         .setId(2L)
@@ -623,7 +623,7 @@ public class UserServiceTest {
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
     
-        assertThat(userService.findAll(PageRequest.of(0, 1)))
+        assertThat(userService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .isEqualTo(ImmutableList.of(new User()
                         .setId(1L)

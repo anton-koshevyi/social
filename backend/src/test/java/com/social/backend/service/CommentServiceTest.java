@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -163,8 +163,8 @@ public class CommentServiceTest {
                 .setBody("comment body")
                 .setPost(new Post(1L))
                 .setAuthor(new User(1L)));
-        
-        assertThat(commentService.findAllByPostId(1L, PageRequest.of(0, 1)))
+    
+        assertThat(commentService.findAllByPostId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .isEqualTo(ImmutableList.of(new Comment()
