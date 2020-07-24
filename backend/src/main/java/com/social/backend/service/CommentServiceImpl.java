@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.social.backend.dto.comment.ContentDto;
+import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
@@ -26,6 +27,20 @@ public class CommentServiceImpl implements CommentService {
     
     @Override
     public Comment create(Post post, User author, ContentDto dto) {
+        User postAuthor = post.getAuthor();
+    
+        if (postAuthor.isPrivate()) {
+            if (!Objects.equals(postAuthor.getId(), author.getId())) {
+                throw new IllegalActionException("illegalAction.comment.privatePost");
+            }
+        }
+    
+        if (postAuthor.isInternal()) {
+            if (!postAuthor.hasFriendship(author)) {
+                throw new IllegalActionException("illegalAction.comment.internalPost");
+            }
+        }
+    
         Comment entity = new Comment()
                 .setCreated(ZonedDateTime.now())
                 .setBody(dto.getBody())

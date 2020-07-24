@@ -1,6 +1,7 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 
 import com.google.common.collect.ImmutableList;
@@ -16,9 +17,11 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.dto.comment.ContentDto;
+import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
+import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,21 +39,154 @@ public class CommentServiceTest {
     private TestEntityManager entityManager;
     
     @Test
-    public void create() {
+    public void create_exception_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor() {
         User postAuthor = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
+                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
+        User commentAuthor = entityManager.persist(new User()
+                .setEmail("commentator@mail.com")
+                .setUsername("commentator")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPassword("encoded"));
+        
+        ContentDto dto = new ContentDto().setBody("body");
+        assertThatThrownBy(() -> commentService.create(post, commentAuthor, dto))
+                .isExactlyInstanceOf(IllegalActionException.class)
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
+    }
     
+    @Test
+    public void create_exception_whenPostOfInternalAuthor_andCommentNotOfFriend() {
+        User postAuthor = entityManager.persist(new User()
+                .setEmail("email@mail.com")
+                .setUsername("username")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.INTERNAL)
+                .setPassword("encoded"));
+        Post post = entityManager.persist(new Post()
+                .setCreated(ZonedDateTime.now())
+                .setBody("post body")
+                .setAuthor(postAuthor));
+        User commentAuthor = entityManager.persist(new User()
+                .setEmail("commentator@mail.com")
+                .setUsername("commentator")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPassword("encoded"));
+        
+        ContentDto dto = new ContentDto().setBody("body");
+        assertThatThrownBy(() -> commentService.create(post, commentAuthor, dto))
+                .isExactlyInstanceOf(IllegalActionException.class)
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.internalPost"});
+    }
+    
+    @Test
+    public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
+        User postAuthor = entityManager.persist(new User()
+                .setEmail("email@mail.com")
+                .setUsername("username")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PRIVATE)
+                .setPassword("encoded"));
+        Post post = entityManager.persist(new Post()
+                .setCreated(ZonedDateTime.now())
+                .setBody("post body")
+                .setAuthor(postAuthor));
+        
         ContentDto dto = new ContentDto().setBody("body");
         commentService.create(post, postAuthor, dto);
+        
+        assertThat(entityManager.find(Comment.class, 1L))
+                .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
+                .withComparatorForFields(notNullActual(), "created")
+                .ignoringFields("post", "author")
+                .isEqualTo(new Comment()
+                        .setId(1L)
+                        .setBody("body"));
+    }
     
+    @Test
+    public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
+        User postAuthor = entityManager.persist(new User()
+                .setEmail("email_1@mail.com")
+                .setUsername("username_1")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.INTERNAL)
+                .setPassword("encoded")
+                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                        .setId(2L)
+                        .setEmail("commentator@mail.com")
+                        .setUsername("commentator")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPassword("encoded")))));
+        Post post = entityManager.persist(new Post()
+                .setCreated(ZonedDateTime.now())
+                .setBody("post body")
+                .setAuthor(postAuthor));
+        User commentAuthor = entityManager.persist(new User()
+                .setEmail("commentator@mail.com")
+                .setUsername("commentator")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPassword("encoded")
+                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                        .setId(1L)
+                        .setEmail("email_1@mail.com")
+                        .setUsername("username_1")
+                        .setFirstName("first")
+                        .setLastName("last")
+                        .setPassword("encoded")))));
+        
+        ContentDto dto = new ContentDto().setBody("body");
+        commentService.create(post, commentAuthor, dto);
+        
+        assertThat(entityManager.find(Comment.class, 1L))
+                .usingRecursiveComparison()
+                .ignoringAllOverriddenEquals()
+                .withComparatorForFields(notNullActual(), "created")
+                .ignoringFields("post", "author")
+                .isEqualTo(new Comment()
+                        .setId(1L)
+                        .setBody("body"));
+    }
+    
+    @Test
+    public void create_whenPostOfPublicAuthor() {
+        User postAuthor = entityManager.persist(new User()
+                .setEmail("email@mail.com")
+                .setUsername("username")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPublicity(Publicity.PUBLIC)
+                .setPassword("encoded"));
+        Post post = entityManager.persist(new Post()
+                .setCreated(ZonedDateTime.now())
+                .setBody("post body")
+                .setAuthor(postAuthor));
+        User commentAuthor = entityManager.persist(new User()
+                .setEmail("commentator@mail.com")
+                .setUsername("commentator")
+                .setFirstName("first")
+                .setLastName("last")
+                .setPassword("encoded"));
+        
+        ContentDto dto = new ContentDto().setBody("body");
+        commentService.create(post, commentAuthor, dto);
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
