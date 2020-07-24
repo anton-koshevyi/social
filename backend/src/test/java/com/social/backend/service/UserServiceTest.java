@@ -46,11 +46,11 @@ public class UserServiceTest {
     private TestEntityManager entityManager;
     
     @Test
-    public void create_encodePassword_andSetPublicityToPrivate() {
+    public void create_encodePassword() {
         Mockito.when(passwordEncoder.encode(
                 "password"
         )).thenReturn("encoded");
-        
+    
         userService.create(new CreateDto()
                 .setEmail("email@mail.com")
                 .setUsername("username")
@@ -67,7 +67,6 @@ public class UserServiceTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"));
     }
     
@@ -86,7 +85,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         
         UpdateDto dto = new UpdateDto()
@@ -125,7 +123,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded")
                 .setModer(false));
         
@@ -141,7 +138,6 @@ public class UserServiceTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded")
                         .setModer(true));
     }
@@ -161,7 +157,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         
         PasswordDto dto = new PasswordDto().setActual("password");
@@ -177,7 +172,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encodedOld"));
         Mockito.when(passwordEncoder.matches(
                 "password",
@@ -201,7 +195,6 @@ public class UserServiceTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encodedNew"));
     }
     
@@ -220,7 +213,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         
         DeleteDto dto = new DeleteDto().setPassword("password");
@@ -236,7 +228,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         Mockito.when(passwordEncoder.matches(
                 "password",
@@ -272,7 +263,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
@@ -288,14 +278,12 @@ public class UserServiceTest {
                 .setUsername("username1")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new User()
                 .setEmail("email2@mail.com")
                 .setUsername("username2")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
     
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
@@ -428,7 +416,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
@@ -444,14 +431,12 @@ public class UserServiceTest {
                 .setUsername("username_1")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new User()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded"));
         
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
@@ -467,7 +452,6 @@ public class UserServiceTest {
                 .setUsername("username_1")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded")
                 .setFriends(new ArrayList<>(ImmutableList.of(new User()
                         .setId(2L)
@@ -475,14 +459,12 @@ public class UserServiceTest {
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("encoded")))));
         entityManager.persist(new User()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded")
                 .setFriends(new ArrayList<>(ImmutableList.of(new User()
                         .setId(1L)
@@ -490,7 +472,6 @@ public class UserServiceTest {
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded")))));
         
         userService.removeFriend(1L, 2L);
@@ -506,7 +487,6 @@ public class UserServiceTest {
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"));
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should remove entity from target friends")
@@ -519,7 +499,6 @@ public class UserServiceTest {
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("encoded"));
     }
     
@@ -537,7 +516,6 @@ public class UserServiceTest {
                 .setUsername("username_1")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded")
                 .setFriends(ImmutableList.of(new User()
                         .setId(2L)
@@ -545,14 +523,12 @@ public class UserServiceTest {
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("encoded"))));
         entityManager.persist(new User()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded")
                 .setFriends(ImmutableList.of(new User()
                         .setId(1L)
@@ -560,7 +536,6 @@ public class UserServiceTest {
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"))));
     
         assertThat(userService.getFriends(1L, Pageable.unpaged()))
@@ -571,7 +546,6 @@ public class UserServiceTest {
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("encoded")));
     }
     
@@ -590,7 +564,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
     
         assertThat(userService.findById(1L))
@@ -602,7 +575,6 @@ public class UserServiceTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded"));
     }
     
@@ -620,7 +592,6 @@ public class UserServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
     
         assertThat(userService.findAll(Pageable.unpaged()))
@@ -631,7 +602,6 @@ public class UserServiceTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded")));
     }
 }

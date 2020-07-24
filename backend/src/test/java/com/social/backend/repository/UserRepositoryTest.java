@@ -9,7 +9,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +36,6 @@ public class UserRepositoryTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("password"));
     
         assertThat(userRepository.findByEmail("email@mail.com"))
@@ -50,7 +48,6 @@ public class UserRepositoryTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("password"));
     }
     
@@ -67,7 +64,6 @@ public class UserRepositoryTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("password"));
     
         assertThat(userRepository.findByUsername("username"))
@@ -80,7 +76,6 @@ public class UserRepositoryTest {
                         .setUsername("username")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
                         .setPassword("password"));
     }
     
@@ -97,7 +92,6 @@ public class UserRepositoryTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("password"));
     
         assertThat(userRepository.existsByEmail("email@mail.com"))
@@ -117,7 +111,6 @@ public class UserRepositoryTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
                 .setPassword("password"));
     
         assertThat(userRepository.existsByUsername("username"))
