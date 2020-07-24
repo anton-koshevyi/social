@@ -37,12 +37,6 @@ public class Comment {
     @JoinColumn(name = "user_id")
     private User author;
     
-    public Comment() {}
-    
-    public Comment(Long id) {
-        this.id = id;
-    }
-    
     public Comment setId(Long id) {
         this.id = id;
         return this;

@@ -18,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import com.social.backend.dto.post.ContentDto;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +41,6 @@ public class PostServiceTest {
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
     
         ContentDto dto = new ContentDto().setBody("body");
@@ -51,18 +49,10 @@ public class PostServiceTest {
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
+                .withComparatorForFields(notNullActual(), "created", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User()
-                                .setId(1L)
-                                .setEmail("email@mail.com")
-                                .setUsername("username")
-                                .setFirstName("first")
-                                .setLastName("last")
-                                .setPublicity(Publicity.PRIVATE)
-                                .setPassword("encoded")));
+                        .setBody("body"));
     }
     
     @Test
@@ -75,29 +65,27 @@ public class PostServiceTest {
     
     @Test
     public void update() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
+                .setAuthor(author));
         
         ContentDto dto = new ContentDto().setBody("new");
         postService.update(1L, 1L, dto);
-        
+    
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "updated")
+                .withComparatorForFields(notNullActual(), "created", "updated", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("new")
-                        .setAuthor(new User(1L)));
+                        .setBody("new"));
     }
     
     @Test
@@ -110,17 +98,16 @@ public class PostServiceTest {
     
     @Test
     public void delete() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
+                .setAuthor(author));
         
         postService.delete(1L, 1L);
         
@@ -138,26 +125,24 @@ public class PostServiceTest {
     
     @Test
     public void findById() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
-        
+                .setAuthor(author));
+    
         assertThat(postService.findById(1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
+                .withComparatorForFields(notNullActual(), "created", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L)));
+                        .setBody("body"));
     }
     
     @Test
@@ -170,26 +155,24 @@ public class PostServiceTest {
     
     @Test
     public void findByIdAndAuthorId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
-        
+                .setAuthor(author));
+    
         assertThat(postService.findByIdAndAuthorId(1L, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
+                .withComparatorForFields(notNullActual(), "created", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L)));
+                        .setBody("body"));
     }
     
     @Test
@@ -201,25 +184,23 @@ public class PostServiceTest {
     
     @Test
     public void findAll() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
-        
+                .setAuthor(author));
+    
         assertThat(postService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
+                .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
                 .isEqualTo(ImmutableList.of(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L))));
+                        .setBody("body")));
     }
     
     @Test
@@ -231,25 +212,23 @@ public class PostServiceTest {
     
     @Test
     public void findAllByAuthorId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
-        
+                .setAuthor(author));
+    
         assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
+                .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
                 .isEqualTo(ImmutableList.of(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L))));
+                        .setBody("body")));
     }
     
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")

@@ -15,7 +15,6 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.model.post.Post;
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,50 +37,46 @@ public class PostRepositoryTest {
     
     @Test
     public void findByIdAndAuthorId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
-        
+                .setAuthor(author));
+    
         assertThat(postRepository.findByIdAndAuthorId(1L, 1L))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
+                .withComparatorForFields(notNullActual(), "created", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L)));
+                        .setBody("body"));
     }
     
     @Test
     public void findAllByAuthorId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
-                .setAuthor(new User(1L)));
+                .setAuthor(author));
     
         assertThat(postRepository.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
+                .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
                 .isEqualTo(ImmutableList.of(new Post()
                         .setId(1L)
-                        .setBody("body")
-                        .setAuthor(new User(1L))));
+                        .setBody("body")));
     }
     
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")

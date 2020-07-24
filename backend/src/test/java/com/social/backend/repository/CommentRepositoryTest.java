@@ -16,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,62 +38,58 @@ public class CommentRepositoryTest {
     
     @Test
     public void findByIdAndAuthorId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        entityManager.persist(new Post()
+        Post post = entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("post body")
-                .setAuthor(new User(1L)));
+                .setAuthor(author));
         entityManager.persist(new Comment()
                 .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
-                .setPost(new Post(1L))
-                .setAuthor(new User(1L)));
-        
+                .setPost(post)
+                .setAuthor(author));
+    
         assertThat(commentRepository.findByIdAndAuthorId(1L, 1L))
                 .get()
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .withComparatorForFields(notNullActual(), "created")
+                .ignoringFields("post", "author")
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("comment body")
-                        .setPost(new Post(1L))
-                        .setAuthor(new User(1L)));
+                        .setBody("comment body"));
     }
     
     @Test
     public void findAllByPostId() {
-        entityManager.persist(new User()
+        User author = entityManager.persist(new User()
                 .setEmail("email@mail.com")
                 .setUsername("username")
                 .setFirstName("first")
                 .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
-        entityManager.persist(new Post()
+        Post post = entityManager.persist(new Post()
                 .setCreated(ZonedDateTime.now())
                 .setBody("post body")
-                .setAuthor(new User(1L)));
+                .setAuthor(author));
         entityManager.persist(new Comment()
                 .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
-                .setPost(new Post(1L))
-                .setAuthor(new User(1L)));
+                .setPost(post)
+                .setAuthor(author));
     
         assertThat(commentRepository.findAllByPostId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
+                .usingElementComparatorIgnoringFields("post", "author")
                 .isEqualTo(ImmutableList.of(new Comment()
                         .setId(1L)
-                        .setBody("comment body")
-                        .setPost(new Post(1L))
-                        .setAuthor(new User(1L))));
+                        .setBody("comment body")));
     }
     
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
