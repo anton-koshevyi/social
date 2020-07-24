@@ -15,7 +15,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.social.backend.dto.post.ContentDto;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -43,8 +42,7 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
     
-        ContentDto dto = new ContentDto().setBody("body");
-        postService.create(author, dto);
+        postService.create(author, "body");
     
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
@@ -57,7 +55,7 @@ public class PostServiceTest {
     
     @Test
     public void update_exception_whenNoPostWithIdAndAuthorId() {
-        assertThatThrownBy(() -> postService.update(1L, 2L, new ContentDto()))
+        assertThatThrownBy(() -> postService.update(1L, 2L, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
@@ -75,9 +73,8 @@ public class PostServiceTest {
                 .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
-        
-        ContentDto dto = new ContentDto().setBody("new");
-        postService.update(1L, 1L, dto);
+    
+        postService.update(1L, 1L, "new body");
     
         assertThat(entityManager.find(Post.class, 1L))
                 .usingRecursiveComparison()
@@ -85,7 +82,7 @@ public class PostServiceTest {
                 .withComparatorForFields(notNullActual(), "created", "updated", "author")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("new"));
+                        .setBody("new body"));
     }
     
     @Test

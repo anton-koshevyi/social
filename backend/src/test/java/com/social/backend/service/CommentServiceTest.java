@@ -16,7 +16,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.social.backend.dto.comment.ContentDto;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Comment;
@@ -58,8 +57,7 @@ public class CommentServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         
-        ContentDto dto = new ContentDto().setBody("body");
-        assertThatThrownBy(() -> commentService.create(post, commentAuthor, dto))
+        assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
     }
@@ -83,9 +81,8 @@ public class CommentServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded"));
-        
-        ContentDto dto = new ContentDto().setBody("body");
-        assertThatThrownBy(() -> commentService.create(post, commentAuthor, dto))
+    
+        assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.internalPost"});
     }
@@ -103,9 +100,8 @@ public class CommentServiceTest {
                 .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
-        
-        ContentDto dto = new ContentDto().setBody("body");
-        commentService.create(post, postAuthor, dto);
+    
+        commentService.create(post, postAuthor, "body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
@@ -150,9 +146,8 @@ public class CommentServiceTest {
                         .setFirstName("first")
                         .setLastName("last")
                         .setPassword("encoded")))));
-        
-        ContentDto dto = new ContentDto().setBody("body");
-        commentService.create(post, commentAuthor, dto);
+    
+        commentService.create(post, commentAuthor, "body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
@@ -183,9 +178,8 @@ public class CommentServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded"));
-        
-        ContentDto dto = new ContentDto().setBody("body");
-        commentService.create(post, commentAuthor, dto);
+    
+        commentService.create(post, commentAuthor, "body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
@@ -199,7 +193,7 @@ public class CommentServiceTest {
     
     @Test
     public void update_exception_whenNoCommentWithIdAndAuthorId() {
-        assertThatThrownBy(() -> commentService.update(1L, 2L, new ContentDto()))
+        assertThatThrownBy(() -> commentService.update(1L, 2L, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
@@ -222,9 +216,8 @@ public class CommentServiceTest {
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(postAuthor));
-        
-        ContentDto dto = new ContentDto().setBody("new");
-        commentService.update(1L, 1L, dto);
+    
+        commentService.update(1L, 1L, "new body");
     
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
@@ -233,7 +226,7 @@ public class CommentServiceTest {
                 .ignoringFields("post", "author")
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("new"));
+                        .setBody("new body"));
     }
     
     @Test

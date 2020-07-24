@@ -3,23 +3,18 @@ package com.social.backend.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.social.backend.dto.user.CreateDto;
-import com.social.backend.dto.user.DeleteDto;
-import com.social.backend.dto.user.PasswordDto;
-import com.social.backend.dto.user.RoleDto;
-import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.model.user.User;
 
 public interface UserService {
-    User create(CreateDto dto);
+    User create(String email, String username, String firstName, String lastName, String password);
     
-    User update(Long id, UpdateDto dto);
+    User update(Long id, String email, String username, String firstName, String lastName, Integer publicity);
     
-    User updateRole(Long id, RoleDto dto);
+    User updateRole(Long id, Boolean moder);
     
-    void changePassword(Long id, PasswordDto dto);
+    void changePassword(Long id, String actual, String change);
     
-    void delete(Long id, DeleteDto dto);
+    void delete(Long id, String password);
     
     void addFriend(Long id, Long targetId);
     

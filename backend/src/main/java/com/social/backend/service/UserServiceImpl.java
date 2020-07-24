@@ -11,11 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.dto.user.CreateDto;
-import com.social.backend.dto.user.DeleteDto;
-import com.social.backend.dto.user.PasswordDto;
-import com.social.backend.dto.user.RoleDto;
-import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
@@ -35,51 +30,51 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public User create(CreateDto dto) {
+    public User create(String email, String username, String firstName, String lastName, String password) {
         User entity = new User()
-                .setEmail(dto.getEmail())
-                .setUsername(dto.getUsername())
-                .setFirstName(dto.getFirstName())
-                .setLastName(dto.getLastName())
-                .setPassword(passwordEncoder.encode(dto.getPassword()));
+                .setEmail(email)
+                .setUsername(username)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setPassword(passwordEncoder.encode(password));
         return userRepository.save(entity);
     }
     
     @Override
-    public User update(Long id, UpdateDto dto) {
+    public User update(Long id, String email, String username, String firstName, String lastName, Integer publicity) {
         User entity = this.findById(id);
-        entity.setEmail(dto.getEmail())
-                .setUsername(dto.getUsername())
-                .setFirstName(dto.getFirstName())
-                .setLastName(dto.getLastName())
-                .setPublicity(dto.getPublicity());
+        entity.setEmail(email)
+                .setUsername(username)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setPublicity(publicity);
         return userRepository.save(entity);
     }
     
     @Override
-    public User updateRole(Long id, RoleDto dto) {
+    public User updateRole(Long id, Boolean moder) {
         User entity = this.findById(id);
-        entity.setModer(dto.getModer());
+        entity.setModer(moder);
         return userRepository.save(entity);
     }
     
     @Override
-    public void changePassword(Long id, PasswordDto dto) {
+    public void changePassword(Long id, String actual, String change) {
         User entity = this.findById(id);
         
-        if (!passwordEncoder.matches(dto.getActual(), entity.getPassword())) {
+        if (!passwordEncoder.matches(actual, entity.getPassword())) {
             throw new WrongCredentialsException("wrongCredentials.password");
         }
         
-        entity.setPassword(passwordEncoder.encode(dto.getChange()));
+        entity.setPassword(passwordEncoder.encode(change));
         userRepository.save(entity);
     }
     
     @Override
-    public void delete(Long id, DeleteDto dto) {
+    public void delete(Long id, String password) {
         User entity = this.findById(id);
         
-        if (!passwordEncoder.matches(dto.getPassword(), entity.getPassword())) {
+        if (!passwordEncoder.matches(password, entity.getPassword())) {
             throw new WrongCredentialsException("wrongCredentials.password");
         }
         

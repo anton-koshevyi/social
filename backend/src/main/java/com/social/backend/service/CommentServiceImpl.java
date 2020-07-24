@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.social.backend.dto.comment.ContentDto;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Comment;
@@ -26,7 +25,7 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public Comment create(Post post, User author, ContentDto dto) {
+    public Comment create(Post post, User author, String body) {
         User postAuthor = post.getAuthor();
     
         if (postAuthor.isPrivate()) {
@@ -43,17 +42,17 @@ public class CommentServiceImpl implements CommentService {
     
         Comment entity = new Comment()
                 .setCreated(ZonedDateTime.now())
-                .setBody(dto.getBody())
+                .setBody(body)
                 .setPost(post)
                 .setAuthor(author);
         return commentRepository.save(entity);
     }
     
     @Override
-    public Comment update(Long id, Long authorId, ContentDto dto) {
+    public Comment update(Long id, Long authorId, String body) {
         Comment entity = findByIdAndAuthorId(id, authorId);
         entity.setUpdated(ZonedDateTime.now())
-                .setBody(dto.getBody());
+                .setBody(body);
         return commentRepository.save(entity);
     }
     

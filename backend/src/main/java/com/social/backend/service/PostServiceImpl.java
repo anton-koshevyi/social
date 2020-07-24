@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.social.backend.dto.post.ContentDto;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -24,19 +23,19 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Post create(User author, ContentDto dto) {
+    public Post create(User author, String body) {
         Post entity = new Post()
                 .setCreated(ZonedDateTime.now())
-                .setBody(dto.getBody())
+                .setBody(body)
                 .setAuthor(author);
         return postRepository.save(entity);
     }
     
     @Override
-    public Post update(Long id, Long authorId, ContentDto dto) {
+    public Post update(Long id, Long authorId, String body) {
         Post entity = this.findByIdAndAuthorId(id, authorId);
         entity.setUpdated(ZonedDateTime.now())
-                .setBody(dto.getBody());
+                .setBody(body);
         return postRepository.save(entity);
     }
     

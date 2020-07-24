@@ -17,11 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.social.backend.dto.user.CreateDto;
-import com.social.backend.dto.user.DeleteDto;
-import com.social.backend.dto.user.PasswordDto;
-import com.social.backend.dto.user.RoleDto;
-import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
@@ -51,13 +46,8 @@ public class UserServiceTest {
                 "password"
         )).thenReturn("encoded");
     
-        userService.create(new CreateDto()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("password"));
-        
+        userService.create("email@mail.com", "username", "first", "last", "password");
+    
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
@@ -72,7 +62,7 @@ public class UserServiceTest {
     
     @Test
     public void update_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.update(1L, new UpdateDto()))
+        assertThatThrownBy(() -> userService.update(1L, "email@mail.com", "usrnm", "first", "last", Publicity.PUBLIC))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -86,14 +76,8 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded"));
-        
-        UpdateDto dto = new UpdateDto()
-                .setEmail("new@mail.com")
-                .setUsername("new")
-                .setFirstName("new")
-                .setLastName("new")
-                .setPublicity(Publicity.INTERNAL);
-        userService.update(1L, dto);
+    
+        userService.update(1L, "new@mail.com", "new username", "new first", "new last", Publicity.INTERNAL);
     
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
@@ -101,16 +85,16 @@ public class UserServiceTest {
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("new@mail.com")
-                        .setUsername("new")
-                        .setFirstName("new")
-                        .setLastName("new")
+                        .setUsername("new username")
+                        .setFirstName("new first")
+                        .setLastName("new last")
                         .setPublicity(Publicity.INTERNAL)
                         .setPassword("encoded"));
     }
     
     @Test
     public void updateRole_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.updateRole(1L, new RoleDto()))
+        assertThatThrownBy(() -> userService.updateRole(1L, false))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -125,9 +109,8 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPassword("encoded")
                 .setModer(false));
-        
-        RoleDto dto = new RoleDto().setModer(true);
-        userService.updateRole(1L, dto);
+    
+        userService.updateRole(1L, true);
     
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
@@ -144,7 +127,7 @@ public class UserServiceTest {
     
     @Test
     public void changePassword_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.changePassword(1L, new PasswordDto()))
+        assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -158,9 +141,8 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded"));
-        
-        PasswordDto dto = new PasswordDto().setActual("password");
-        assertThatThrownBy(() -> userService.changePassword(1L, dto))
+    
+        assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
     }
@@ -180,11 +162,8 @@ public class UserServiceTest {
         Mockito.when(passwordEncoder.encode(
                 "change"
         )).thenReturn("encodedNew");
-        
-        PasswordDto dto = new PasswordDto()
-                .setActual("password")
-                .setChange("change");
-        userService.changePassword(1L, dto);
+    
+        userService.changePassword(1L, "password", "change");
     
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
@@ -200,7 +179,7 @@ public class UserServiceTest {
     
     @Test
     public void delete_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.delete(1L, new DeleteDto()))
+        assertThatThrownBy(() -> userService.delete(1L, "password"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -214,9 +193,8 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded"));
-        
-        DeleteDto dto = new DeleteDto().setPassword("password");
-        assertThatThrownBy(() -> userService.delete(1L, dto))
+    
+        assertThatThrownBy(() -> userService.delete(1L, "password"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
     }
@@ -233,9 +211,8 @@ public class UserServiceTest {
                 "password",
                 "encoded"
         )).thenReturn(true);
-        
-        DeleteDto dto = new DeleteDto().setPassword("password");
-        userService.delete(1L, dto);
+    
+        userService.delete(1L, "password");
         
         assertThat(entityManager.find(User.class, 1L))
                 .isNull();
