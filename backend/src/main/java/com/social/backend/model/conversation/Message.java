@@ -1,5 +1,6 @@
 package com.social.backend.model.conversation;
 
+import java.time.ZonedDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.social.backend.model.user.User;
+
 @Entity
 @Table(name = "messages")
 public class Message {
@@ -17,8 +20,11 @@ public class Message {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "creation_milli", nullable = false)
-    private Long creationMilli;
+    @Column(name = "created", nullable = false)
+    private ZonedDateTime created;
+    
+    @Column(name = "updated")
+    private ZonedDateTime updated;
     
     @Column(name = "body", nullable = false)
     private String body;
@@ -27,19 +33,22 @@ public class Message {
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
     
-    public Message() {}
-    
-    public Message(Long id) {
-        this.id = id;
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User author;
     
     public Message setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public Message setCreationMilli(Long creationMilli) {
-        this.creationMilli = creationMilli;
+    public Message setCreated(ZonedDateTime created) {
+        this.created = created;
+        return this;
+    }
+    
+    public Message setUpdated(ZonedDateTime updated) {
+        this.updated = updated;
         return this;
     }
     
@@ -53,12 +62,21 @@ public class Message {
         return this;
     }
     
+    public Message setAuthor(User author) {
+        this.author = author;
+        return this;
+    }
+    
     public Long getId() {
         return id;
     }
     
-    public Long getCreationMilli() {
-        return creationMilli;
+    public ZonedDateTime getCreated() {
+        return created;
+    }
+    
+    public ZonedDateTime getUpdated() {
+        return updated;
     }
     
     public String getBody() {
@@ -67,5 +85,9 @@ public class Message {
     
     public Conversation getConversation() {
         return conversation;
+    }
+    
+    public User getAuthor() {
+        return author;
     }
 }
