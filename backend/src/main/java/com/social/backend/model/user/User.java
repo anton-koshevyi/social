@@ -14,6 +14,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.social.backend.model.conversation.Conversation;
+import com.social.backend.model.conversation.GroupConversation;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
@@ -57,6 +58,9 @@ public class User {
     
     @ManyToMany(mappedBy = "members")
     private List<Conversation> conversations = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "owner")
+    private List<GroupConversation> ownedConversations = new ArrayList<>();
     
     @OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
     private List<Post> posts = new ArrayList<>();
@@ -112,7 +116,7 @@ public class User {
         return this;
     }
     
-    public User setPublicity(Integer publicity) {
+    public User setPublicity(int publicity) {
         this.publicity = publicity;
         return this;
     }
@@ -147,6 +151,11 @@ public class User {
         return this;
     }
     
+    public User setOwnedConversations(List<GroupConversation> ownedConversations) {
+        this.ownedConversations = ownedConversations;
+        return this;
+    }
+    
     public User setPosts(List<Post> posts) {
         this.posts = posts;
         return this;
@@ -177,7 +186,7 @@ public class User {
         return lastName;
     }
     
-    public Integer getPublicity() {
+    public int getPublicity() {
         return publicity;
     }
     
@@ -203,6 +212,10 @@ public class User {
     
     public List<Conversation> getConversations() {
         return conversations;
+    }
+    
+    public List<GroupConversation> getOwnedConversations() {
+        return ownedConversations;
     }
     
     public List<Post> getPosts() {
