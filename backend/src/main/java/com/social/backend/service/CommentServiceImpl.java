@@ -25,12 +25,12 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public Comment create(Long postId, Long authorId, ContentDto dto) {
+    public Comment create(Post post, User author, ContentDto dto) {
         Comment entity = new Comment()
                 .setCreated(ZonedDateTime.now())
                 .setBody(dto.getBody())
-                .setPost(new Post(postId))
-                .setAuthor(new User(authorId));
+                .setPost(post)
+                .setAuthor(author);
         return commentRepository.save(entity);
     }
     
