@@ -1,10 +1,8 @@
 package com.social.backend.service;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +45,6 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         User commentAuthor = entityManager.persist(new User()
@@ -72,7 +69,6 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.INTERNAL)
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         User commentAuthor = entityManager.persist(new User()
@@ -97,7 +93,6 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
     
@@ -122,15 +117,14 @@ public class CommentServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.INTERNAL)
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(2L)
                         .setEmail("commentator@mail.com")
                         .setUsername("commentator")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         User commentAuthor = entityManager.persist(new User()
@@ -139,13 +133,13 @@ public class CommentServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
     
         commentService.create(post, commentAuthor, "body");
         
@@ -169,7 +163,6 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         User commentAuthor = entityManager.persist(new User()
@@ -208,11 +201,9 @@ public class CommentServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         entityManager.persist(new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(postAuthor));
@@ -246,11 +237,9 @@ public class CommentServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         entityManager.persist(new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(postAuthor));
@@ -277,11 +266,9 @@ public class CommentServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(postAuthor));
         entityManager.persist(new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(postAuthor));
@@ -290,7 +277,7 @@ public class CommentServiceTest {
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .usingElementComparatorIgnoringFields("post", "author")
-                .isEqualTo(ImmutableList.of(new Comment()
+                .isEqualTo(Collections.singletonList(new Comment()
                         .setId(1L)
                         .setBody("comment body")));
     }

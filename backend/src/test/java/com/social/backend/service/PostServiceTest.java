@@ -1,9 +1,8 @@
 package com.social.backend.service;
 
-import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +69,6 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
@@ -102,7 +100,6 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
         
@@ -129,7 +126,6 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
@@ -159,7 +155,6 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
@@ -188,14 +183,13 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
         assertThat(postService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(ImmutableList.of(new Post()
+                .isEqualTo(Collections.singletonList(new Post()
                         .setId(1L)
                         .setBody("body")));
     }
@@ -216,14 +210,13 @@ public class PostServiceTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
         assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(ImmutableList.of(new Post()
+                .isEqualTo(Collections.singletonList(new Post()
                         .setId(1L)
                         .setBody("body")));
     }

@@ -21,7 +21,7 @@ public class Comment {
     private Long id;
     
     @Column(name = "created", nullable = false)
-    private ZonedDateTime created;
+    private ZonedDateTime created = ZonedDateTime.now();
     
     @Column(name = "updated")
     private ZonedDateTime updated;

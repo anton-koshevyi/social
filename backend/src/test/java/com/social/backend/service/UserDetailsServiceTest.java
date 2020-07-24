@@ -3,7 +3,7 @@ package com.social.backend.service;
 import java.util.Collections;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,7 +73,7 @@ public class UserDetailsServiceTest {
                         1L,
                         "username",
                         "password",
-                        ImmutableSet.of(
+                        Sets.newHashSet(
                                 new SimpleGrantedAuthority(Authority.ADMIN),
                                 new SimpleGrantedAuthority(Authority.MODER)
                         )

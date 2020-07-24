@@ -41,7 +41,6 @@ public class CommentServiceImpl implements CommentService {
         }
     
         Comment entity = new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody(body)
                 .setPost(post)
                 .setAuthor(author);

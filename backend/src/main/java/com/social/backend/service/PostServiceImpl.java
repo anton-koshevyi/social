@@ -25,7 +25,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post create(User author, String body) {
         Post entity = new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody(body)
                 .setAuthor(author);
         return postRepository.save(entity);

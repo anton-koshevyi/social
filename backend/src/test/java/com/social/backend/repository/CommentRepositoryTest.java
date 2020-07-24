@@ -1,9 +1,8 @@
 package com.social.backend.repository;
 
-import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +44,9 @@ public class CommentRepositoryTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(author));
         entityManager.persist(new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(author));
@@ -74,11 +71,9 @@ public class CommentRepositoryTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         Post post = entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("post body")
                 .setAuthor(author));
         entityManager.persist(new Comment()
-                .setCreated(ZonedDateTime.now())
                 .setBody("comment body")
                 .setPost(post)
                 .setAuthor(author));
@@ -87,7 +82,7 @@ public class CommentRepositoryTest {
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .usingElementComparatorIgnoringFields("post", "author")
-                .isEqualTo(ImmutableList.of(new Comment()
+                .isEqualTo(Collections.singletonList(new Comment()
                         .setId(1L)
                         .setBody("comment body")));
     }

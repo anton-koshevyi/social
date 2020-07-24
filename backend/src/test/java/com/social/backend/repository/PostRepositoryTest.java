@@ -1,9 +1,8 @@
 package com.social.backend.repository;
 
-import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,6 @@ public class PostRepositoryTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
@@ -67,14 +65,13 @@ public class PostRepositoryTest {
                 .setLastName("last")
                 .setPassword("encoded"));
         entityManager.persist(new Post()
-                .setCreated(ZonedDateTime.now())
                 .setBody("body")
                 .setAuthor(author));
     
         assertThat(postRepository.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(ImmutableList.of(new Post()
+                .isEqualTo(Collections.singletonList(new Post()
                         .setId(1L)
                         .setBody("body")));
     }
