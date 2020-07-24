@@ -147,6 +147,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll(pageable);
     }
     
+    @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
     private static void removeFriend(User user, User target) {
         List<User> friends = user.getFriends();
         
