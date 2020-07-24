@@ -1,8 +1,7 @@
 package com.social.backend.service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -278,7 +277,7 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
                 .setPassword("encoded")
-                .setFriends(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
@@ -293,7 +292,7 @@ public class UserServiceTest {
                 .setLastName("last")
                 .setPublicity(Publicity.PUBLIC)
                 .setPassword("encoded")
-                .setFriends(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
@@ -340,7 +339,7 @@ public class UserServiceTest {
                         .setLastName("last")
                         .setPublicity(Publicity.PRIVATE)
                         .setPassword("encoded")
-                        .setFriends(ImmutableList.of(new User()
+                        .setFriends(Collections.singletonList(new User()
                                 .setId(2L)
                                 .setEmail("email_2@mail.com")
                                 .setUsername("username_2")
@@ -361,7 +360,7 @@ public class UserServiceTest {
                         .setLastName("last")
                         .setPublicity(Publicity.PUBLIC)
                         .setPassword("encoded")
-                        .setFriends(ImmutableList.of(new User()
+                        .setFriends(Collections.singletonList(new User()
                                 .setId(1L)
                                 .setEmail("email_1@mail.com")
                                 .setUsername("username_1")
@@ -430,26 +429,26 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
         entityManager.persist(new User()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded")
-                .setFriends(new ArrayList<>(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
                         .setFirstName("first")
                         .setLastName("last")
-                        .setPassword("encoded")))));
+                        .setPassword("encoded"))));
         
         userService.removeFriend(1L, 2L);
     
@@ -494,7 +493,7 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded")
-                .setFriends(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
@@ -507,7 +506,7 @@ public class UserServiceTest {
                 .setFirstName("first")
                 .setLastName("last")
                 .setPassword("encoded")
-                .setFriends(ImmutableList.of(new User()
+                .setFriends(Collections.singletonList(new User()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
@@ -517,7 +516,7 @@ public class UserServiceTest {
     
         assertThat(userService.getFriends(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(ImmutableList.of(new User()
+                .isEqualTo(Collections.singletonList(new User()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
@@ -573,7 +572,7 @@ public class UserServiceTest {
     
         assertThat(userService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(ImmutableList.of(new User()
+                .isEqualTo(Collections.singletonList(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
                         .setUsername("username")

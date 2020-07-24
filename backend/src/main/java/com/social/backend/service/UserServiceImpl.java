@@ -1,5 +1,6 @@
 package com.social.backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,8 +99,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalActionException("illegalAction.user.addPresent", targetId);
         }
     
-        entity.getFriends().add(target);
-        target.getFriends().add(entity);
+        entity.setFriends(addFriend(entity, target));
+        target.setFriends(addFriend(target, entity));
         userRepository.save(entity);
         userRepository.save(target);
     }
@@ -117,8 +118,8 @@ public class UserServiceImpl implements UserService {
             throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
     
-        removeFriend(entity, target);
-        removeFriend(target, entity);
+        entity.setFriends(removeFriend(entity, target));
+        target.setFriends(removeFriend(target, entity));
         userRepository.save(entity);
         userRepository.save(target);
     }
@@ -143,16 +144,25 @@ public class UserServiceImpl implements UserService {
     }
     
     @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
-    private static void removeFriend(User user, User target) {
-        List<User> friends = user.getFriends();
+    private static List<User> addFriend(User user, User target) {
+        List<User> friends = new ArrayList<>(user.getFriends());
+        friends.add(target);
+        return friends;
+    }
+    
+    @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
+    private static List<User> removeFriend(User user, User target) {
+        List<User> friends = new ArrayList<>(user.getFriends());
         
         for (int i = 0; i < friends.size(); i++) {
             User friend = friends.get(i);
             
             if (Objects.equals(friend.getId(), target.getId())) {
                 friends.remove(i);
-                return;
+                break;
             }
         }
+        
+        return friends;
     }
 }
