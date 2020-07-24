@@ -2,7 +2,6 @@ package com.social.backend.model.user;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.social.backend.model.conversation.Conversation;
 import com.social.backend.model.post.Comment;
@@ -38,7 +38,7 @@ public class User {
     private String lastName;
     
     @Column(name = "publicity", nullable = false)
-    private Integer publicity;
+    private int publicity = Publicity.PRIVATE;
     
     @Column(name = "password", nullable = false)
     private String password;
@@ -64,33 +64,27 @@ public class User {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
     
-    public User() {}
-    
-    public User(Long id) {
-        this.id = id;
+    @Transient
+    public boolean hasFriendship(User user) {
+        Long id = user.getId();
+        return friends.stream()
+                .map(User::getId)
+                .anyMatch(id::equals);
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        User user = (User) o;
-        return moder == user.moder
-                && admin == user.admin
-                && Objects.equals(email, user.email)
-                && Objects.equals(username, user.username)
-                && Objects.equals(firstName, user.firstName)
-                && Objects.equals(lastName, user.lastName)
-                && Objects.equals(publicity, user.publicity);
+    @Transient
+    public boolean isPublic() {
+        return Publicity.PUBLIC == publicity;
     }
     
-    @Override
-    public int hashCode() {
-        return Objects.hash(email, username, firstName, lastName, publicity, moder, admin);
+    @Transient
+    public boolean isInternal() {
+        return Publicity.INTERNAL == publicity;
+    }
+    
+    @Transient
+    public boolean isPrivate() {
+        return Publicity.PRIVATE == publicity;
     }
     
     public User setId(Long id) {
