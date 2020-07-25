@@ -1,6 +1,5 @@
 package com.social.backend.service;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,10 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.util.Lists.list;
+
+import static com.social.backend.TestEntity.post;
+import static com.social.backend.TestEntity.user;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -34,12 +37,7 @@ public class PostServiceTest {
     
     @Test
     public void create() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        User author = entityManager.persist(user());
     
         postService.create(author, "body");
     
@@ -62,12 +60,7 @@ public class PostServiceTest {
     
     @Test
     public void update() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        User author = entityManager.persist(user());
         entityManager.persist(new Post()
                 .setBody("body")
                 .setAuthor(author));
@@ -93,18 +86,12 @@ public class PostServiceTest {
     
     @Test
     public void delete() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setBody("body")
+        User author = entityManager.persist(user());
+        entityManager.persist(post()
                 .setAuthor(author));
-        
+    
         postService.delete(1L, 1L);
-        
+    
         assertThat(entityManager.find(Post.class, 1L))
                 .isNull();
     }
@@ -119,23 +106,16 @@ public class PostServiceTest {
     
     @Test
     public void findById() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setBody("body")
+        User author = entityManager.persist(user());
+        entityManager.persist(post()
                 .setAuthor(author));
     
         assertThat(postService.findById(1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .withComparatorForFields(notNullActual(), "created", "author")
-                .isEqualTo(new Post()
-                        .setId(1L)
-                        .setBody("body"));
+                .isEqualTo(post()
+                        .setId(1L));
     }
     
     @Test
@@ -148,23 +128,16 @@ public class PostServiceTest {
     
     @Test
     public void findByIdAndAuthorId() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setBody("body")
+        User author = entityManager.persist(user());
+        entityManager.persist(post()
                 .setAuthor(author));
     
         assertThat(postService.findByIdAndAuthorId(1L, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .withComparatorForFields(notNullActual(), "created", "author")
-                .isEqualTo(new Post()
-                        .setId(1L)
-                        .setBody("body"));
+                .isEqualTo(post()
+                        .setId(1L));
     }
     
     @Test
@@ -176,22 +149,15 @@ public class PostServiceTest {
     
     @Test
     public void findAll() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setBody("body")
+        User author = entityManager.persist(user());
+        entityManager.persist(post()
                 .setAuthor(author));
     
         assertThat(postService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(Collections.singletonList(new Post()
-                        .setId(1L)
-                        .setBody("body")));
+                .isEqualTo(list(post()
+                        .setId(1L)));
     }
     
     @Test
@@ -203,22 +169,15 @@ public class PostServiceTest {
     
     @Test
     public void findAllByAuthorId() {
-        User author = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new Post()
-                .setBody("body")
+        User author = entityManager.persist(user());
+        entityManager.persist(post()
                 .setAuthor(author));
     
         assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(Collections.singletonList(new Post()
-                        .setId(1L)
-                        .setBody("body")));
+                .isEqualTo(list(post()
+                        .setId(1L)));
     }
     
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")

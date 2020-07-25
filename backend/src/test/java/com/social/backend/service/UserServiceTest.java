@@ -1,7 +1,5 @@
 package com.social.backend.service;
 
-import java.util.Collections;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,6 +22,9 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.util.Lists.list;
+
+import static com.social.backend.TestEntity.user;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -69,12 +70,7 @@ public class UserServiceTest {
     
     @Test
     public void update() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
     
         userService.update(1L, "new@mail.com", "new username", "new first", "new last", Publicity.INTERNAL);
     
@@ -101,12 +97,7 @@ public class UserServiceTest {
     
     @Test
     public void updateRole() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
+        entityManager.persist(user()
                 .setModer(false));
     
         userService.updateRole(1L, true);
@@ -114,13 +105,8 @@ public class UserServiceTest {
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(1L)
-                        .setEmail("email@mail.com")
-                        .setUsername("username")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded")
                         .setModer(true));
     }
     
@@ -134,12 +120,7 @@ public class UserServiceTest {
     
     @Test
     public void changePassword_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
     
         assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
@@ -148,11 +129,7 @@ public class UserServiceTest {
     
     @Test
     public void changePassword_encodeAndSetNew() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
+        entityManager.persist(user()
                 .setPassword("encodedOld"));
         Mockito.when(passwordEncoder.matches(
                 "password",
@@ -167,12 +144,8 @@ public class UserServiceTest {
         assertThat(entityManager.find(User.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(1L)
-                        .setEmail("email@mail.com")
-                        .setUsername("username")
-                        .setFirstName("first")
-                        .setLastName("last")
                         .setPassword("encodedNew"));
     }
     
@@ -186,12 +159,7 @@ public class UserServiceTest {
     
     @Test
     public void delete_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
     
         assertThatThrownBy(() -> userService.delete(1L, "password"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
@@ -200,12 +168,7 @@ public class UserServiceTest {
     
     @Test
     public void delete() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
         Mockito.when(passwordEncoder.matches(
                 "password",
                 "encoded"
@@ -234,12 +197,7 @@ public class UserServiceTest {
     
     @Test
     public void addFriend_exception_whenNoTargetUserWithId() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
         
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(NotFoundException.class)
@@ -249,18 +207,12 @@ public class UserServiceTest {
     
     @Test
     public void addFriend_exception_whenTargetUserPublicityIsPrivate() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email1@mail.com")
-                .setUsername("username1")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new User()
+                .setUsername("username1"));
+        entityManager.persist(user()
                 .setEmail("email2@mail.com")
-                .setUsername("username2")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+                .setUsername("username2"));
     
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
@@ -270,37 +222,25 @@ public class UserServiceTest {
     
     @Test
     public void addFriend_exception_whenFriendAlreadyPresent() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
                 .setPublicity(Publicity.PRIVATE)
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPublicity(Publicity.PUBLIC)
-                        .setPassword("encoded"))));
-        entityManager.persist(new User()
+                        .setPublicity(Publicity.PUBLIC))));
+        entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFirstName("first")
-                .setLastName("last")
                 .setPublicity(Publicity.PUBLIC)
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPublicity(Publicity.PRIVATE)
-                        .setPassword("encoded"))));
-        
+                        .setPublicity(Publicity.PRIVATE))));
+    
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
@@ -309,65 +249,47 @@ public class UserServiceTest {
     
     @Test
     public void addFriend() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
-                .setPassword("encoded"));
-        entityManager.persist(new User()
+                .setPublicity(Publicity.PRIVATE));
+        entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
-                .setPassword("encoded"));
-        
+                .setPublicity(Publicity.PUBLIC));
+    
         userService.addFriend(1L, 2L);
-        
+    
         assertThat(entityManager.find(User.class, 1L))
                 .describedAs("Should add target to entity friends")
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringFields("friends.friends", "friendFor")
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
                         .setPublicity(Publicity.PRIVATE)
-                        .setPassword("encoded")
-                        .setFriends(Collections.singletonList(new User()
+                        .setFriends(list(user()
                                 .setId(2L)
                                 .setEmail("email_2@mail.com")
                                 .setUsername("username_2")
-                                .setFirstName("first")
-                                .setLastName("last")
-                                .setPublicity(Publicity.PUBLIC)
-                                .setPassword("encoded"))));
+                                .setPublicity(Publicity.PUBLIC))));
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should add entity to target friends")
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringFields("friends.friends", "friendFor")
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
                         .setPublicity(Publicity.PUBLIC)
-                        .setPassword("encoded")
-                        .setFriends(Collections.singletonList(new User()
+                        .setFriends(list(user()
                                 .setId(1L)
                                 .setEmail("email_1@mail.com")
                                 .setUsername("username_1")
-                                .setFirstName("first")
-                                .setLastName("last")
-                                .setPublicity(Publicity.PRIVATE)
-                                .setPassword("encoded"))));
+                                .setPublicity(Publicity.PRIVATE))));
     }
     
     @Test
@@ -387,12 +309,7 @@ public class UserServiceTest {
     
     @Test
     public void removeFriend_exception_whenNoTargetUserWithId() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
         
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
                 .isExactlyInstanceOf(NotFoundException.class)
@@ -402,19 +319,13 @@ public class UserServiceTest {
     
     @Test
     public void removeFriend_exception_whenNoTargetInFriends() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email_1@mail.com")
-                .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        entityManager.persist(new User()
+                .setUsername("username_1"));
+        entityManager.persist(user()
                 .setEmail("email_2@mail.com")
-                .setUsername("username_2")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        
+                .setUsername("username_2"));
+    
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeAbsent"})
@@ -423,33 +334,21 @@ public class UserServiceTest {
     
     @Test
     public void removeFriend() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
-        entityManager.persist(new User()
+                        .setUsername("username_2"))));
+        entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
-        
+                        .setUsername("username_1"))));
+    
         userService.removeFriend(1L, 2L);
     
         assertThat(entityManager.find(User.class, 1L))
@@ -457,25 +356,19 @@ public class UserServiceTest {
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"));
+                        .setUsername("username_1"));
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should remove entity from target friends")
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringFields("friendFor")
-                .isEqualTo(new User()
+                .isEqualTo(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"));
+                        .setUsername("username_2"));
     }
     
     @Test
@@ -487,42 +380,27 @@ public class UserServiceTest {
     
     @Test
     public void getFriends() {
-        entityManager.persist(new User()
+        entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
-        entityManager.persist(new User()
+                        .setUsername("username_2"))));
+        entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
+                        .setUsername("username_1"))));
     
         assertThat(userService.getFriends(1L, Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(Collections.singletonList(new User()
+                .isEqualTo(list(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded")));
+                        .setUsername("username_2")));
     }
     
     @Test
@@ -535,23 +413,13 @@ public class UserServiceTest {
     
     @Test
     public void findById() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
     
         assertThat(userService.findById(1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
-                .isEqualTo(new User()
-                        .setId(1L)
-                        .setEmail("email@mail.com")
-                        .setUsername("username")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"));
+                .isEqualTo(user()
+                        .setId(1L));
     }
     
     @Test
@@ -563,21 +431,11 @@ public class UserServiceTest {
     
     @Test
     public void findAll() {
-        entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+        entityManager.persist(user());
     
         assertThat(userService.findAll(Pageable.unpaged()))
                 .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(Collections.singletonList(new User()
-                        .setId(1L)
-                        .setEmail("email@mail.com")
-                        .setUsername("username")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded")));
+                .isEqualTo(list(user()
+                        .setId(1L)));
     }
 }

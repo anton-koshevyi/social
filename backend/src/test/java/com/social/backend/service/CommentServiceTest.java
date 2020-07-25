@@ -1,6 +1,5 @@
 package com.social.backend.service;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,11 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.util.Lists.list;
+
+import static com.social.backend.TestEntity.comment;
+import static com.social.backend.TestEntity.post;
+import static com.social.backend.TestEntity.user;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -37,23 +41,14 @@ public class CommentServiceTest {
     
     @Test
     public void create_exception_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user()
+                .setPublicity(Publicity.PRIVATE));
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(new User()
+        User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
-                .setUsername("commentator")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        
+                .setUsername("commentator"));
+    
         assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
@@ -61,22 +56,13 @@ public class CommentServiceTest {
     
     @Test
     public void create_exception_whenPostOfInternalAuthor_andCommentNotOfFriend() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.INTERNAL)
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user()
+                .setPublicity(Publicity.INTERNAL));
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(new User()
+        User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
-                .setUsername("commentator")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+                .setUsername("commentator"));
     
         assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
@@ -85,19 +71,13 @@ public class CommentServiceTest {
     
     @Test
     public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PRIVATE)
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user()
+                .setPublicity(Publicity.PRIVATE));
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
     
         commentService.create(post, postAuthor, "body");
-        
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
@@ -110,39 +90,26 @@ public class CommentServiceTest {
     
     @Test
     public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
-        User postAuthor = entityManager.persist(new User()
+        User postAuthor = entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFirstName("first")
-                .setLastName("last")
                 .setPublicity(Publicity.INTERNAL)
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(2L)
                         .setEmail("commentator@mail.com")
-                        .setUsername("commentator")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+                        .setUsername("commentator"))));
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(new User()
+        User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded")
-                .setFriends(Collections.singletonList(new User()
+                .setFriends(list(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"))));
+                        .setUsername("username_1"))));
     
         commentService.create(post, commentAuthor, "body");
-        
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
@@ -155,25 +122,16 @@ public class CommentServiceTest {
     
     @Test
     public void create_whenPostOfPublicAuthor() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPublicity(Publicity.PUBLIC)
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user()
+                .setPublicity(Publicity.PUBLIC));
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(new User()
+        User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
-                .setUsername("commentator")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
+                .setUsername("commentator"));
     
         commentService.create(post, commentAuthor, "body");
-        
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
@@ -194,14 +152,8 @@ public class CommentServiceTest {
     
     @Test
     public void update() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user());
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
         entityManager.persist(new Comment()
                 .setBody("comment body")
@@ -230,22 +182,15 @@ public class CommentServiceTest {
     
     @Test
     public void delete() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user());
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        entityManager.persist(new Comment()
-                .setBody("comment body")
+        entityManager.persist(comment()
                 .setPost(post)
                 .setAuthor(postAuthor));
-        
+    
         commentService.delete(1L, 1L);
-        
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .isNull();
     }
@@ -259,17 +204,10 @@ public class CommentServiceTest {
     
     @Test
     public void findAllByPostId() {
-        User postAuthor = entityManager.persist(new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded"));
-        Post post = entityManager.persist(new Post()
-                .setBody("post body")
+        User postAuthor = entityManager.persist(user());
+        Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        entityManager.persist(new Comment()
-                .setBody("comment body")
+        entityManager.persist(comment()
                 .setPost(post)
                 .setAuthor(postAuthor));
     
@@ -277,9 +215,8 @@ public class CommentServiceTest {
                 .usingRecursiveFieldByFieldElementComparator()
                 .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
                 .usingElementComparatorIgnoringFields("post", "author")
-                .isEqualTo(Collections.singletonList(new Comment()
-                        .setId(1L)
-                        .setBody("comment body")));
+                .isEqualTo(list(comment()
+                        .setId(1L)));
     }
     
     @SuppressWarnings("checkstyle:AvoidInlineConditionals")
