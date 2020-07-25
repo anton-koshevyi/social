@@ -62,19 +62,19 @@ public class ConversationServiceImpl implements ConversationService {
     public Conversation updateGroup(Long id, User user, String name, List<User> newMembers) {
         GroupConversation entity = findGroupByIdAndUser(id, user);
         List<User> finalMembers = new ArrayList<>(entity.getMembers());
-        
-        for (User member : newMembers) {
-            if (!member.isPublic() && !member.hasFriendship(user)) {
-                throw new IllegalActionException("illegalAction.conversation.updateGroupWithNotFriend");
-            }
-            
-            if (entity.hasMember(member)) {
+    
+        for (User newMember : newMembers) {
+            if (entity.hasMember(newMember)) {
                 throw new IllegalActionException("illegalAction.conversation.addExistentMember");
             }
-            
-            finalMembers.add(member);
-        }
         
+            if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
+                throw new IllegalActionException("illegalAction.conversation.updateGroupWithNotFriend");
+            }
+        
+            finalMembers.add(newMember);
+        }
+    
         entity.setName(name)
                 .setMembers(finalMembers);
         return baseRepository.save(entity);
