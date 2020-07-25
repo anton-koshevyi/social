@@ -13,45 +13,45 @@ import org.springframework.stereotype.Service;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
-import com.social.backend.model.conversation.Conversation;
-import com.social.backend.model.conversation.GroupConversation;
-import com.social.backend.model.conversation.PrivateConversation;
+import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ConversationBaseRepository;
-import com.social.backend.repository.ConversationGroupRepository;
+import com.social.backend.repository.ChatRepositoryBase;
+import com.social.backend.repository.ChatRepositoryGroup;
 
 @Service
-public class ConversationServiceImpl implements ConversationService {
-    private final ConversationBaseRepository<Conversation> baseRepository;
-    private final ConversationGroupRepository groupRepository;
+public class ChatServiceImpl implements ChatService {
+    private final ChatRepositoryBase<Chat> baseRepository;
+    private final ChatRepositoryGroup groupRepository;
     
     @Autowired
-    public ConversationServiceImpl(ConversationBaseRepository<Conversation> baseRepository,
-                                   ConversationGroupRepository groupRepository) {
+    public ChatServiceImpl(ChatRepositoryBase<Chat> baseRepository,
+                           ChatRepositoryGroup groupRepository) {
         this.baseRepository = baseRepository;
         this.groupRepository = groupRepository;
     }
     
     @Override
-    public Conversation createPrivate(User user, User target) {
+    public Chat createPrivate(User user, User target) {
         if (!target.isPublic() && !target.hasFriendship(user)) {
-            throw new IllegalActionException("illegalAction.conversation.privateWithNotFriend");
+            throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend");
         }
         
-        Conversation entity = new PrivateConversation()
+        Chat entity = new PrivateChat()
                 .setMembers(Arrays.asList(user, target));
         return baseRepository.save(entity);
     }
     
     @Override
-    public Conversation createGroup(User user, String name, List<User> members) {
+    public Chat createGroup(User user, String name, List<User> members) {
         for (User member : members) {
             if (!member.isPublic() && !member.hasFriendship(user)) {
-                throw new IllegalActionException("illegalAction.conversation.createGroupWithNotFriend");
+                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend");
             }
         }
         
-        Conversation entity = new GroupConversation()
+        Chat entity = new GroupChat()
                 .setName(name)
                 .setOwner(user)
                 .setMembers(new ArrayList<>(members));
@@ -59,17 +59,17 @@ public class ConversationServiceImpl implements ConversationService {
     }
     
     @Override
-    public Conversation updateGroup(Long id, User user, String name, List<User> newMembers) {
-        GroupConversation entity = findGroupByIdAndUser(id, user);
+    public Chat updateGroup(Long id, User user, String name, List<User> newMembers) {
+        GroupChat entity = findGroupByIdAndUser(id, user);
         List<User> finalMembers = new ArrayList<>(entity.getMembers());
-    
+        
         for (User newMember : newMembers) {
             if (entity.hasMember(newMember)) {
-                throw new IllegalActionException("illegalAction.conversation.addExistentMember");
+                throw new IllegalActionException("illegalAction.chat.group.addExistentMember");
             }
-        
+            
             if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
-                throw new IllegalActionException("illegalAction.conversation.updateGroupWithNotFriend");
+                throw new IllegalActionException("illegalAction.chat.group.addNotFriend");
             }
         
             finalMembers.add(newMember);
@@ -82,19 +82,19 @@ public class ConversationServiceImpl implements ConversationService {
     
     @Override
     public void deletePrivate(Long id, User user) {
-        Conversation entity = this.findByIdAndUser(id, user);
+        Chat entity = this.findByIdAndUser(id, user);
         baseRepository.delete(entity);
     }
     
     @Override
     public void leaveGroup(Long id, User user) {
-        GroupConversation entity = findGroupByIdAndUser(id, user);
+        GroupChat entity = findGroupByIdAndUser(id, user);
         this.removeGroupMembers(id, entity.getOwner().getId(), Collections.singletonList(user));
     }
     
     @Override
     public void removeGroupMembers(Long id, Long ownerId, List<User> members) {
-        GroupConversation entity = findGroupByIdAndOwnerId(id, ownerId);
+        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
         List<User> finalMembers = new ArrayList<>(entity.getMembers());
         
         for (User memberToRemove : members) {
@@ -103,7 +103,7 @@ public class ConversationServiceImpl implements ConversationService {
                 
                 if (Objects.equals(memberToRemove.getId(), member.getId())) {
                     if (entity.isOwner(member)) {
-                        throw new IllegalActionException("illegalAction.conversation.removeOwner");
+                        throw new IllegalActionException("illegalAction.chat.group.removeOwner");
                     }
                     
                     finalMembers.remove(i);
@@ -118,42 +118,42 @@ public class ConversationServiceImpl implements ConversationService {
     
     @Override
     public void deleteGroup(Long id, Long ownerId) {
-        GroupConversation entity = findGroupByIdAndOwnerId(id, ownerId);
+        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
         baseRepository.delete(entity);
     }
     
     @Override
-    public Conversation setOwner(Long id, Long ownerId, User newOwner) {
-        GroupConversation entity = findGroupByIdAndOwnerId(id, ownerId);
+    public Chat setOwner(Long id, Long ownerId, User newOwner) {
+        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
         entity.setOwner(newOwner);
         return baseRepository.save(entity);
     }
     
     @Override
-    public Conversation findByIdAndUser(Long id, User user) {
+    public Chat findByIdAndUser(Long id, User user) {
         return baseRepository.findByIdAndMembersContaining(id, user)
-                .orElseThrow(() -> new NotFoundException("notFound.conversation.byIdAndUser", id, user.getId()));
+                .orElseThrow(() -> new NotFoundException("notFound.chat.byIdAndUser", id, user.getId()));
     }
     
     @Override
-    public Page<Conversation> findAllByUser(User user, Pageable pageable) {
+    public Page<Chat> findAllByUser(User user, Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return baseRepository.findAllByMembersContaining(user, pageable);
     }
     
-    private GroupConversation findGroupByIdAndUser(Long id, User user) {
-        Conversation entity = this.findByIdAndUser(id, user);
-        Class<? extends Conversation> entityClass = entity.getClass();
+    private GroupChat findGroupByIdAndUser(Long id, User user) {
+        Chat entity = this.findByIdAndUser(id, user);
+        Class<? extends Chat> entityClass = entity.getClass();
         
-        if (!GroupConversation.class.isAssignableFrom(entityClass)) {
+        if (!GroupChat.class.isAssignableFrom(entityClass)) {
             throw new IllegalStateException("Type is not assignable: " + entityClass);
         }
         
-        return (GroupConversation) entity;
+        return (GroupChat) entity;
     }
     
-    private GroupConversation findGroupByIdAndOwnerId(Long id, Long ownerId) {
+    private GroupChat findGroupByIdAndOwnerId(Long id, Long ownerId) {
         return groupRepository.findByIdAndOwnerId(id, ownerId)
-                .orElseThrow(() -> new NotFoundException("notFound.conversation.group.byIdAndOwnerId", id, ownerId));
+                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndOwnerId", id, ownerId));
     }
 }

@@ -1,4 +1,4 @@
-package com.social.backend.model.conversation;
+package com.social.backend.model.chat;
 
 import java.time.ZonedDateTime;
 import javax.persistence.Column;
@@ -30,8 +30,8 @@ public class Message {
     private String body;
     
     @ManyToOne
-    @JoinColumn(name = "conversation_id")
-    private Conversation conversation;
+    @JoinColumn(name = "chat_id")
+    private Chat chat;
     
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -57,8 +57,8 @@ public class Message {
         return this;
     }
     
-    public Message setConversation(Conversation conversation) {
-        this.conversation = conversation;
+    public Message setChat(Chat chat) {
+        this.chat = chat;
         return this;
     }
     
@@ -83,8 +83,8 @@ public class Message {
         return body;
     }
     
-    public Conversation getConversation() {
-        return conversation;
+    public Chat getChat() {
+        return chat;
     }
     
     public User getAuthor() {

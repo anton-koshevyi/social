@@ -13,8 +13,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.social.backend.model.conversation.Conversation;
-import com.social.backend.model.conversation.GroupConversation;
+import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
@@ -57,10 +57,10 @@ public class User {
     private List<User> friendFor = new ArrayList<>();
     
     @ManyToMany(mappedBy = "members")
-    private List<Conversation> conversations = new ArrayList<>();
+    private List<Chat> chats = new ArrayList<>();
     
     @OneToMany(mappedBy = "owner")
-    private List<GroupConversation> ownedConversations = new ArrayList<>();
+    private List<GroupChat> ownedChats = new ArrayList<>();
     
     @OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
     private List<Post> posts = new ArrayList<>();
@@ -146,13 +146,13 @@ public class User {
         return this;
     }
     
-    public User setConversations(List<Conversation> conversations) {
-        this.conversations = conversations;
+    public User setChats(List<Chat> chats) {
+        this.chats = chats;
         return this;
     }
     
-    public User setOwnedConversations(List<GroupConversation> ownedConversations) {
-        this.ownedConversations = ownedConversations;
+    public User setOwnedChats(List<GroupChat> ownedChats) {
+        this.ownedChats = ownedChats;
         return this;
     }
     
@@ -210,12 +210,12 @@ public class User {
         return friendFor;
     }
     
-    public List<Conversation> getConversations() {
-        return conversations;
+    public List<Chat> getChats() {
+        return chats;
     }
     
-    public List<GroupConversation> getOwnedConversations() {
-        return ownedConversations;
+    public List<GroupChat> getOwnedChats() {
+        return ownedChats;
     }
     
     public List<Post> getPosts() {

@@ -1,4 +1,4 @@
-package com.social.backend.model.conversation;
+package com.social.backend.model.chat;
 
 import java.util.Objects;
 import javax.persistence.Column;
@@ -11,8 +11,8 @@ import javax.persistence.Transient;
 import com.social.backend.model.user.User;
 
 @Entity
-@DiscriminatorValue(ConversationType.GROUP)
-public class GroupConversation extends Conversation {
+@DiscriminatorValue(ChatType.GROUP)
+public class GroupChat extends Chat {
     @Column(name = "name")
     private String name;
     
@@ -33,12 +33,12 @@ public class GroupConversation extends Conversation {
         return Objects.equals(owner.getId(), user.getId());
     }
     
-    public GroupConversation setName(String name) {
+    public GroupChat setName(String name) {
         this.name = name;
         return this;
     }
     
-    public GroupConversation setOwner(User creator) {
+    public GroupChat setOwner(User creator) {
         this.owner = creator;
         return this;
     }
