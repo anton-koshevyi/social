@@ -34,13 +34,17 @@ public final class TestComparator {
     }
     
     public static Comparator<Chat> chatComparator() {
-        return Comparator.comparing(Chat::getId);
-    }
-    
-    public static Comparator<GroupChat> chatGroupComparator() {
-        return Comparator.comparing(GroupChat::getId)
-                .thenComparing(GroupChat::getName)
-                .thenComparing(GroupChat::getOwner, userComparator());
+        return (chat1, chat2) -> {
+            if (chat1 instanceof GroupChat) {
+                return Comparator.comparing(GroupChat::getId)
+                        .thenComparing(GroupChat::getName)
+                        .thenComparing(GroupChat::getOwner, userComparator())
+                        .compare((GroupChat) chat1, (GroupChat) chat2);
+            }
+        
+            return Comparator.comparing(Chat::getId)
+                    .compare(chat1, chat2);
+        };
     }
     
     @SuppressWarnings({"checkstyle:AvoidInlineConditionals", "ComparatorMethodParameterNotUsed"})
