@@ -13,7 +13,7 @@ import com.social.backend.model.user.User;
 @Entity
 @DiscriminatorValue(ConversationType.GROUP)
 public class GroupConversation extends Conversation {
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
     
     @ManyToOne
