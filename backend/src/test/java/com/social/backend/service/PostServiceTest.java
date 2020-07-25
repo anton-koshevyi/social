@@ -44,7 +44,9 @@ public class PostServiceTest {
                 .usingComparator(postComparator())
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("body"));
+                        .setBody("body")
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -69,7 +71,9 @@ public class PostServiceTest {
                 .usingComparatorForFields(notNullFirst(), "updated")
                 .isEqualTo(new Post()
                         .setId(1L)
-                        .setBody("new body"));
+                        .setBody("new body")
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -109,7 +113,9 @@ public class PostServiceTest {
         assertThat(postService.findById(1L))
                 .usingComparator(postComparator())
                 .isEqualTo(post()
-                        .setId(1L));
+                        .setId(1L)
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -129,7 +135,9 @@ public class PostServiceTest {
         assertThat(postService.findByIdAndAuthorId(1L, 1L))
                 .usingComparator(postComparator())
                 .isEqualTo(post()
-                        .setId(1L));
+                        .setId(1L)
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -148,7 +156,9 @@ public class PostServiceTest {
         assertThat(postService.findAll(Pageable.unpaged()))
                 .usingComparatorForType(postComparator(), Post.class)
                 .containsExactly(post()
-                        .setId(1L));
+                        .setId(1L)
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -167,6 +177,8 @@ public class PostServiceTest {
         assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
                 .usingComparatorForType(postComparator(), Post.class)
                 .containsExactly(post()
-                        .setId(1L));
+                        .setId(1L)
+                        .setAuthor(user()
+                                .setId(1L)));
     }
 }

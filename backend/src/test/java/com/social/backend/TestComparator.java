@@ -22,12 +22,15 @@ public final class TestComparator {
     
     public static Comparator<Post> postComparator() {
         return Comparator.comparing(Post::getId)
-                .thenComparing(Post::getBody);
+                .thenComparing(Post::getBody)
+                .thenComparing(Post::getAuthor, userComparator());
     }
     
     public static Comparator<Comment> commentComparator() {
         return Comparator.comparing(Comment::getId)
-                .thenComparing(Comment::getBody);
+                .thenComparing(Comment::getBody)
+                .thenComparing(Comment::getPost, postComparator())
+                .thenComparing(Comment::getAuthor, userComparator());
     }
     
     public static Comparator<Chat> chatComparator() {
@@ -36,7 +39,8 @@ public final class TestComparator {
     
     public static Comparator<GroupChat> chatGroupComparator() {
         return Comparator.comparing(GroupChat::getId)
-                .thenComparing(GroupChat::getName);
+                .thenComparing(GroupChat::getName)
+                .thenComparing(GroupChat::getOwner, userComparator());
     }
     
     @SuppressWarnings({"checkstyle:AvoidInlineConditionals", "ComparatorMethodParameterNotUsed"})

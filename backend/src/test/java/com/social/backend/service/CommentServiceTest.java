@@ -82,14 +82,20 @@ public class CommentServiceTest {
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("body"));
+                        .setBody("body")
+                        .setPost(post()
+                                .setId(1L)
+                                .setAuthor(user()
+                                        .setId(1L)))
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
     public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
         User postAuthor = entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1")
+                .setEmail("poster@mail.com")
+                .setUsername("poster")
                 .setPublicity(Publicity.INTERNAL)
                 .setFriends(list(user()
                         .setId(2L)
@@ -102,8 +108,8 @@ public class CommentServiceTest {
                 .setUsername("commentator")
                 .setFriends(list(user()
                         .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1"))));
+                        .setEmail("commentator@mail.com")
+                        .setUsername("commentator"))));
     
         commentService.create(post, commentAuthor, "body");
     
@@ -111,12 +117,25 @@ public class CommentServiceTest {
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("body"));
+                        .setBody("body")
+                        .setPost(post()
+                                .setId(1L)
+                                .setAuthor(user()
+                                        .setId(1L)
+                                        .setEmail("poster@mail.com")
+                                        .setUsername("poster")
+                                        .setPublicity(Publicity.INTERNAL)))
+                        .setAuthor(user()
+                                .setId(2L)
+                                .setEmail("commentator@mail.com")
+                                .setUsername("commentator")));
     }
     
     @Test
     public void create_whenPostOfPublicAuthor() {
         User postAuthor = entityManager.persist(user()
+                .setEmail("poster@mail.com")
+                .setUsername("poster")
                 .setPublicity(Publicity.PUBLIC));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
@@ -130,7 +149,18 @@ public class CommentServiceTest {
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("body"));
+                        .setBody("body")
+                        .setPost(post()
+                                .setId(1L)
+                                .setAuthor(user()
+                                        .setId(1L)
+                                        .setEmail("poster@mail.com")
+                                        .setUsername("poster")
+                                        .setPublicity(Publicity.PUBLIC)))
+                        .setAuthor(user()
+                                .setId(2L)
+                                .setEmail("commentator@mail.com")
+                                .setUsername("commentator")));
     }
     
     @Test
@@ -158,7 +188,13 @@ public class CommentServiceTest {
                 .usingComparatorForFields(notNullFirst(), "updated")
                 .isEqualTo(new Comment()
                         .setId(1L)
-                        .setBody("new body"));
+                        .setBody("new body")
+                        .setPost(post()
+                                .setId(1L)
+                                .setAuthor(user()
+                                        .setId(1L)))
+                        .setAuthor(user()
+                                .setId(1L)));
     }
     
     @Test
@@ -203,6 +239,12 @@ public class CommentServiceTest {
         assertThat(commentService.findAllByPostId(1L, Pageable.unpaged()))
                 .usingComparatorForType(commentComparator(), Comment.class)
                 .containsExactly(comment()
-                        .setId(1L));
+                        .setId(1L)
+                        .setPost(post()
+                                .setId(1L)
+                                .setAuthor(user()
+                                        .setId(1L)))
+                        .setAuthor(user()
+                                .setId(1L)));
     }
 }
