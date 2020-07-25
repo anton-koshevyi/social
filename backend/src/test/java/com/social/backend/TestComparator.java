@@ -2,6 +2,8 @@ package com.social.backend;
 
 import java.util.Comparator;
 
+import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -26,6 +28,15 @@ public final class TestComparator {
     public static Comparator<Comment> commentComparator() {
         return Comparator.comparing(Comment::getId)
                 .thenComparing(Comment::getBody);
+    }
+    
+    public static Comparator<Chat> chatComparator() {
+        return Comparator.comparing(Chat::getId);
+    }
+    
+    public static Comparator<GroupChat> chatGroupComparator() {
+        return Comparator.comparing(GroupChat::getId)
+                .thenComparing(GroupChat::getName);
     }
     
     @SuppressWarnings({"checkstyle:AvoidInlineConditionals", "ComparatorMethodParameterNotUsed"})
