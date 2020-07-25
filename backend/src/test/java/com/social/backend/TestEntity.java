@@ -4,6 +4,7 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 
+@SuppressWarnings("checkstyle:DeclarationOrder")
 public final class TestEntity {
     public static User user() {
         return new User()
