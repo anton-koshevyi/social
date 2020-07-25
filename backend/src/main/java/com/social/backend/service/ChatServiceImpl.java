@@ -71,7 +71,7 @@ public class ChatServiceImpl implements ChatService {
             if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
                 throw new IllegalActionException("illegalAction.chat.group.addNotFriend");
             }
-        
+    
             finalMembers.add(newMember);
         }
     
@@ -125,6 +125,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat setOwner(Long id, Long ownerId, User newOwner) {
         GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
+    
+        if (!entity.hasMember(newOwner)) {
+            throw new IllegalActionException("illegalAction.chat.group.setOwnerNotMember", id, newOwner.getId());
+        }
+    
         entity.setOwner(newOwner);
         return baseRepository.save(entity);
     }
