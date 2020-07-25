@@ -1,7 +1,5 @@
 package com.social.backend.service;
 
-import java.util.Comparator;
-
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Lists.list;
 
+import static com.social.backend.TestComparator.commentComparator;
+import static com.social.backend.TestComparator.notNullFirst;
 import static com.social.backend.TestEntity.comment;
 import static com.social.backend.TestEntity.post;
 import static com.social.backend.TestEntity.user;
@@ -79,10 +79,7 @@ public class CommentServiceTest {
         commentService.create(post, postAuthor, "body");
     
         assertThat(entityManager.find(Comment.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
-                .ignoringFields("post", "author")
+                .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
                         .setBody("body"));
@@ -111,10 +108,7 @@ public class CommentServiceTest {
         commentService.create(post, commentAuthor, "body");
     
         assertThat(entityManager.find(Comment.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
-                .ignoringFields("post", "author")
+                .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
                         .setBody("body"));
@@ -133,10 +127,7 @@ public class CommentServiceTest {
         commentService.create(post, commentAuthor, "body");
     
         assertThat(entityManager.find(Comment.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created")
-                .ignoringFields("post", "author")
+                .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
                         .setId(1L)
                         .setBody("body"));
@@ -163,10 +154,8 @@ public class CommentServiceTest {
         commentService.update(1L, 1L, "new body");
     
         assertThat(entityManager.find(Comment.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "updated")
-                .ignoringFields("post", "author")
+                .usingComparator(commentComparator())
+                .usingComparatorForFields(notNullFirst(), "updated")
                 .isEqualTo(new Comment()
                         .setId(1L)
                         .setBody("new body"));
@@ -212,15 +201,8 @@ public class CommentServiceTest {
                 .setAuthor(postAuthor));
     
         assertThat(commentService.findAllByPostId(1L, Pageable.unpaged()))
-                .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created")
-                .usingElementComparatorIgnoringFields("post", "author")
-                .isEqualTo(list(comment()
-                        .setId(1L)));
-    }
-    
-    @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-    private static <T> Comparator<T> notNullActual() {
-        return (T actual, T expected) -> (actual != null) ? 0 : 1;
+                .usingComparatorForType(commentComparator(), Comment.class)
+                .containsExactly(comment()
+                        .setId(1L));
     }
 }

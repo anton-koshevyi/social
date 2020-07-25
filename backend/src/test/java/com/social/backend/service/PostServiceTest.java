@@ -1,7 +1,5 @@
 package com.social.backend.service;
 
-import java.util.Comparator;
-
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +17,9 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
+import static com.social.backend.TestComparator.notNullFirst;
+import static com.social.backend.TestComparator.postComparator;
 import static com.social.backend.TestEntity.post;
 import static com.social.backend.TestEntity.user;
 
@@ -42,9 +41,7 @@ public class PostServiceTest {
         postService.create(author, "body");
     
         assertThat(entityManager.find(Post.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "author")
+                .usingComparator(postComparator())
                 .isEqualTo(new Post()
                         .setId(1L)
                         .setBody("body"));
@@ -68,9 +65,8 @@ public class PostServiceTest {
         postService.update(1L, 1L, "new body");
     
         assertThat(entityManager.find(Post.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "updated", "author")
+                .usingComparator(postComparator())
+                .usingComparatorForFields(notNullFirst(), "updated")
                 .isEqualTo(new Post()
                         .setId(1L)
                         .setBody("new body"));
@@ -111,9 +107,7 @@ public class PostServiceTest {
                 .setAuthor(author));
     
         assertThat(postService.findById(1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "author")
+                .usingComparator(postComparator())
                 .isEqualTo(post()
                         .setId(1L));
     }
@@ -133,9 +127,7 @@ public class PostServiceTest {
                 .setAuthor(author));
     
         assertThat(postService.findByIdAndAuthorId(1L, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .withComparatorForFields(notNullActual(), "created", "author")
+                .usingComparator(postComparator())
                 .isEqualTo(post()
                         .setId(1L));
     }
@@ -154,10 +146,9 @@ public class PostServiceTest {
                 .setAuthor(author));
     
         assertThat(postService.findAll(Pageable.unpaged()))
-                .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(list(post()
-                        .setId(1L)));
+                .usingComparatorForType(postComparator(), Post.class)
+                .containsExactly(post()
+                        .setId(1L));
     }
     
     @Test
@@ -174,14 +165,8 @@ public class PostServiceTest {
                 .setAuthor(author));
     
         assertThat(postService.findAllByAuthorId(1L, Pageable.unpaged()))
-                .usingRecursiveFieldByFieldElementComparator()
-                .usingComparatorForElementFieldsWithNames(notNullActual(), "created", "author")
-                .isEqualTo(list(post()
-                        .setId(1L)));
-    }
-    
-    @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-    private static <T> Comparator<T> notNullActual() {
-        return (T actual, T expected) -> (actual != null) ? 0 : 1;
+                .usingComparatorForType(postComparator(), Post.class)
+                .containsExactly(post()
+                        .setId(1L));
     }
 }

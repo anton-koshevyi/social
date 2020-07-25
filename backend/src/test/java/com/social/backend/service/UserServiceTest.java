@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Lists.list;
 
+import static com.social.backend.TestComparator.userComparator;
 import static com.social.backend.TestEntity.user;
 
 @DataJpaTest
@@ -49,8 +50,7 @@ public class UserServiceTest {
         userService.create("email@mail.com", "username", "first", "last", "password");
     
         assertThat(entityManager.find(User.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
+                .usingComparator(userComparator())
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("email@mail.com")
@@ -75,8 +75,7 @@ public class UserServiceTest {
         userService.update(1L, "new@mail.com", "new username", "new first", "new last", Publicity.INTERNAL);
     
         assertThat(entityManager.find(User.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
+                .usingComparator(userComparator())
                 .isEqualTo(new User()
                         .setId(1L)
                         .setEmail("new@mail.com")
@@ -103,8 +102,7 @@ public class UserServiceTest {
         userService.updateRole(1L, true);
     
         assertThat(entityManager.find(User.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
+                .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L)
                         .setModer(true));
@@ -142,8 +140,7 @@ public class UserServiceTest {
         userService.changePassword(1L, "password", "change");
     
         assertThat(entityManager.find(User.class, 1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
+                .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L)
                         .setPassword("encodedNew"));
@@ -353,18 +350,14 @@ public class UserServiceTest {
     
         assertThat(entityManager.find(User.class, 1L))
                 .describedAs("Should remove target from entity friends")
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .ignoringFields("friendFor")
+                .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1"));
         assertThat(entityManager.find(User.class, 2L))
                 .describedAs("Should remove entity from target friends")
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .ignoringFields("friendFor")
+                .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
@@ -396,11 +389,11 @@ public class UserServiceTest {
                         .setUsername("username_1"))));
     
         assertThat(userService.getFriends(1L, Pageable.unpaged()))
-                .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(list(user()
+                .usingComparatorForType(userComparator(), User.class)
+                .containsExactly(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
-                        .setUsername("username_2")));
+                        .setUsername("username_2"));
     }
     
     @Test
@@ -416,8 +409,7 @@ public class UserServiceTest {
         entityManager.persist(user());
     
         assertThat(userService.findById(1L))
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
+                .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L));
     }
@@ -434,8 +426,8 @@ public class UserServiceTest {
         entityManager.persist(user());
     
         assertThat(userService.findAll(Pageable.unpaged()))
-                .usingRecursiveFieldByFieldElementComparator()
-                .isEqualTo(list(user()
-                        .setId(1L)));
+                .usingComparatorForType(userComparator(), User.class)
+                .containsExactly(user()
+                        .setId(1L));
     }
 }
