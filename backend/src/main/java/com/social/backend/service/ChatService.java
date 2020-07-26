@@ -25,6 +25,8 @@ public interface ChatService {
     
     void deleteGroup(Long id, Long ownerId);
     
+    Page<User> getMembers(Long id, User user, Pageable pageable);
+    
     Chat findByIdAndUser(Long id, User user);
     
     Page<Chat> findAllByUser(User user, Pageable pageable);

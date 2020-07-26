@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -103,7 +104,7 @@ public class ChatServiceImpl implements ChatService {
                 
                 if (Objects.equals(memberToRemove.getId(), member.getId())) {
                     if (entity.isOwner(member)) {
-                        throw new IllegalActionException("illegalAction.chat.group.removeOwner");
+                        throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, ownerId);
                     }
                     
                     finalMembers.remove(i);
@@ -132,6 +133,13 @@ public class ChatServiceImpl implements ChatService {
     
         entity.setOwner(newOwner);
         return baseRepository.save(entity);
+    }
+    
+    @Override
+    public Page<User> getMembers(Long id, User user, Pageable pageable) {
+        Objects.requireNonNull(pageable, "Pageable must not be null");
+        List<User> members = this.findByIdAndUser(id, user).getMembers();
+        return new PageImpl<>(members, pageable, members.size());
     }
     
     @Override
