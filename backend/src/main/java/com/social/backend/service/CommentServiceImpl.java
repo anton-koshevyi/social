@@ -19,11 +19,11 @@ import com.social.backend.repository.CommentRepository;
 @Service
 @Transactional
 public class CommentServiceImpl implements CommentService {
-    private final CommentRepository commentRepository;
+    private final CommentRepository repository;
     
     @Autowired
-    public CommentServiceImpl(CommentRepository commentRepository) {
-        this.commentRepository = commentRepository;
+    public CommentServiceImpl(CommentRepository repository) {
+        this.repository = repository;
     }
     
     @Override
@@ -46,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
         entity.setBody(body);
         entity.setPost(post);
         entity.setAuthor(author);
-        return commentRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
@@ -54,23 +54,23 @@ public class CommentServiceImpl implements CommentService {
         Comment entity = findByIdAndAuthorId(id, authorId);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
-        return commentRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
     public void delete(Long id, Long authorId) {
         Comment entity = findByIdAndAuthorId(id, authorId);
-        commentRepository.delete(entity);
+        repository.delete(entity);
     }
     
     @Override
     public Page<Comment> findAllByPostId(Long postId, Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
-        return commentRepository.findAllByPostId(postId, pageable);
+        return repository.findAllByPostId(postId, pageable);
     }
     
     private Comment findByIdAndAuthorId(Long id, Long authorId) {
-        return commentRepository.findByIdAndAuthorId(id, authorId)
+        return repository.findByIdAndAuthorId(id, authorId)
                 .orElseThrow(() -> new NotFoundException("notFound.comment.byIdAndAuthorId", id, authorId));
     }
 }

@@ -21,12 +21,12 @@ import com.social.backend.repository.UserRepository;
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRepository;
+    private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
+    public UserServiceImpl(UserRepository repository, PasswordEncoder passwordEncoder) {
+        this.repository = repository;
         this.passwordEncoder = passwordEncoder;
     }
     
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         entity.setFirstName(firstName);
         entity.setLastName(lastName);
         entity.setPassword(passwordEncoder.encode(password));
-        return userRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
@@ -49,14 +49,14 @@ public class UserServiceImpl implements UserService {
         entity.setFirstName(firstName);
         entity.setLastName(lastName);
         entity.setPublicity(publicity);
-        return userRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
     public User updateRole(Long id, Boolean moder) {
         User entity = this.findById(id);
         entity.setModer(moder);
-        return userRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
@@ -66,9 +66,9 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(actual, entity.getPassword())) {
             throw new WrongCredentialsException("wrongCredentials.password");
         }
-        
+    
         entity.setPassword(passwordEncoder.encode(change));
-        userRepository.save(entity);
+        repository.save(entity);
     }
     
     @Override
@@ -78,8 +78,8 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(password, entity.getPassword())) {
             throw new WrongCredentialsException("wrongCredentials.password");
         }
-        
-        userRepository.delete(entity);
+    
+        repository.delete(entity);
     }
     
     @Override
@@ -90,19 +90,19 @@ public class UserServiceImpl implements UserService {
         
         User entity = this.findById(id);
         User target = this.findById(targetId);
-        
+    
         if (target.isPrivate()) {
             throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
-        
+    
         if (entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.addPresent", targetId);
         }
-        
+    
         entity.setFriends(addFriend(entity, target));
         target.setFriends(addFriend(target, entity));
-        userRepository.save(entity);
-        userRepository.save(target);
+        repository.save(entity);
+        repository.save(target);
     }
     
     @Override
@@ -110,18 +110,18 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(id, targetId)) {
             throw new IllegalActionException("illegalAction.user.removeHimself", targetId);
         }
-        
+    
         User entity = this.findById(id);
         User target = this.findById(targetId);
-        
+    
         if (!entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
-        
+    
         entity.setFriends(removeFriend(entity, target));
         target.setFriends(removeFriend(target, entity));
-        userRepository.save(entity);
-        userRepository.save(target);
+        repository.save(entity);
+        repository.save(target);
     }
     
     @Override
@@ -133,14 +133,14 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public User findById(Long id) {
-        return userRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("notFound.user.byId", id));
     }
     
     @Override
     public Page<User> findAll(Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
-        return userRepository.findAll(pageable);
+        return repository.findAll(pageable);
     }
     
     @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")

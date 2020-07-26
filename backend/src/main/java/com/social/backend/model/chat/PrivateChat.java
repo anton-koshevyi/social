@@ -4,6 +4,6 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue(ChatType.PRIVATE)
+@DiscriminatorValue("private")
 public class PrivateChat extends Chat {
 }

@@ -11,7 +11,7 @@ import javax.persistence.Transient;
 import com.social.backend.model.user.User;
 
 @Entity
-@DiscriminatorValue(ChatType.GROUP)
+@DiscriminatorValue("group")
 public class GroupChat extends Chat {
     @Column(name = "name")
     private String name;

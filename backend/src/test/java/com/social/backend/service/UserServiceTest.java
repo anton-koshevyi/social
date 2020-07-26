@@ -118,7 +118,8 @@ public class UserServiceTest {
     
     @Test
     public void changePassword_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(user());
+        entityManager.persist(user()
+                .setPassword("wrongActual"));
     
         assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
@@ -147,7 +148,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void delete_exception_whenNoUserWithId() {
+    public void delete_exception_whenNoEntityWithId() {
         assertThatThrownBy(() -> userService.delete(1L, "password"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
@@ -156,7 +157,8 @@ public class UserServiceTest {
     
     @Test
     public void delete_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(user());
+        entityManager.persist(user()
+                .setPassword("wrongActual"));
     
         assertThatThrownBy(() -> userService.delete(1L, "password"))
                 .isExactlyInstanceOf(WrongCredentialsException.class)
@@ -185,7 +187,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void addFriend_exception_whenNoUserWithId() {
+    public void addFriend_exception_whenNoEntityWithId() {
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
@@ -193,7 +195,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void addFriend_exception_whenNoTargetUserWithId() {
+    public void addFriend_exception_whenNoTargetEntityWithId() {
         entityManager.persist(user());
         
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
@@ -203,14 +205,14 @@ public class UserServiceTest {
     }
     
     @Test
-    public void addFriend_exception_whenTargetUserPublicityIsPrivate() {
+    public void addFriend_exception_whenTargetEntityIsPrivate() {
         entityManager.persist(user()
                 .setEmail("email1@mail.com")
                 .setUsername("username1"));
         entityManager.persist(user()
                 .setEmail("email2@mail.com")
                 .setUsername("username2"));
-    
+        
         assertThatThrownBy(() -> userService.addFriend(1L, 2L))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPrivate"})
@@ -290,14 +292,14 @@ public class UserServiceTest {
     }
     
     @Test
-    public void removeFriend_exception_whenUserAndTargetIdAreEquals() {
+    public void removeFriend_exception_whenUserIdAndTargetIdAreEquals() {
         assertThatThrownBy(() -> userService.removeFriend(1L, 1L))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeHimself"});
     }
     
     @Test
-    public void removeFriend_exception_whenNoUserWithId() {
+    public void removeFriend_exception_whenNoEntityWithId() {
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
@@ -305,7 +307,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void removeFriend_exception_whenNoTargetUserWithId() {
+    public void removeFriend_exception_whenNoTargetWithId() {
         entityManager.persist(user());
         
         assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
@@ -397,7 +399,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void findById_exception_whenNoUserWithId() {
+    public void findById_exception_whenNoEntityWithId() {
         assertThatThrownBy(() -> userService.findById(1L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})

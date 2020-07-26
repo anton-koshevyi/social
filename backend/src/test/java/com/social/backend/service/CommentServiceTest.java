@@ -45,11 +45,11 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PRIVATE));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(user()
+        User commentator = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator"));
-        
-        assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
+    
+        assertThatThrownBy(() -> commentService.create(post, commentator, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
     }
@@ -94,8 +94,8 @@ public class CommentServiceTest {
     @Test
     public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
         User postAuthor = entityManager.persist(user()
-                .setEmail("poster@mail.com")
-                .setUsername("poster")
+                .setEmail("postAuthor@mail.com")
+                .setUsername("postAuthor")
                 .setPublicity(Publicity.INTERNAL)
                 .setFriends(list(user()
                         .setId(2L)
@@ -103,15 +103,15 @@ public class CommentServiceTest {
                         .setUsername("commentator"))));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(user()
+        User commentator = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator")
                 .setFriends(list(user()
                         .setId(1L)
                         .setEmail("commentator@mail.com")
                         .setUsername("commentator"))));
-        
-        commentService.create(post, commentAuthor, "body");
+    
+        commentService.create(post, commentator, "body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
@@ -120,8 +120,8 @@ public class CommentServiceTest {
                                 .setId(1L)
                                 .setAuthor(user()
                                         .setId(1L)
-                                        .setEmail("poster@mail.com")
-                                        .setUsername("poster")
+                                        .setEmail("postAuthor@mail.com")
+                                        .setUsername("postAuthor")
                                         .setPublicity(Publicity.INTERNAL)))
                         .setId(1L)
                         .setBody("body")
@@ -134,16 +134,16 @@ public class CommentServiceTest {
     @Test
     public void create_whenPostOfPublicAuthor() {
         User postAuthor = entityManager.persist(user()
-                .setEmail("poster@mail.com")
-                .setUsername("poster")
+                .setEmail("postAuthor@mail.com")
+                .setUsername("postAuthor")
                 .setPublicity(Publicity.PUBLIC));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(user()
+        User commentator = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator"));
-        
-        commentService.create(post, commentAuthor, "body");
+    
+        commentService.create(post, commentator, "body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
@@ -152,8 +152,8 @@ public class CommentServiceTest {
                                 .setId(1L)
                                 .setAuthor(user()
                                         .setId(1L)
-                                        .setEmail("poster@mail.com")
-                                        .setUsername("poster")
+                                        .setEmail("postAuthor@mail.com")
+                                        .setUsername("postAuthor")
                                         .setPublicity(Publicity.PUBLIC)))
                         .setId(1L)
                         .setBody("body")
@@ -164,11 +164,13 @@ public class CommentServiceTest {
     }
     
     @Test
-    public void update_exception_whenNoCommentWithIdAndAuthorId() {
-        assertThatThrownBy(() -> commentService.update(1L, 2L, "body"))
+    public void update_exception_whenNoEntityWithIdAndAuthorId() {
+        entityManager.persist(user());
+        
+        assertThatThrownBy(() -> commentService.update(0L, 1L, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
@@ -198,11 +200,13 @@ public class CommentServiceTest {
     }
     
     @Test
-    public void delete_exception_whenNoCommentWithIdAndAuthorId() {
-        assertThatThrownBy(() -> commentService.delete(1L, 2L))
+    public void delete_exception_whenNoEntityWithIdAndAuthorId() {
+        entityManager.persist(user());
+        
+        assertThatThrownBy(() -> commentService.delete(0L, 1L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test

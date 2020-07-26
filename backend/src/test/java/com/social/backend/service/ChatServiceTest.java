@@ -41,7 +41,7 @@ public class ChatServiceTest {
     private TestEntityManager entityManager;
     
     @Test
-    public void createPrivate_exception_whenAlreadyExists() {
+    public void createPrivate_exception_whenEntityAlreadyExists() {
         User user = entityManager.persist(user()
                 .setEmail("user@mail.com")
                 .setUsername("user"));
@@ -50,7 +50,7 @@ public class ChatServiceTest {
                 .setUsername("target"));
         entityManager.persist(privateChat()
                 .setMembers(list(user, target)));
-        
+    
         assertThatThrownBy(() -> chatService.createPrivate(user, target))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.chat.private.alreadyExist"})
@@ -234,7 +234,7 @@ public class ChatServiceTest {
     }
     
     @Test
-    public void updateGroup_exception_whenNoGroupWithIdAndUser() {
+    public void updateGroup_exception_whenNoEntityWithIdAndUser() {
         User user = entityManager.persist(user());
         
         assertThatThrownBy(() -> chatService.updateGroup(0L, user, "new name", Collections.emptyList()))
@@ -400,7 +400,7 @@ public class ChatServiceTest {
     }
     
     @Test
-    public void leaveGroup_exception_whenLeavingUserIsOwner() {
+    public void leaveGroup_exception_whenLeavingMemberIsOwner() {
         User owner = entityManager.persist(user()
                 .setEmail("owner@mail.com")
                 .setUsername("owner"));
@@ -444,9 +444,7 @@ public class ChatServiceTest {
     
     @Test
     public void removeGroupMembers_exception_whenNoEntityWithIdAndOwnerId() {
-        entityManager.persist(user()
-                .setEmail("owner@mail.com")
-                .setUsername("owner"));
+        entityManager.persist(user());
         
         assertThatThrownBy(() -> chatService.removeGroupMembers(0L, 1L, Collections.emptyList()))
                 .isExactlyInstanceOf(NotFoundException.class)
@@ -455,7 +453,7 @@ public class ChatServiceTest {
     }
     
     @Test
-    public void removeGroupMembers_exception_whenRemovingUserIsOwner() {
+    public void removeGroupMembers_exception_whenRemovingMemberIsOwner() {
         User owner = entityManager.persist(user()
                 .setEmail("owner@mail.com")
                 .setUsername("owner"));
@@ -497,9 +495,7 @@ public class ChatServiceTest {
     
     @Test
     public void deleteGroup_exception_whenNoEntityWithIdAndOwnerId() {
-        entityManager.persist(user()
-                .setEmail("owner@mail.com")
-                .setUsername("owner"));
+        entityManager.persist(user());
         
         assertThatThrownBy(() -> chatService.deleteGroup(0L, 1L))
                 .isExactlyInstanceOf(NotFoundException.class)

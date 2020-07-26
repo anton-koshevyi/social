@@ -55,26 +55,26 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public Chat createGroup(User user, String name, List<User> members) {
+    public Chat createGroup(User creator, String name, List<User> members) {
         for (User member : members) {
-            if (!member.isPublic() && !member.hasFriendship(user)) {
+            if (!member.isPublic() && !member.hasFriendship(creator)) {
                 throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
             }
         }
-        
+    
         ArrayList<User> finalMembers = new ArrayList<>(members);
-        finalMembers.add(user);
-        
+        finalMembers.add(creator);
+    
         GroupChat entity = new GroupChat();
         entity.setName(name);
-        entity.setOwner(user);
+        entity.setOwner(creator);
         entity.setMembers(finalMembers);
         return baseRepository.save(entity);
     }
     
     @Override
-    public Chat updateGroup(Long id, User user, String name, List<User> newMembers) {
-        GroupChat entity = findGroupByIdAndUser(id, user);
+    public Chat updateGroup(Long id, User member, String name, List<User> newMembers) {
+        GroupChat entity = findGroupByIdAndUser(id, member);
         List<User> finalMembers = new ArrayList<>(entity.getMembers());
         
         for (User newMember : newMembers) {
@@ -82,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
                 throw new IllegalActionException("illegalAction.chat.group.addExistentMember", newMember.getId());
             }
             
-            if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
+            if (!newMember.isPublic() && !newMember.hasFriendship(member)) {
                 throw new IllegalActionException("illegalAction.chat.group.addNotFriend", newMember.getId());
             }
             
@@ -96,14 +96,14 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public void deletePrivate(Long id, User user) {
-        Chat entity = this.findByIdAndUser(id, user);
+        Chat entity = this.findPrivateByIdAndUser(id, user);
         baseRepository.delete(entity);
     }
     
     @Override
-    public void leaveGroup(Long id, User user) {
-        GroupChat entity = findGroupByIdAndUser(id, user);
-        this.removeGroupMembers(id, entity.getOwner().getId(), Collections.singletonList(user));
+    public void leaveGroup(Long id, User member) {
+        GroupChat entity = findGroupByIdAndUser(id, member);
+        this.removeGroupMembers(id, entity.getOwner().getId(), Collections.singletonList(member));
     }
     
     @Override
@@ -165,6 +165,11 @@ public class ChatServiceImpl implements ChatService {
     public Page<Chat> findAllByUser(User user, Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return baseRepository.findAllByMembersContaining(user, pageable);
+    }
+    
+    private PrivateChat findPrivateByIdAndUser(Long id, User user) {
+        return privateRepository.findByIdAndMembersContaining(id, user)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.private.byIdAndUser", id, user.getId()));
     }
     
     private GroupChat findGroupByIdAndUser(Long id, User user) {

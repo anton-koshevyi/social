@@ -17,11 +17,11 @@ import com.social.backend.repository.PostRepository;
 @Service
 @Transactional
 public class PostServiceImpl implements PostService {
-    private final PostRepository postRepository;
+    private final PostRepository repository;
     
     @Autowired
-    public PostServiceImpl(PostRepository postRepository) {
-        this.postRepository = postRepository;
+    public PostServiceImpl(PostRepository repository) {
+        this.repository = repository;
     }
     
     @Override
@@ -29,7 +29,7 @@ public class PostServiceImpl implements PostService {
         Post entity = new Post();
         entity.setBody(body);
         entity.setAuthor(author);
-        return postRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
@@ -37,36 +37,36 @@ public class PostServiceImpl implements PostService {
         Post entity = this.findByIdAndAuthorId(id, authorId);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
-        return postRepository.save(entity);
+        return repository.save(entity);
     }
     
     @Override
     public void delete(Long id, Long authorId) {
         Post entity = this.findByIdAndAuthorId(id, authorId);
-        postRepository.delete(entity);
+        repository.delete(entity);
     }
     
     @Override
     public Post findById(Long id) {
-        return postRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("notFound.post.byId", id));
     }
     
     @Override
     public Post findByIdAndAuthorId(Long id, Long authorId) {
-        return postRepository.findByIdAndAuthorId(id, authorId)
+        return repository.findByIdAndAuthorId(id, authorId)
                 .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthorId", id, authorId));
     }
     
     @Override
     public Page<Post> findAll(Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
-        return postRepository.findAll(pageable);
+        return repository.findAll(pageable);
     }
     
     @Override
     public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
-        return postRepository.findAllByAuthorId(authorId, pageable);
+        return repository.findAllByAuthorId(authorId, pageable);
     }
 }

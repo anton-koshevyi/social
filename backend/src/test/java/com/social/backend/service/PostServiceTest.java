@@ -51,10 +51,12 @@ public class PostServiceTest {
     
     @Test
     public void update_exception_whenNoPostWithIdAndAuthorId() {
-        assertThatThrownBy(() -> postService.update(1L, 2L, "body"))
+        entityManager.persist(user());
+    
+        assertThatThrownBy(() -> postService.update(0L, 1L, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
@@ -78,10 +80,12 @@ public class PostServiceTest {
     
     @Test
     public void delete_exception_whenNoPostWithIdAndAuthorId() {
-        assertThatThrownBy(() -> postService.delete(1L, 2L))
+        entityManager.persist(user());
+    
+        assertThatThrownBy(() -> postService.delete(0L, 1L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
@@ -98,6 +102,8 @@ public class PostServiceTest {
     
     @Test
     public void findById_exception_whenNoPostWithId() {
+        entityManager.persist(user());
+    
         assertThatThrownBy(() -> postService.findById(1L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byId"})
@@ -120,10 +126,12 @@ public class PostServiceTest {
     
     @Test
     public void findByIdAndAuthorId_exception_whenNoPostWithIdAndAuthorId() {
-        assertThatThrownBy(() -> postService.findByIdAndAuthorId(1L, 2L))
+        entityManager.persist(user());
+    
+        assertThatThrownBy(() -> postService.findByIdAndAuthorId(0L, 1L))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
