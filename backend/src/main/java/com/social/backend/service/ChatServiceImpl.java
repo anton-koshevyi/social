@@ -36,7 +36,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat createPrivate(User user, User target) {
         if (!target.isPublic() && !target.hasFriendship(user)) {
-            throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend");
+            throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend", target.getId());
         }
         
         Chat entity = new PrivateChat()
@@ -48,14 +48,16 @@ public class ChatServiceImpl implements ChatService {
     public Chat createGroup(User user, String name, List<User> members) {
         for (User member : members) {
             if (!member.isPublic() && !member.hasFriendship(user)) {
-                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend");
+                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
             }
         }
-        
+    
+        ArrayList<User> finalMembers = new ArrayList<>(members);
+        finalMembers.add(user);
         Chat entity = new GroupChat()
                 .setName(name)
                 .setOwner(user)
-                .setMembers(new ArrayList<>(members));
+                .setMembers(finalMembers);
         return baseRepository.save(entity);
     }
     
@@ -66,11 +68,11 @@ public class ChatServiceImpl implements ChatService {
         
         for (User newMember : newMembers) {
             if (entity.hasMember(newMember)) {
-                throw new IllegalActionException("illegalAction.chat.group.addExistentMember");
+                throw new IllegalActionException("illegalAction.chat.group.addExistentMember", newMember.getId());
             }
             
             if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
-                throw new IllegalActionException("illegalAction.chat.group.addNotFriend");
+                throw new IllegalActionException("illegalAction.chat.group.addNotFriend", newMember.getId());
             }
     
             finalMembers.add(newMember);
