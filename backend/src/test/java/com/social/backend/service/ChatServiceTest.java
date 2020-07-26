@@ -41,6 +41,23 @@ public class ChatServiceTest {
     private TestEntityManager entityManager;
     
     @Test
+    public void createPrivate_exception_whenAlreadyExists() {
+        User user = entityManager.persist(user()
+                .setEmail("user@mail.com")
+                .setUsername("user"));
+        User target = entityManager.persist(user()
+                .setEmail("target@mail.com")
+                .setUsername("target"));
+        entityManager.persist(privateChat()
+                .setMembers(list(user, target)));
+        
+        assertThatThrownBy(() -> chatService.createPrivate(user, target))
+                .isExactlyInstanceOf(IllegalActionException.class)
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.chat.private.alreadyExist"})
+                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+    }
+    
+    @Test
     public void createPrivate_exception_whenTargetIsNotPublicNorFriend() {
         User user = entityManager.persist(user()
                 .setEmail("user@mail.com")

@@ -21,22 +21,30 @@ import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.ChatRepositoryBase;
 import com.social.backend.repository.ChatRepositoryGroup;
+import com.social.backend.repository.ChatRepositoryPrivate;
 
 @Service
 @Transactional
 public class ChatServiceImpl implements ChatService {
     private final ChatRepositoryBase<Chat> baseRepository;
+    private final ChatRepositoryPrivate privateRepository;
     private final ChatRepositoryGroup groupRepository;
     
     @Autowired
     public ChatServiceImpl(ChatRepositoryBase<Chat> baseRepository,
+                           ChatRepositoryPrivate privateRepository,
                            ChatRepositoryGroup groupRepository) {
         this.baseRepository = baseRepository;
+        this.privateRepository = privateRepository;
         this.groupRepository = groupRepository;
     }
     
     @Override
     public Chat createPrivate(User user, User target) {
+        if (privateRepository.existsByMembersIn(Arrays.asList(user, target))) {
+            throw new IllegalActionException("illegalAction.chat.private.alreadyExist", target.getId());
+        }
+        
         if (!target.isPublic() && !target.hasFriendship(user)) {
             throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend", target.getId());
         }
