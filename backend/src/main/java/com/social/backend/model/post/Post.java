@@ -1,7 +1,9 @@
 package com.social.backend.model.post;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,46 +24,34 @@ public class Post {
     @Column(name = "id")
     private Long id;
     
-    @Column(name = "creation_milli", nullable = false)
-    private Long creationMilli;
+    @Column(name = "created", nullable = false)
+    private ZonedDateTime created = ZonedDateTime.now();
+    
+    @Column(name = "updated")
+    private ZonedDateTime updated;
     
     @Column(name = "body", nullable = false)
     private String body;
     
-    @OneToMany(mappedBy = "post")
-    private List<Comment> comments;
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    private List<Comment> comments = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User author;
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Post post = (Post) o;
-        return Objects.equals(creationMilli, post.creationMilli)
-                && Objects.equals(body, post.body)
-                && Objects.equals(comments, post.comments)
-                && Objects.equals(author, post.author);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(creationMilli, body, comments, author);
-    }
     
     public Post setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public Post setCreationMilli(Long creationMilli) {
-        this.creationMilli = creationMilli;
+    public Post setCreated(ZonedDateTime created) {
+        this.created = created;
+        return this;
+    }
+    
+    public Post setUpdated(ZonedDateTime updated) {
+        this.updated = updated;
         return this;
     }
     
@@ -84,8 +74,12 @@ public class Post {
         return id;
     }
     
-    public Long getCreationMilli() {
-        return creationMilli;
+    public ZonedDateTime getCreated() {
+        return created;
+    }
+    
+    public ZonedDateTime getUpdated() {
+        return updated;
     }
     
     public String getBody() {
