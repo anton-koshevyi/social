@@ -155,14 +155,8 @@ public class ChatServiceImpl implements ChatService {
     }
     
     private GroupChat findGroupByIdAndUser(Long id, User user) {
-        Chat entity = this.findByIdAndUser(id, user);
-        Class<? extends Chat> entityClass = entity.getClass();
-        
-        if (!GroupChat.class.isAssignableFrom(entityClass)) {
-            throw new IllegalStateException("Type is not assignable: " + entityClass);
-        }
-        
-        return (GroupChat) entity;
+        return groupRepository.findByIdAndMembersContaining(id, user)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndUser", id, user.getId()));
     }
     
     private GroupChat findGroupByIdAndOwnerId(Long id, Long ownerId) {
