@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -16,6 +17,7 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.CommentRepository;
 
 @Service
+@Transactional
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     
@@ -40,18 +42,18 @@ public class CommentServiceImpl implements CommentService {
             }
         }
     
-        Comment entity = new Comment()
-                .setBody(body)
-                .setPost(post)
-                .setAuthor(author);
+        Comment entity = new Comment();
+        entity.setBody(body);
+        entity.setPost(post);
+        entity.setAuthor(author);
         return commentRepository.save(entity);
     }
     
     @Override
     public Comment update(Long id, Long authorId, String body) {
         Comment entity = findByIdAndAuthorId(id, authorId);
-        entity.setUpdated(ZonedDateTime.now())
-                .setBody(body);
+        entity.setUpdated(ZonedDateTime.now());
+        entity.setBody(body);
         return commentRepository.save(entity);
     }
     

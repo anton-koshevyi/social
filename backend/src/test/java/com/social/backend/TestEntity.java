@@ -9,22 +9,25 @@ import com.social.backend.model.user.User;
 @SuppressWarnings("checkstyle:DeclarationOrder")
 public final class TestEntity {
     public static User user() {
-        return new User()
-                .setEmail("email@mail.com")
-                .setUsername("username")
-                .setFirstName("first")
-                .setLastName("last")
-                .setPassword("encoded");
+        User user = new User();
+        user.setEmail("email@mail.com");
+        user.setUsername("username");
+        user.setFirstName("first");
+        user.setLastName("last");
+        user.setPassword("encoded");
+        return user;
     }
     
     public static Post post() {
-        return new Post()
-                .setBody("post body");
+        Post post = new Post();
+        post.setBody("post body");
+        return post;
     }
     
     public static Comment comment() {
-        return new Comment()
-                .setBody("comment body");
+        Comment comment = new Comment();
+        comment.setBody("comment body");
+        return comment;
     }
     
     public static PrivateChat privateChat() {
@@ -32,8 +35,9 @@ public final class TestEntity {
     }
     
     public static GroupChat groupChat() {
-        return new GroupChat()
-                .setName("name");
+        GroupChat groupChat = new GroupChat();
+        groupChat.setName("name");
+        return groupChat;
     }
     
     private TestEntity() {}

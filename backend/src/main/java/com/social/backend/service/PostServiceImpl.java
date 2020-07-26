@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
@@ -14,6 +15,7 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.PostRepository;
 
 @Service
+@Transactional
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     
@@ -24,17 +26,17 @@ public class PostServiceImpl implements PostService {
     
     @Override
     public Post create(User author, String body) {
-        Post entity = new Post()
-                .setBody(body)
-                .setAuthor(author);
+        Post entity = new Post();
+        entity.setBody(body);
+        entity.setAuthor(author);
         return postRepository.save(entity);
     }
     
     @Override
     public Post update(Long id, Long authorId, String body) {
         Post entity = this.findByIdAndAuthorId(id, authorId);
-        entity.setUpdated(ZonedDateTime.now())
-                .setBody(body);
+        entity.setUpdated(ZonedDateTime.now());
+        entity.setBody(body);
         return postRepository.save(entity);
     }
     

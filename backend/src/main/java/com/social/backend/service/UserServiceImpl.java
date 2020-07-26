@@ -32,23 +32,23 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public User create(String email, String username, String firstName, String lastName, String password) {
-        User entity = new User()
-                .setEmail(email)
-                .setUsername(username)
-                .setFirstName(firstName)
-                .setLastName(lastName)
-                .setPassword(passwordEncoder.encode(password));
+        User entity = new User();
+        entity.setEmail(email);
+        entity.setUsername(username);
+        entity.setFirstName(firstName);
+        entity.setLastName(lastName);
+        entity.setPassword(passwordEncoder.encode(password));
         return userRepository.save(entity);
     }
     
     @Override
     public User update(Long id, String email, String username, String firstName, String lastName, Integer publicity) {
         User entity = this.findById(id);
-        entity.setEmail(email)
-                .setUsername(username)
-                .setFirstName(firstName)
-                .setLastName(lastName)
-                .setPublicity(publicity);
+        entity.setEmail(email);
+        entity.setUsername(username);
+        entity.setFirstName(firstName);
+        entity.setLastName(lastName);
+        entity.setPublicity(publicity);
         return userRepository.save(entity);
     }
     
@@ -87,18 +87,18 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(id, targetId)) {
             throw new IllegalActionException("illegalAction.user.addHimself");
         }
-    
+        
         User entity = this.findById(id);
         User target = this.findById(targetId);
-    
+        
         if (target.isPrivate()) {
             throw new IllegalActionException("illegalAction.user.addPrivate", targetId);
         }
-    
+        
         if (entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.addPresent", targetId);
         }
-    
+        
         entity.setFriends(addFriend(entity, target));
         target.setFriends(addFriend(target, entity));
         userRepository.save(entity);
@@ -110,14 +110,14 @@ public class UserServiceImpl implements UserService {
         if (Objects.equals(id, targetId)) {
             throw new IllegalActionException("illegalAction.user.removeHimself", targetId);
         }
-    
+        
         User entity = this.findById(id);
         User target = this.findById(targetId);
-    
+        
         if (!entity.hasFriendship(target)) {
             throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
         }
-    
+        
         entity.setFriends(removeFriend(entity, target));
         target.setFriends(removeFriend(target, entity));
         userRepository.save(entity);

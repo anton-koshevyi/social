@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -22,6 +23,7 @@ import com.social.backend.repository.ChatRepositoryBase;
 import com.social.backend.repository.ChatRepositoryGroup;
 
 @Service
+@Transactional
 public class ChatServiceImpl implements ChatService {
     private final ChatRepositoryBase<Chat> baseRepository;
     private final ChatRepositoryGroup groupRepository;
@@ -39,8 +41,8 @@ public class ChatServiceImpl implements ChatService {
             throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend", target.getId());
         }
         
-        Chat entity = new PrivateChat()
-                .setMembers(Arrays.asList(user, target));
+        PrivateChat entity = new PrivateChat();
+        entity.setMembers(Arrays.asList(user, target));
         return baseRepository.save(entity);
     }
     
@@ -51,13 +53,14 @@ public class ChatServiceImpl implements ChatService {
                 throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
             }
         }
-    
+        
         ArrayList<User> finalMembers = new ArrayList<>(members);
         finalMembers.add(user);
-        Chat entity = new GroupChat()
-                .setName(name)
-                .setOwner(user)
-                .setMembers(finalMembers);
+        
+        GroupChat entity = new GroupChat();
+        entity.setName(name);
+        entity.setOwner(user);
+        entity.setMembers(finalMembers);
         return baseRepository.save(entity);
     }
     
@@ -74,12 +77,12 @@ public class ChatServiceImpl implements ChatService {
             if (!newMember.isPublic() && !newMember.hasFriendship(user)) {
                 throw new IllegalActionException("illegalAction.chat.group.addNotFriend", newMember.getId());
             }
-    
+            
             finalMembers.add(newMember);
         }
-    
-        entity.setName(name)
-                .setMembers(finalMembers);
+        
+        entity.setName(name);
+        entity.setMembers(finalMembers);
         return baseRepository.save(entity);
     }
     
@@ -128,11 +131,11 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chat setOwner(Long id, Long ownerId, User newOwner) {
         GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
-    
+        
         if (!entity.hasMember(newOwner)) {
             throw new IllegalActionException("illegalAction.chat.group.setOwnerNotMember", id, newOwner.getId());
         }
-    
+        
         entity.setOwner(newOwner);
         return baseRepository.save(entity);
     }

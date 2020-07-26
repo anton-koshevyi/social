@@ -3,8 +3,8 @@ package com.social.backend.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
+import com.social.backend.model.post.Comment;
 import com.social.backend.model.user.User;
 
 public interface CommentService {

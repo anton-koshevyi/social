@@ -48,7 +48,7 @@ public class CommentServiceTest {
         User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator"));
-    
+        
         assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
@@ -63,7 +63,7 @@ public class CommentServiceTest {
         User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator"));
-    
+        
         assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.internalPost"});
@@ -75,18 +75,18 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PRIVATE));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-    
+        
         commentService.create(post, postAuthor, "body");
-    
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
-                        .setId(1L)
-                        .setBody("body")
                         .setPost(post()
                                 .setId(1L)
                                 .setAuthor(user()
                                         .setId(1L)))
+                        .setId(1L)
+                        .setBody("body")
                         .setAuthor(user()
                                 .setId(1L)));
     }
@@ -110,14 +110,12 @@ public class CommentServiceTest {
                         .setId(1L)
                         .setEmail("commentator@mail.com")
                         .setUsername("commentator"))));
-    
+        
         commentService.create(post, commentAuthor, "body");
-    
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
-                        .setId(1L)
-                        .setBody("body")
                         .setPost(post()
                                 .setId(1L)
                                 .setAuthor(user()
@@ -125,6 +123,8 @@ public class CommentServiceTest {
                                         .setEmail("poster@mail.com")
                                         .setUsername("poster")
                                         .setPublicity(Publicity.INTERNAL)))
+                        .setId(1L)
+                        .setBody("body")
                         .setAuthor(user()
                                 .setId(2L)
                                 .setEmail("commentator@mail.com")
@@ -142,14 +142,12 @@ public class CommentServiceTest {
         User commentAuthor = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator"));
-    
+        
         commentService.create(post, commentAuthor, "body");
-    
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
-                        .setId(1L)
-                        .setBody("body")
                         .setPost(post()
                                 .setId(1L)
                                 .setAuthor(user()
@@ -157,6 +155,8 @@ public class CommentServiceTest {
                                         .setEmail("poster@mail.com")
                                         .setUsername("poster")
                                         .setPublicity(Publicity.PUBLIC)))
+                        .setId(1L)
+                        .setBody("body")
                         .setAuthor(user()
                                 .setId(2L)
                                 .setEmail("commentator@mail.com")
@@ -177,22 +177,22 @@ public class CommentServiceTest {
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
         entityManager.persist(new Comment()
-                .setBody("comment body")
                 .setPost(post)
+                .setBody("comment body")
                 .setAuthor(postAuthor));
-    
+        
         commentService.update(1L, 1L, "new body");
-    
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .usingComparatorForFields(notNullFirst(), "updated")
                 .isEqualTo(new Comment()
-                        .setId(1L)
-                        .setBody("new body")
                         .setPost(post()
                                 .setId(1L)
                                 .setAuthor(user()
                                         .setId(1L)))
+                        .setId(1L)
+                        .setBody("new body")
                         .setAuthor(user()
                                 .setId(1L)));
     }
@@ -213,9 +213,9 @@ public class CommentServiceTest {
         entityManager.persist(comment()
                 .setPost(post)
                 .setAuthor(postAuthor));
-    
+        
         commentService.delete(1L, 1L);
-    
+        
         assertThat(entityManager.find(Comment.class, 1L))
                 .isNull();
     }
@@ -235,15 +235,15 @@ public class CommentServiceTest {
         entityManager.persist(comment()
                 .setPost(post)
                 .setAuthor(postAuthor));
-    
+        
         assertThat(commentService.findAllByPostId(1L, Pageable.unpaged()))
                 .usingComparatorForType(commentComparator(), Comment.class)
-                .containsExactly(comment()
-                        .setId(1L)
+                .containsExactly((Comment) comment()
                         .setPost(post()
                                 .setId(1L)
                                 .setAuthor(user()
                                         .setId(1L)))
+                        .setId(1L)
                         .setAuthor(user()
                                 .setId(1L)));
     }
