@@ -1,9 +1,9 @@
-package com.social.backend.model.conversation;
+package com.social.backend.model.chat;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
 @DiscriminatorValue("private")
-public class PrivateConversation extends Conversation {
+public class PrivateChat extends Chat {
 }

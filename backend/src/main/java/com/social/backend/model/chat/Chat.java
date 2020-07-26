@@ -1,7 +1,8 @@
-package com.social.backend.model.conversation;
+package com.social.backend.model.chat;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
@@ -18,10 +19,10 @@ import javax.persistence.Table;
 import com.social.backend.model.user.User;
 
 @Entity
-@Table(name = "conversations")
+@Table(name = "chats")
 @Inheritance
 @DiscriminatorColumn
-public abstract class Conversation {
+public abstract class Chat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -29,41 +30,23 @@ public abstract class Conversation {
     
     @ManyToMany
     @JoinTable(joinColumns = @JoinColumn(name = "user_id"),
-               inverseJoinColumns = @JoinColumn(name = "conversation_id"))
-    private List<User> members;
+               inverseJoinColumns = @JoinColumn(name = "chat_id"))
+    private List<User> members = new ArrayList<>();
     
-    @OneToMany(mappedBy = "conversation")
-    private List<Message> messages;
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
+    private List<Message> messages = new ArrayList<>();
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Conversation that = (Conversation) o;
-        return Objects.equals(members, that.members)
-                && Objects.equals(messages, that.messages);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(members, messages);
-    }
-    
-    public Conversation setId(Long id) {
+    public Chat setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public Conversation setMembers(List<User> members) {
+    public Chat setMembers(List<User> members) {
         this.members = members;
         return this;
     }
     
-    public Conversation setMessages(List<Message> messages) {
+    public Chat setMessages(List<Message> messages) {
         this.messages = messages;
         return this;
     }
