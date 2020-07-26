@@ -19,7 +19,7 @@ public interface ChatService {
     
     void leaveGroup(Long id, User user);
     
-    void removeGroupMembers(Long id, Long ownerId, List<User> members);
+    Chat removeGroupMembers(Long id, Long ownerId, List<User> members);
     
     void deletePrivate(Long id, User user);
     

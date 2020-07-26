@@ -94,7 +94,7 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public void removeGroupMembers(Long id, Long ownerId, List<User> members) {
+    public Chat removeGroupMembers(Long id, Long ownerId, List<User> members) {
         GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
         List<User> finalMembers = new ArrayList<>(entity.getMembers());
         
@@ -114,7 +114,7 @@ public class ChatServiceImpl implements ChatService {
         }
         
         entity.setMembers(finalMembers);
-        baseRepository.save(entity);
+        return baseRepository.save(entity);
     }
     
     @Override
