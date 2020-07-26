@@ -368,7 +368,7 @@ public class ChatServiceTest {
         
         assertThatThrownBy(() -> chatService.deletePrivate(1L, user))
                 .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndUser"})
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.private.byIdAndUser"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
     }
     
