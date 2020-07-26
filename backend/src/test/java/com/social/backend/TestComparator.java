@@ -4,6 +4,7 @@ import java.util.Comparator;
 
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.Message;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -41,10 +42,15 @@ public final class TestComparator {
                         .thenComparing(GroupChat::getOwner, userComparator())
                         .compare((GroupChat) chat1, (GroupChat) chat2);
             }
-        
+            
             return Comparator.comparing(Chat::getId)
                     .compare(chat1, chat2);
         };
+    }
+    
+    public static Comparator<Message> messageComparator() {
+        return Comparator.comparing(Message::getId)
+                .thenComparing(Message::getBody);
     }
     
     @SuppressWarnings({"checkstyle:AvoidInlineConditionals", "ComparatorMethodParameterNotUsed"})

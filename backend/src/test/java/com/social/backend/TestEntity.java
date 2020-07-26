@@ -1,6 +1,7 @@
 package com.social.backend;
 
 import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.Message;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
@@ -38,6 +39,12 @@ public final class TestEntity {
         GroupChat groupChat = new GroupChat();
         groupChat.setName("name");
         return groupChat;
+    }
+    
+    public static Message message() {
+        Message message = new Message();
+        message.setBody("message body");
+        return message;
     }
     
     private TestEntity() {}
