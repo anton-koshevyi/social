@@ -1,31 +1,34 @@
 package com.social.backend.model.user;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
-import com.social.backend.model.conversation.Conversation;
-import com.social.backend.model.invite.Invitable;
-import com.social.backend.model.invite.Invite;
+import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.Message;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
 @Entity
 @Table(name = "users")
-public class User implements Invitable {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+    
+    @Column(name = "email", unique = true, nullable = false)
+    private String email;
     
     @Column(name = "username", unique = true, nullable = false)
     private String username;
@@ -37,74 +40,68 @@ public class User implements Invitable {
     private String lastName;
     
     @Column(name = "publicity", nullable = false)
-    private Integer publicity;
+    private int publicity = Publicity.PRIVATE;
     
     @Column(name = "password", nullable = false)
     private String password;
     
-    @OneToMany(mappedBy = "sender")
-    private List<Invite<? extends Invitable, User>> sentInvites;
+    @Column(name = "role_moder", nullable = false)
+    private boolean moder;
     
-    @OneToMany(mappedBy = "receiver")
-    private List<Invite<User, ? extends Invitable>> receivedInvites;
+    @Column(name = "role_admin", nullable = false)
+    private boolean admin;
+    
+    @ManyToMany
+    private List<User> friends = new ArrayList<>();
+    
+    @ManyToMany(mappedBy = "friends", cascade = CascadeType.REMOVE)
+    private List<User> friendFor = new ArrayList<>();
     
     @ManyToMany(mappedBy = "members")
-    private List<Conversation> conversations;
+    private List<Chat> chats = new ArrayList<>();
     
-    @ManyToOne
-    @JoinColumn(name = "instance", referencedColumnName = "id")
-    private User instance;
+    @OneToMany(mappedBy = "owner")
+    private List<GroupChat> ownedChats = new ArrayList<>();
     
-    @OneToMany(mappedBy = "instance")
-    private List<User> friends;
-    
-    @OneToMany(mappedBy = "author")
-    private List<Post> posts;
+    @OneToMany(mappedBy = "author", cascade = CascadeType.REMOVE)
+    private List<Post> posts = new ArrayList<>();
     
     @OneToMany(mappedBy = "author")
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        User user = (User) o;
-        return Objects.equals(username, user.username)
-                && Objects.equals(firstName, user.firstName)
-                && Objects.equals(lastName, user.lastName)
-                && Objects.equals(publicity, user.publicity)
-                && Objects.equals(password, user.password)
-                && Objects.equals(sentInvites, user.sentInvites)
-                && Objects.equals(receivedInvites, user.receivedInvites)
-                && Objects.equals(conversations, user.conversations)
-                && Objects.equals(instance, user.instance)
-                && Objects.equals(friends, user.friends)
-                && Objects.equals(posts, user.posts)
-                && Objects.equals(comments, user.comments);
+    @OneToMany(mappedBy = "author")
+    private List<Message> messages = new ArrayList<>();
+    
+    @Transient
+    public boolean hasFriendship(User user) {
+        Long id = user.getId();
+        return friends.stream()
+                .map(User::getId)
+                .anyMatch(id::equals);
     }
     
-    @Override
-    public int hashCode() {
-        return Objects.hash(username,
-                firstName,
-                lastName,
-                publicity,
-                password,
-                sentInvites,
-                receivedInvites,
-                conversations,
-                instance,
-                friends,
-                posts,
-                comments);
+    @Transient
+    public boolean isPublic() {
+        return Publicity.PUBLIC == publicity;
+    }
+    
+    @Transient
+    public boolean isInternal() {
+        return Publicity.INTERNAL == publicity;
+    }
+    
+    @Transient
+    public boolean isPrivate() {
+        return Publicity.PRIVATE == publicity;
     }
     
     public User setId(Long id) {
         this.id = id;
+        return this;
+    }
+    
+    public User setEmail(String email) {
+        this.email = email;
         return this;
     }
     
@@ -123,7 +120,7 @@ public class User implements Invitable {
         return this;
     }
     
-    public User setPublicity(Integer publicity) {
+    public User setPublicity(int publicity) {
         this.publicity = publicity;
         return this;
     }
@@ -133,28 +130,33 @@ public class User implements Invitable {
         return this;
     }
     
-    public User setSentInvites(List<Invite<? extends Invitable, User>> sentInvites) {
-        this.sentInvites = sentInvites;
+    public User setModer(boolean moder) {
+        this.moder = moder;
         return this;
     }
     
-    public User setReceivedInvites(List<Invite<User, ? extends Invitable>> receivedInvites) {
-        this.receivedInvites = receivedInvites;
-        return this;
-    }
-    
-    public User setConversations(List<Conversation> conversations) {
-        this.conversations = conversations;
-        return this;
-    }
-    
-    public User setInstance(User instance) {
-        this.instance = instance;
+    public User setAdmin(boolean admin) {
+        this.admin = admin;
         return this;
     }
     
     public User setFriends(List<User> friends) {
         this.friends = friends;
+        return this;
+    }
+    
+    public User setFriendFor(List<User> friendOf) {
+        this.friendFor = friendOf;
+        return this;
+    }
+    
+    public User setChats(List<Chat> chats) {
+        this.chats = chats;
+        return this;
+    }
+    
+    public User setOwnedChats(List<GroupChat> ownedChats) {
+        this.ownedChats = ownedChats;
         return this;
     }
     
@@ -168,8 +170,17 @@ public class User implements Invitable {
         return this;
     }
     
+    public User setMessages(List<Message> messages) {
+        this.messages = messages;
+        return this;
+    }
+    
     public Long getId() {
         return id;
+    }
+    
+    public String getEmail() {
+        return email;
     }
     
     public String getUsername() {
@@ -184,7 +195,7 @@ public class User implements Invitable {
         return lastName;
     }
     
-    public Integer getPublicity() {
+    public int getPublicity() {
         return publicity;
     }
     
@@ -192,24 +203,28 @@ public class User implements Invitable {
         return password;
     }
     
-    public List<Invite<? extends Invitable, User>> getSentInvites() {
-        return sentInvites;
+    public boolean isModer() {
+        return moder;
     }
     
-    public List<Invite<User, ? extends Invitable>> getReceivedInvites() {
-        return receivedInvites;
-    }
-    
-    public List<Conversation> getConversations() {
-        return conversations;
-    }
-    
-    public User getInstance() {
-        return instance;
+    public boolean isAdmin() {
+        return admin;
     }
     
     public List<User> getFriends() {
         return friends;
+    }
+    
+    public List<User> getFriendFor() {
+        return friendFor;
+    }
+    
+    public List<Chat> getChats() {
+        return chats;
+    }
+    
+    public List<GroupChat> getOwnedChats() {
+        return ownedChats;
     }
     
     public List<Post> getPosts() {
@@ -218,5 +233,9 @@ public class User implements Invitable {
     
     public List<Comment> getComments() {
         return comments;
+    }
+    
+    public List<Message> getMessages() {
+        return messages;
     }
 }
