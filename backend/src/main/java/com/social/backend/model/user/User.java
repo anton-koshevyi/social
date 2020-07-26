@@ -15,6 +15,7 @@ import javax.persistence.Transient;
 
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.Message;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
@@ -67,6 +68,9 @@ public class User {
     
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "author")
+    private List<Message> messages = new ArrayList<>();
     
     @Transient
     public boolean hasFriendship(User user) {
@@ -166,6 +170,11 @@ public class User {
         return this;
     }
     
+    public User setMessages(List<Message> messages) {
+        this.messages = messages;
+        return this;
+    }
+    
     public Long getId() {
         return id;
     }
@@ -224,5 +233,9 @@ public class User {
     
     public List<Comment> getComments() {
         return comments;
+    }
+    
+    public List<Message> getMessages() {
+        return messages;
     }
 }
