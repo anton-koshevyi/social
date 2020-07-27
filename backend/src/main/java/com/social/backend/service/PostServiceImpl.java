@@ -53,12 +53,6 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Post findByIdAndAuthorId(Long id, Long authorId) {
-        return repository.findByIdAndAuthorId(id, authorId)
-                .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthorId", id, authorId));
-    }
-    
-    @Override
     public Page<Post> findAll(Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAll(pageable);
@@ -68,5 +62,10 @@ public class PostServiceImpl implements PostService {
     public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
         Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAllByAuthorId(authorId, pageable);
+    }
+    
+    private Post findByIdAndAuthorId(Long id, Long authorId) {
+        return repository.findByIdAndAuthorId(id, authorId)
+                .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthorId", id, authorId));
     }
 }

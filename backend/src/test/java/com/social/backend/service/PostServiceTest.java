@@ -125,30 +125,6 @@ public class PostServiceTest {
     }
     
     @Test
-    public void findByIdAndAuthorId_exception_whenNoPostWithIdAndAuthorId() {
-        entityManager.persist(user());
-    
-        assertThatThrownBy(() -> postService.findByIdAndAuthorId(0L, 1L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthorId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
-    }
-    
-    @Test
-    public void findByIdAndAuthorId() {
-        User author = entityManager.persist(user());
-        entityManager.persist(post()
-                .setAuthor(author));
-    
-        assertThat(postService.findByIdAndAuthorId(1L, 1L))
-                .usingComparator(postComparator())
-                .isEqualTo(post()
-                        .setId(1L)
-                        .setAuthor(user()
-                                .setId(1L)));
-    }
-    
-    @Test
     public void findAll_exception_onNull() {
         assertThatThrownBy(() -> postService.findAll(null))
                 .isExactlyInstanceOf(NullPointerException.class)

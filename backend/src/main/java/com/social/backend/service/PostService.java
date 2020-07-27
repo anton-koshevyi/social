@@ -15,8 +15,6 @@ public interface PostService {
     
     Post findById(Long id);
     
-    Post findByIdAndAuthorId(Long id, Long authorId);
-    
     Page<Post> findAll(Pageable pageable);
     
     Page<Post> findAllByAuthorId(Long authorId, Pageable pageable);
