@@ -13,9 +13,6 @@ import javax.validation.constraints.Size;
 @Size(min = 8, max = 16)
 @Constraint(validatedBy = {})
 public @interface Password {
-    // Should not be used. To enable, annotate class
-    // with javax.validation.ReportAsSingleViolation
-    
     String message() default "invalid password";
     
     Class<?>[] groups() default {};

@@ -13,9 +13,6 @@ import javax.validation.constraints.Size;
 @Size(min = 1, max = 64)
 @Constraint(validatedBy = {})
 public @interface LastName {
-    // Should not be used. To enable, annotate class
-    // with javax.validation.ReportAsSingleViolation
-    
     String message() default "invalid last name";
     
     Class<?>[] groups() default {};
