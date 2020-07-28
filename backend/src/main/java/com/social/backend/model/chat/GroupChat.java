@@ -1,6 +1,5 @@
 package com.social.backend.model.chat;
 
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -22,15 +21,12 @@ public class GroupChat extends Chat {
     
     @Transient
     public boolean hasMember(User member) {
-        Long id = member.getId();
-        return super.getMembers().stream()
-                .map(User::getId)
-                .anyMatch(id::equals);
+        return super.getMembers().contains(member);
     }
     
     @Transient
     public boolean isOwner(User user) {
-        return Objects.equals(owner.getId(), user.getId());
+        return owner.equals(user);
     }
     
     public GroupChat setName(String name) {

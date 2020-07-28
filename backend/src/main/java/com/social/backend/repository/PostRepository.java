@@ -7,9 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.social.backend.model.post.Post;
+import com.social.backend.model.user.User;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    Optional<Post> findByIdAndAuthorId(Long id, Long authorId);
+    Optional<Post> findByIdAndAuthor(Long id, User author);
     
-    Page<Post> findAllByAuthorId(Long authorId, Pageable pageable);
+    Page<Post> findAllByAuthor(User author, Pageable pageable);
 }

@@ -1,5 +1,7 @@
 package com.social.backend.service;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -22,7 +24,6 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
 import static com.social.backend.TestComparator.userComparator;
 import static com.social.backend.TestEntity.user;
@@ -225,7 +226,7 @@ public class UserServiceTest {
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
                 .setPublicity(Publicity.PRIVATE)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
@@ -234,7 +235,7 @@ public class UserServiceTest {
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
                 .setPublicity(Publicity.PUBLIC)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
@@ -269,7 +270,7 @@ public class UserServiceTest {
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1")
                         .setPublicity(Publicity.PRIVATE)
-                        .setFriends(list(user()
+                        .setFriends(ImmutableSet.of(user()
                                 .setId(2L)
                                 .setEmail("email_2@mail.com")
                                 .setUsername("username_2")
@@ -284,7 +285,7 @@ public class UserServiceTest {
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2")
                         .setPublicity(Publicity.PUBLIC)
-                        .setFriends(list(user()
+                        .setFriends(ImmutableSet.of(user()
                                 .setId(1L)
                                 .setEmail("email_1@mail.com")
                                 .setUsername("username_1")
@@ -336,14 +337,14 @@ public class UserServiceTest {
         entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2"))));
         entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1"))));
@@ -367,25 +368,18 @@ public class UserServiceTest {
     }
     
     @Test
-    public void getFriends_exception_onNull() {
-        assertThatThrownBy(() -> userService.getFriends(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
     public void getFriends() {
         entityManager.persist(user()
                 .setEmail("email_1@mail.com")
                 .setUsername("username_1")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("email_2@mail.com")
                         .setUsername("username_2"))));
         entityManager.persist(user()
                 .setEmail("email_2@mail.com")
                 .setUsername("username_2")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("email_1@mail.com")
                         .setUsername("username_1"))));
@@ -414,13 +408,6 @@ public class UserServiceTest {
                 .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L));
-    }
-    
-    @Test
-    public void findAll_exception_onNull() {
-        assertThatThrownBy(() -> userService.findAll(null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
     }
     
     @Test

@@ -1,7 +1,9 @@
 package com.social.backend.model.chat;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
@@ -31,7 +33,7 @@ public abstract class Chat {
     @ManyToMany
     @JoinTable(joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "chat_id"))
-    private List<User> members = new ArrayList<>();
+    private Set<User> members = new HashSet<>();
     
     @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
     private List<Message> messages = new ArrayList<>();
@@ -41,7 +43,7 @@ public abstract class Chat {
         return this;
     }
     
-    public Chat setMembers(List<User> members) {
+    public Chat setMembers(Set<User> members) {
         this.members = members;
         return this;
     }
@@ -55,7 +57,7 @@ public abstract class Chat {
         return id;
     }
     
-    public List<User> getMembers() {
+    public Set<User> getMembers() {
         return members;
     }
     
