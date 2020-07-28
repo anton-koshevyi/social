@@ -1,5 +1,6 @@
 package com.social.backend.service;
 
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,6 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
 import static com.social.backend.TestComparator.messageComparator;
 import static com.social.backend.TestComparator.notNullFirst;
@@ -43,7 +43,7 @@ public class MessageServiceTest {
                 .setEmail("sender@mail.com")
                 .setUsername("sender"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(list(sender)));
+                .setMembers(Sets.newHashSet(sender)));
         
         messageService.create(chat, sender, "body");
         
@@ -76,7 +76,7 @@ public class MessageServiceTest {
                 .setEmail("sender@mail.com")
                 .setUsername("sender"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(list(sender)));
+                .setMembers(Sets.newHashSet(sender)));
         entityManager.persist(new Message()
                 .setChat(chat)
                 .setBody("message body")
@@ -114,7 +114,7 @@ public class MessageServiceTest {
                 .setEmail("sender@mail.com")
                 .setUsername("sender"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(list(sender)));
+                .setMembers(Sets.newHashSet(sender)));
         entityManager.persist(message()
                 .setChat(chat)
                 .setAuthor(sender));
@@ -131,7 +131,7 @@ public class MessageServiceTest {
                 .setEmail("sender@mail.com")
                 .setUsername("sender"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(list(sender)));
+                .setMembers(Sets.newHashSet(sender)));
         entityManager.persist(message()
                 .setChat(chat)
                 .setAuthor(sender));

@@ -1,5 +1,6 @@
 package com.social.backend.service;
 
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
 import static com.social.backend.TestComparator.commentComparator;
 import static com.social.backend.TestComparator.notNullFirst;
@@ -97,7 +97,7 @@ public class CommentServiceTest {
                 .setEmail("postAuthor@mail.com")
                 .setUsername("postAuthor")
                 .setPublicity(Publicity.INTERNAL)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("commentator@mail.com")
                         .setUsername("commentator"))));
@@ -106,7 +106,7 @@ public class CommentServiceTest {
         User commentator = entityManager.persist(user()
                 .setEmail("commentator@mail.com")
                 .setUsername("commentator")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("commentator@mail.com")
                         .setUsername("commentator"))));

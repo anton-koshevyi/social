@@ -1,5 +1,7 @@
 package com.social.backend.service;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
 import static com.social.backend.TestComparator.chatComparator;
 import static com.social.backend.TestComparator.userComparator;
@@ -47,7 +48,7 @@ public class ChatServiceTest {
                 .setEmail("target@mail.com")
                 .setUsername("target"));
         entityManager.persist(privateChat()
-                .setMembers(list(user, target)));
+                .setMembers(Sets.newHashSet(user, target)));
     
         assertThatThrownBy(() -> chatService.createPrivate(user, target))
                 .isExactlyInstanceOf(IllegalActionException.class)
@@ -78,7 +79,7 @@ public class ChatServiceTest {
         User user = entityManager.persist(user()
                 .setEmail("user@mail.com")
                 .setUsername("user")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("target@mail.com")
                         .setUsername("target")
@@ -87,7 +88,7 @@ public class ChatServiceTest {
                 .setEmail("target@mail.com")
                 .setUsername("target")
                 .setPublicity(Publicity.INTERNAL)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("user@mail.com")
                         .setUsername("user"))));
@@ -97,7 +98,7 @@ public class ChatServiceTest {
                 .ignoringFields("members.friends")
                 .isEqualTo(privateChat()
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("user@mail.com")
@@ -125,7 +126,7 @@ public class ChatServiceTest {
                 .ignoringFields("members.friends")
                 .isEqualTo(privateChat()
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("user@mail.com")
@@ -157,7 +158,7 @@ public class ChatServiceTest {
                 .setEmail("second@mail.com")
                 .setUsername("second"));
         entityManager.persist(privateChat()
-                .setMembers(list(first, second)));
+                .setMembers(Sets.newHashSet(first, second)));
         
         chatService.deletePrivate(1L, first);
         
@@ -174,8 +175,8 @@ public class ChatServiceTest {
                 .setEmail("member@mail.com")
                 .setUsername("member")
                 .setPublicity(Publicity.INTERNAL));
-        
-        assertThatThrownBy(() -> chatService.createGroup(owner, "name", list(member)))
+    
+        assertThatThrownBy(() -> chatService.createGroup(owner, "name", ImmutableSet.of(member)))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes",
                         new Object[]{"illegalAction.chat.group.createWithNotFriend"})
@@ -188,7 +189,7 @@ public class ChatServiceTest {
         User owner = entityManager.persist(user()
                 .setEmail("owner@mail.com")
                 .setUsername("owner")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("member@mail.com")
                         .setUsername("member")
@@ -197,12 +198,12 @@ public class ChatServiceTest {
                 .setEmail("member@mail.com")
                 .setUsername("member")
                 .setPublicity(Publicity.INTERNAL)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("owner@mail.com")
                         .setUsername("owner"))));
-        
-        assertThat(chatService.createGroup(owner, "name", list(member)))
+    
+        assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
                 .usingRecursiveComparison()
                 .ignoringCollectionOrder()
                 .ignoringFields("owner.friends", "members.friends")
@@ -212,7 +213,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("owner@mail.com")
@@ -234,8 +235,8 @@ public class ChatServiceTest {
                 .setEmail("member@mail.com")
                 .setUsername("member")
                 .setPublicity(Publicity.PUBLIC));
-        
-        assertThat(chatService.createGroup(owner, "name", list(member)))
+    
+        assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
                 .usingRecursiveComparison()
                 .ignoringCollectionOrder()
                 .ignoringFields("owner.friends", "members.friends")
@@ -245,7 +246,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("owner@mail.com")
@@ -275,7 +276,7 @@ public class ChatServiceTest {
                 .setUsername("member"));
         entityManager.persist(groupChat()
                 .setOwner(member))
-                .setMembers(list(member));
+                .setMembers(Sets.newHashSet(member));
         
         assertThat(chatService.updateGroup(1L, member, "new name"))
                 .usingComparator(chatComparator())
@@ -291,8 +292,8 @@ public class ChatServiceTest {
     @Test
     public void updateGroupMembers_exception_whenNoEntityWithIdAndOwnerId() {
         entityManager.persist(user());
-        
-        assertThatThrownBy(() -> chatService.updateGroupMembers(0L, 1L, list()))
+    
+        assertThatThrownBy(() -> chatService.updateGroupMembers(0L, 1L, ImmutableSet.of()))
                 .isExactlyInstanceOf(NotFoundException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwnerId"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -303,9 +304,9 @@ public class ChatServiceTest {
         User owner = entityManager.persist(user());
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
-        
-        assertThatThrownBy(() -> chatService.updateGroupMembers(1L, 1L, list()))
+                .setMembers(Sets.newHashSet(owner)));
+    
+        assertThatThrownBy(() -> chatService.updateGroupMembers(1L, 1L, ImmutableSet.of()))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.chat.group.removeOwner"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
@@ -322,9 +323,9 @@ public class ChatServiceTest {
                 .setPublicity(Publicity.INTERNAL));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
-        
-        assertThatThrownBy(() -> chatService.updateGroupMembers(1L, 1L, list(owner, newMember)))
+                .setMembers(Sets.newHashSet(owner)));
+    
+        assertThatThrownBy(() -> chatService.updateGroupMembers(1L, 1L, ImmutableSet.of(owner, newMember)))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.chat.group.addNotFriend"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
@@ -335,7 +336,7 @@ public class ChatServiceTest {
         User owner = entityManager.persist(user()
                 .setEmail("owner@mail.com")
                 .setUsername("owner")
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
                         .setEmail("newMember@mail.com")
                         .setUsername("newMember")
@@ -344,15 +345,15 @@ public class ChatServiceTest {
                 .setEmail("newMember@mail.com")
                 .setUsername("newMember")
                 .setPublicity(Publicity.INTERNAL)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
                         .setEmail("owner@mail.com")
                         .setUsername("owner"))));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
-        
-        assertThat(chatService.updateGroupMembers(1L, 1L, list(owner, newMember)))
+                .setMembers(Sets.newHashSet(owner)));
+    
+        assertThat(chatService.updateGroupMembers(1L, 1L, ImmutableSet.of(owner, newMember)))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringCollectionOrder()
@@ -363,7 +364,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("owner@mail.com")
@@ -387,9 +388,9 @@ public class ChatServiceTest {
                 .setPublicity(Publicity.PUBLIC));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
-        
-        assertThat(chatService.updateGroupMembers(1L, 1L, list(owner, newMember)))
+                .setMembers(Sets.newHashSet(owner)));
+    
+        assertThat(chatService.updateGroupMembers(1L, 1L, ImmutableSet.of(owner, newMember)))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringCollectionOrder()
@@ -400,7 +401,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(1L)
                                         .setEmail("owner@mail.com")
@@ -423,9 +424,9 @@ public class ChatServiceTest {
                 .setUsername("member"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner, member)));
-        
-        assertThat(chatService.updateGroupMembers(1L, 1L, list(owner)))
+                .setMembers(Sets.newHashSet(owner, member)));
+    
+        assertThat(chatService.updateGroupMembers(1L, 1L, ImmutableSet.of(owner)))
                 .usingRecursiveComparison()
                 .ignoringAllOverriddenEquals()
                 .ignoringCollectionOrder()
@@ -435,7 +436,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(user()
+                        .setMembers(ImmutableSet.of(user()
                                 .setId(1L)
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))));
@@ -483,7 +484,7 @@ public class ChatServiceTest {
                 .setUsername("newOwner"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner, newOwner)));
+                .setMembers(Sets.newHashSet(owner, newOwner)));
         
         assertThat(chatService.setOwner(1L, 1L, newOwner))
                 .usingRecursiveComparison()
@@ -495,7 +496,7 @@ public class ChatServiceTest {
                                 .setEmail("newOwner@mail.com")
                                 .setUsername("newOwner"))
                         .setId(1L)
-                        .setMembers(list(
+                        .setMembers(ImmutableSet.of(
                                 user()
                                         .setId(2L)
                                         .setEmail("newOwner@mail.com")
@@ -524,7 +525,7 @@ public class ChatServiceTest {
                 .setUsername("owner"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
+                .setMembers(Sets.newHashSet(owner)));
         
         assertThatThrownBy(() -> chatService.leaveGroup(1L, owner))
                 .isExactlyInstanceOf(IllegalActionException.class)
@@ -542,7 +543,7 @@ public class ChatServiceTest {
                 .setUsername("member"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner, member)));
+                .setMembers(Sets.newHashSet(owner, member)));
         
         chatService.leaveGroup(1L, member);
         
@@ -555,7 +556,7 @@ public class ChatServiceTest {
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))
                         .setId(1L)
-                        .setMembers(list(user()
+                        .setMembers(ImmutableSet.of(user()
                                 .setId(1L)
                                 .setEmail("owner@mail.com")
                                 .setUsername("owner"))));
@@ -578,7 +579,7 @@ public class ChatServiceTest {
                 .setUsername("owner"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
+                .setMembers(Sets.newHashSet(owner)));
         
         chatService.deleteGroup(1L, 1L);
         
@@ -606,7 +607,7 @@ public class ChatServiceTest {
                 .setUsername("member"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner, member)));
+                .setMembers(Sets.newHashSet(owner, member)));
         
         assertThat(chatService.getMembers(1L, owner, Pageable.unpaged()))
                 .usingComparatorForType(userComparator(), User.class)
@@ -639,7 +640,7 @@ public class ChatServiceTest {
                 .setUsername("owner"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
+                .setMembers(ImmutableSet.of(owner)));
         
         assertThat(chatService.findByIdAndUser(1L, owner))
                 .usingComparator(chatComparator())
@@ -658,7 +659,7 @@ public class ChatServiceTest {
                 .setUsername("owner"));
         entityManager.persist(groupChat()
                 .setOwner(owner)
-                .setMembers(list(owner)));
+                .setMembers(Sets.newHashSet(owner)));
         
         assertThat(chatService.findAllByUser(owner, Pageable.unpaged()))
                 .usingComparatorForType(chatComparator(), Chat.class)
