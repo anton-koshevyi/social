@@ -59,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public Page<Comment> findAllByPostId(Post post, Pageable pageable) {
+    public Page<Comment> findAllByPost(Post post, Pageable pageable) {
         return repository.findAllByPost(post, pageable);
     }
     
