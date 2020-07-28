@@ -1,8 +1,9 @@
 package com.social.backend.service;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -126,9 +127,8 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Page<User> getFriends(Long id, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
-        List<User> friends = this.findById(id).getFriends();
-        return new PageImpl<>(friends, pageable, friends.size());
+        Set<User> friends = this.findById(id).getFriends();
+        return new PageImpl<>(new ArrayList<>(friends), pageable, friends.size());
     }
     
     @Override
@@ -139,30 +139,20 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Page<User> findAll(Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAll(pageable);
     }
     
     @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
-    private static List<User> addFriend(User user, User target) {
-        List<User> friends = new ArrayList<>(user.getFriends());
+    private static Set<User> addFriend(User user, User target) {
+        Set<User> friends = new HashSet<>(user.getFriends());
         friends.add(target);
         return friends;
     }
     
     @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
-    private static List<User> removeFriend(User user, User target) {
-        List<User> friends = new ArrayList<>(user.getFriends());
-        
-        for (int i = 0; i < friends.size(); i++) {
-            User friend = friends.get(i);
-            
-            if (Objects.equals(friend.getId(), target.getId())) {
-                friends.remove(i);
-                break;
-            }
-        }
-        
+    private static Set<User> removeFriend(User user, User target) {
+        Set<User> friends = new HashSet<>(user.getFriends());
+        friends.remove(target);
         return friends;
     }
 }

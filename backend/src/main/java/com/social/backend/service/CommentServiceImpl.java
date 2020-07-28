@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,16 +29,12 @@ public class CommentServiceImpl implements CommentService {
     public Comment create(Post post, User author, String body) {
         User postAuthor = post.getAuthor();
     
-        if (postAuthor.isPrivate()) {
-            if (!Objects.equals(postAuthor.getId(), author.getId())) {
-                throw new IllegalActionException("illegalAction.comment.privatePost");
-            }
+        if (postAuthor.isPrivate() && !postAuthor.equals(author)) {
+            throw new IllegalActionException("illegalAction.comment.privatePost");
         }
     
-        if (postAuthor.isInternal()) {
-            if (!postAuthor.hasFriendship(author)) {
-                throw new IllegalActionException("illegalAction.comment.internalPost");
-            }
+        if (postAuthor.isInternal() && !postAuthor.hasFriendship(author)) {
+            throw new IllegalActionException("illegalAction.comment.internalPost");
         }
     
         Comment entity = new Comment();
@@ -50,27 +45,26 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public Comment update(Long id, Long authorId, String body) {
-        Comment entity = findByIdAndAuthorId(id, authorId);
+    public Comment update(Long id, User author, String body) {
+        Comment entity = findByIdAndAuthor(id, author);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
         return repository.save(entity);
     }
     
     @Override
-    public void delete(Long id, Long authorId) {
-        Comment entity = findByIdAndAuthorId(id, authorId);
+    public void delete(Long id, User author) {
+        Comment entity = findByIdAndAuthor(id, author);
         repository.delete(entity);
     }
     
     @Override
-    public Page<Comment> findAllByPostId(Long postId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
-        return repository.findAllByPostId(postId, pageable);
+    public Page<Comment> findAllByPostId(Post post, Pageable pageable) {
+        return repository.findAllByPost(post, pageable);
     }
     
-    private Comment findByIdAndAuthorId(Long id, Long authorId) {
-        return repository.findByIdAndAuthorId(id, authorId)
-                .orElseThrow(() -> new NotFoundException("notFound.comment.byIdAndAuthorId", id, authorId));
+    private Comment findByIdAndAuthor(Long id, User author) {
+        return repository.findByIdAndAuthor(id, author)
+                .orElseThrow(() -> new NotFoundException("notFound.comment.byIdAndAuthor", id, author.getId()));
     }
 }

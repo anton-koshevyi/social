@@ -1,5 +1,6 @@
 package com.social.backend.service;
 
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,6 @@ import com.social.backend.model.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.util.Lists.list;
 
 import static com.social.backend.TestComparator.commentComparator;
 import static com.social.backend.TestComparator.notNullFirst;
@@ -45,11 +45,11 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PRIVATE));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentator = entityManager.persist(user()
-                .setEmail("commentator@mail.com")
-                .setUsername("commentator"));
+        User author = entityManager.persist(user()
+                .setEmail("commentAuthor@mail.com")
+                .setUsername("commentAuthor"));
     
-        assertThatThrownBy(() -> commentService.create(post, commentator, "body"))
+        assertThatThrownBy(() -> commentService.create(post, author, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
     }
@@ -60,11 +60,11 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.INTERNAL));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentAuthor = entityManager.persist(user()
-                .setEmail("commentator@mail.com")
-                .setUsername("commentator"));
-        
-        assertThatThrownBy(() -> commentService.create(post, commentAuthor, "body"))
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
+    
+        assertThatThrownBy(() -> commentService.create(post, author, "body"))
                 .isExactlyInstanceOf(IllegalActionException.class)
                 .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.internalPost"});
     }
@@ -97,22 +97,22 @@ public class CommentServiceTest {
                 .setEmail("postAuthor@mail.com")
                 .setUsername("postAuthor")
                 .setPublicity(Publicity.INTERNAL)
-                .setFriends(list(user()
+                .setFriends(Sets.newHashSet(user()
                         .setId(2L)
-                        .setEmail("commentator@mail.com")
-                        .setUsername("commentator"))));
+                        .setEmail("author@mail.com")
+                        .setUsername("author"))));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentator = entityManager.persist(user()
-                .setEmail("commentator@mail.com")
-                .setUsername("commentator")
-                .setFriends(list(user()
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author")
+                .setFriends(Sets.newHashSet(user()
                         .setId(1L)
-                        .setEmail("commentator@mail.com")
-                        .setUsername("commentator"))));
+                        .setEmail("author@mail.com")
+                        .setUsername("author"))));
     
-        commentService.create(post, commentator, "body");
-        
+        commentService.create(post, author, "body");
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
@@ -127,8 +127,8 @@ public class CommentServiceTest {
                         .setBody("body")
                         .setAuthor(user()
                                 .setId(2L)
-                                .setEmail("commentator@mail.com")
-                                .setUsername("commentator")));
+                                .setEmail("author@mail.com")
+                                .setUsername("author")));
     }
     
     @Test
@@ -139,12 +139,12 @@ public class CommentServiceTest {
                 .setPublicity(Publicity.PUBLIC));
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
-        User commentator = entityManager.persist(user()
-                .setEmail("commentator@mail.com")
-                .setUsername("commentator"));
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
     
-        commentService.create(post, commentator, "body");
-        
+        commentService.create(post, author, "body");
+    
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
                 .isEqualTo(new Comment()
@@ -159,17 +159,17 @@ public class CommentServiceTest {
                         .setBody("body")
                         .setAuthor(user()
                                 .setId(2L)
-                                .setEmail("commentator@mail.com")
-                                .setUsername("commentator")));
+                                .setEmail("author@mail.com")
+                                .setUsername("author")));
     }
     
     @Test
-    public void update_exception_whenNoEntityWithIdAndAuthorId() {
-        entityManager.persist(user());
+    public void update_exception_whenNoEntityWithIdAndAuthor() {
+        User author = entityManager.persist(user());
         
-        assertThatThrownBy(() -> commentService.update(0L, 1L, "body"))
+        assertThatThrownBy(() -> commentService.update(0L, author, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
@@ -182,8 +182,8 @@ public class CommentServiceTest {
                 .setPost(post)
                 .setBody("comment body")
                 .setAuthor(postAuthor));
-        
-        commentService.update(1L, 1L, "new body");
+    
+        commentService.update(1L, postAuthor, "new body");
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .usingComparator(commentComparator())
@@ -200,12 +200,12 @@ public class CommentServiceTest {
     }
     
     @Test
-    public void delete_exception_whenNoEntityWithIdAndAuthorId() {
-        entityManager.persist(user());
+    public void delete_exception_whenNoEntityWithIdAndAuthor() {
+        User author = entityManager.persist(user());
         
-        assertThatThrownBy(() -> commentService.delete(0L, 1L))
+        assertThatThrownBy(() -> commentService.delete(0L, author))
                 .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthorId"})
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
@@ -217,22 +217,15 @@ public class CommentServiceTest {
         entityManager.persist(comment()
                 .setPost(post)
                 .setAuthor(postAuthor));
-        
-        commentService.delete(1L, 1L);
+    
+        commentService.delete(1L, postAuthor);
         
         assertThat(entityManager.find(Comment.class, 1L))
                 .isNull();
     }
     
     @Test
-    public void findAllByPostId_exception_onNullPageable() {
-        assertThatThrownBy(() -> commentService.findAllByPostId(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
-    public void findAllByPostId() {
+    public void findAllByPost() {
         User postAuthor = entityManager.persist(user());
         Post post = entityManager.persist(post()
                 .setAuthor(postAuthor));
@@ -240,7 +233,7 @@ public class CommentServiceTest {
                 .setPost(post)
                 .setAuthor(postAuthor));
         
-        assertThat(commentService.findAllByPostId(1L, Pageable.unpaged()))
+        assertThat(commentService.findAllByPostId(post, Pageable.unpaged()))
                 .usingComparatorForType(commentComparator(), Comment.class)
                 .containsExactly((Comment) comment()
                         .setPost(post()

@@ -9,15 +9,13 @@ import com.social.backend.model.user.User;
 public interface PostService {
     Post create(User author, String body);
     
-    Post update(Long id, Long authorId, String body);
+    Post update(Long id, User author, String body);
     
-    void delete(Long id, Long authorId);
+    void delete(Long id, User author);
     
     Post findById(Long id);
     
-    Post findByIdAndAuthorId(Long id, Long authorId);
-    
     Page<Post> findAll(Pageable pageable);
     
-    Page<Post> findAllByAuthorId(Long authorId, Pageable pageable);
+    Page<Post> findAllByAuthor(User author, Pageable pageable);
 }
