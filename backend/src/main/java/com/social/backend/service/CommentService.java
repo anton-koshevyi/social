@@ -14,5 +14,5 @@ public interface CommentService {
     
     void delete(Long id, User author);
     
-    Page<Comment> findAllByPostId(Post post, Pageable pageable);
+    Page<Comment> findAllByPost(Post post, Pageable pageable);
 }

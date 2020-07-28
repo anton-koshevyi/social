@@ -233,7 +233,7 @@ public class CommentServiceTest {
                 .setPost(post)
                 .setAuthor(postAuthor));
         
-        assertThat(commentService.findAllByPostId(post, Pageable.unpaged()))
+        assertThat(commentService.findAllByPost(post, Pageable.unpaged()))
                 .usingComparatorForType(commentComparator(), Comment.class)
                 .containsExactly((Comment) comment()
                         .setPost(post()
