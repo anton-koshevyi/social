@@ -126,13 +126,6 @@ public class MessageServiceTest {
     }
     
     @Test
-    public void findAllByChatId_exception_onNullPageable() {
-        assertThatThrownBy(() -> messageService.findAllByChatId(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
     public void findAllByChatId() {
         User sender = entityManager.persist(user()
                 .setEmail("sender@mail.com")
@@ -154,5 +147,4 @@ public class MessageServiceTest {
                                 .setEmail("sender@mail.com")
                                 .setUsername("sender")));
     }
-    
 }

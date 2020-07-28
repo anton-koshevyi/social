@@ -367,13 +367,6 @@ public class UserServiceTest {
     }
     
     @Test
-    public void getFriends_exception_onNull() {
-        assertThatThrownBy(() -> userService.getFriends(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
     public void getFriends() {
         entityManager.persist(user()
                 .setEmail("email_1@mail.com")
@@ -414,13 +407,6 @@ public class UserServiceTest {
                 .usingComparator(userComparator())
                 .isEqualTo(user()
                         .setId(1L));
-    }
-    
-    @Test
-    public void findAll_exception_onNull() {
-        assertThatThrownBy(() -> userService.findAll(null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
     }
     
     @Test

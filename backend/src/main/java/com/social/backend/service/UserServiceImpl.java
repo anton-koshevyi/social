@@ -126,7 +126,6 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Page<User> getFriends(Long id, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         List<User> friends = this.findById(id).getFriends();
         return new PageImpl<>(friends, pageable, friends.size());
     }
@@ -139,7 +138,6 @@ public class UserServiceImpl implements UserService {
     
     @Override
     public Page<User> findAll(Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAll(pageable);
     }
     

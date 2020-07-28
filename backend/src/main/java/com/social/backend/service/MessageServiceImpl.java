@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,7 +47,6 @@ public class MessageServiceImpl implements MessageService {
     
     @Override
     public Page<Message> findAllByChatId(Long chatId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAllByChatId(chatId, pageable);
     }
     

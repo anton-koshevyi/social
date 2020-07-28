@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -54,13 +53,11 @@ public class PostServiceImpl implements PostService {
     
     @Override
     public Page<Post> findAll(Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAll(pageable);
     }
     
     @Override
     public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAllByAuthorId(authorId, pageable);
     }
     

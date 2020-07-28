@@ -225,13 +225,6 @@ public class CommentServiceTest {
     }
     
     @Test
-    public void findAllByPostId_exception_onNullPageable() {
-        assertThatThrownBy(() -> commentService.findAllByPostId(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
     public void findAllByPostId() {
         User postAuthor = entityManager.persist(user());
         Post post = entityManager.persist(post()

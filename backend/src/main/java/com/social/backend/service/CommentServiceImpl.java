@@ -65,7 +65,6 @@ public class CommentServiceImpl implements CommentService {
     
     @Override
     public Page<Comment> findAllByPostId(Long postId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAllByPostId(postId, pageable);
     }
     

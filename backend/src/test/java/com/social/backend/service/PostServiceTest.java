@@ -125,13 +125,6 @@ public class PostServiceTest {
     }
     
     @Test
-    public void findAll_exception_onNull() {
-        assertThatThrownBy(() -> postService.findAll(null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
-    }
-    
-    @Test
     public void findAll() {
         User author = entityManager.persist(user());
         entityManager.persist(post()
@@ -143,13 +136,6 @@ public class PostServiceTest {
                         .setId(1L)
                         .setAuthor(user()
                                 .setId(1L)));
-    }
-    
-    @Test
-    public void findAllByAuthorId_exception_onNullPageable() {
-        assertThatThrownBy(() -> postService.findAllByAuthorId(1L, null))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("Pageable must not be null");
     }
     
     @Test
