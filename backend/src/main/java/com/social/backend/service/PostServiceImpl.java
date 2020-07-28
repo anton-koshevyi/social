@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,16 +32,16 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Post update(Long id, Long authorId, String body) {
-        Post entity = this.findByIdAndAuthorId(id, authorId);
+    public Post update(Long id, User author, String body) {
+        Post entity = findByIdAndAuthor(id, author);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
         return repository.save(entity);
     }
     
     @Override
-    public void delete(Long id, Long authorId) {
-        Post entity = this.findByIdAndAuthorId(id, authorId);
+    public void delete(Long id, User author) {
+        Post entity = findByIdAndAuthor(id, author);
         repository.delete(entity);
     }
     
@@ -53,20 +52,17 @@ public class PostServiceImpl implements PostService {
     }
     
     @Override
-    public Post findByIdAndAuthorId(Long id, Long authorId) {
-        return repository.findByIdAndAuthorId(id, authorId)
-                .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthorId", id, authorId));
-    }
-    
-    @Override
     public Page<Post> findAll(Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return repository.findAll(pageable);
     }
     
     @Override
-    public Page<Post> findAllByAuthorId(Long authorId, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
-        return repository.findAllByAuthorId(authorId, pageable);
+    public Page<Post> findAllByAuthor(User author, Pageable pageable) {
+        return repository.findAllByAuthor(author, pageable);
+    }
+    
+    private Post findByIdAndAuthor(Long id, User author) {
+        return repository.findByIdAndAuthor(id, author)
+                .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthor", id, author.getId()));
     }
 }

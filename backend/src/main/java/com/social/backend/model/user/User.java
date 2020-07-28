@@ -1,7 +1,10 @@
 package com.social.backend.model.user;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,10 +55,10 @@ public class User {
     private boolean admin;
     
     @ManyToMany
-    private List<User> friends = new ArrayList<>();
+    private Set<User> friends = new HashSet<>();
     
     @ManyToMany(mappedBy = "friends", cascade = CascadeType.REMOVE)
-    private List<User> friendFor = new ArrayList<>();
+    private Set<User> friendFor = new HashSet<>();
     
     @ManyToMany(mappedBy = "members")
     private List<Chat> chats = new ArrayList<>();
@@ -74,10 +77,7 @@ public class User {
     
     @Transient
     public boolean hasFriendship(User user) {
-        Long id = user.getId();
-        return friends.stream()
-                .map(User::getId)
-                .anyMatch(id::equals);
+        return friends.contains(user);
     }
     
     @Transient
@@ -93,6 +93,24 @@ public class User {
     @Transient
     public boolean isPrivate() {
         return Publicity.PRIVATE == publicity;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return Objects.equals(email, user.email)
+                && Objects.equals(username, user.username);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, username);
     }
     
     public User setId(Long id) {
@@ -140,12 +158,12 @@ public class User {
         return this;
     }
     
-    public User setFriends(List<User> friends) {
+    public User setFriends(Set<User> friends) {
         this.friends = friends;
         return this;
     }
     
-    public User setFriendFor(List<User> friendOf) {
+    public User setFriendFor(Set<User> friendOf) {
         this.friendFor = friendOf;
         return this;
     }
@@ -211,11 +229,11 @@ public class User {
         return admin;
     }
     
-    public List<User> getFriends() {
+    public Set<User> getFriends() {
         return friends;
     }
     
-    public List<User> getFriendFor() {
+    public Set<User> getFriendFor() {
         return friendFor;
     }
     
