@@ -32,26 +32,26 @@ public class MessageServiceImpl implements MessageService {
     }
     
     @Override
-    public Message update(Long id, Long authorId, String body) {
-        Message entity = findByIdAndAuthorId(id, authorId);
+    public Message update(Long id, User author, String body) {
+        Message entity = findByIdAndAuthor(id, author);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
         return repository.save(entity);
     }
     
     @Override
-    public void delete(Long id, Long authorId) {
-        Message entity = findByIdAndAuthorId(id, authorId);
+    public void delete(Long id, User author) {
+        Message entity = findByIdAndAuthor(id, author);
         repository.delete(entity);
     }
     
     @Override
-    public Page<Message> findAllByChatId(Long chatId, Pageable pageable) {
-        return repository.findAllByChatId(chatId, pageable);
+    public Page<Message> findAllByChat(Chat chat, Pageable pageable) {
+        return repository.findAllByChat(chat, pageable);
     }
     
-    private Message findByIdAndAuthorId(Long id, Long authorId) {
-        return repository.findByIdAndAuthorId(id, authorId)
-                .orElseThrow(() -> new NotFoundException("notFound.message.byIdAndAuthorId", id, authorId));
+    private Message findByIdAndAuthor(Long id, User author) {
+        return repository.findByIdAndAuthor(id, author)
+                .orElseThrow(() -> new NotFoundException("notFound.message.byIdAndAuthor", id, author.getId()));
     }
 }

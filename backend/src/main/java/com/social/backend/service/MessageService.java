@@ -10,9 +10,9 @@ import com.social.backend.model.user.User;
 public interface MessageService {
     Message create(Chat chat, User author, String body);
     
-    Message update(Long id, Long authorId, String body);
+    Message update(Long id, User author, String body);
     
-    void delete(Long id, Long authorId);
+    void delete(Long id, User author);
     
-    Page<Message> findAllByChatId(Long chatId, Pageable pageable);
+    Page<Message> findAllByChat(Chat chat, Pageable pageable);
 }

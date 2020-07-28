@@ -47,7 +47,7 @@ public class ChatServiceImpl implements ChatService {
         }
     
         if (!target.isPublic() && !target.hasFriendship(user)) {
-            throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend", target.getId());
+            throw new IllegalActionException("illegalAction.chat.private.createNotFriend", target.getId());
         }
     
         PrivateChat entity = new PrivateChat();
@@ -56,8 +56,8 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public void deletePrivate(Long id, User user) {
-        Chat entity = this.findPrivateByIdAndUser(id, user);
+    public void deletePrivate(Long id, User member) {
+        Chat entity = findPrivateByIdAndMember(id, member);
         baseRepository.delete(entity);
     }
     
@@ -65,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
     public Chat createGroup(User creator, String name, Set<User> members) {
         for (User member : members) {
             if (!member.isPublic() && !member.hasFriendship(creator)) {
-                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
+                throw new IllegalActionException("illegalAction.chat.group.addNotFriend", member.getId());
             }
         }
         
@@ -81,18 +81,17 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public Chat updateGroup(Long id, User member, String name) {
-        GroupChat entity = findGroupByIdAndUser(id, member);
+        GroupChat entity = findGroupByIdAndMember(id, member);
         entity.setName(name);
         return baseRepository.save(entity);
     }
     
     @Override
-    public Chat updateGroupMembers(Long id, Long ownerId, Set<User> members) {
-        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
-        User owner = entity.getOwner();
+    public Chat updateGroupMembers(Long id, User owner, Set<User> members) {
+        GroupChat entity = findGroupByIdAndOwner(id, owner);
         
         if (!members.contains(owner)) {
-            throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, ownerId);
+            throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, owner.getId());
         }
         
         Set<User> finalMembers = new HashSet<>();
@@ -115,20 +114,20 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public Chat setOwner(Long id, Long ownerId, User newOwner) {
-        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
-    
+    public Chat setOwner(Long id, User owner, User newOwner) {
+        GroupChat entity = findGroupByIdAndOwner(id, owner);
+        
         if (!entity.hasMember(newOwner)) {
             throw new IllegalActionException("illegalAction.chat.group.setOwnerNotMember", id, newOwner.getId());
         }
-    
+        
         entity.setOwner(newOwner);
         return baseRepository.save(entity);
     }
     
     @Override
     public void leaveGroup(Long id, User member) {
-        GroupChat entity = findGroupByIdAndUser(id, member);
+        GroupChat entity = findGroupByIdAndMember(id, member);
         
         if (entity.isOwner(member)) {
             throw new IllegalActionException("illegalAction.chat.group.leaveOwner", id, member.getId());
@@ -141,40 +140,40 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public void deleteGroup(Long id, Long ownerId) {
-        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
+    public void deleteGroup(Long id, User owner) {
+        GroupChat entity = findGroupByIdAndOwner(id, owner);
         baseRepository.delete(entity);
     }
     
     @Override
-    public Page<User> getMembers(Long id, User user, Pageable pageable) {
-        Set<User> members = this.findByIdAndUser(id, user).getMembers();
+    public Page<User> getMembers(Long id, User member, Pageable pageable) {
+        Set<User> members = this.findByIdAndMember(id, member).getMembers();
         return new PageImpl<>(new ArrayList<>(members), pageable, members.size());
     }
     
     @Override
-    public Chat findByIdAndUser(Long id, User user) {
-        return baseRepository.findByIdAndMembersContaining(id, user)
-                .orElseThrow(() -> new NotFoundException("notFound.chat.byIdAndUser", id, user.getId()));
+    public Chat findByIdAndMember(Long id, User member) {
+        return baseRepository.findByIdAndMembersContaining(id, member)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.byIdAndMember", id, member.getId()));
     }
     
     @Override
-    public Page<Chat> findAllByUser(User user, Pageable pageable) {
-        return baseRepository.findAllByMembersContaining(user, pageable);
+    public Page<Chat> findAllByMember(User member, Pageable pageable) {
+        return baseRepository.findAllByMembersContaining(member, pageable);
     }
     
-    private PrivateChat findPrivateByIdAndUser(Long id, User user) {
-        return privateRepository.findByIdAndMembersContaining(id, user)
-                .orElseThrow(() -> new NotFoundException("notFound.chat.private.byIdAndUser", id, user.getId()));
+    private PrivateChat findPrivateByIdAndMember(Long id, User member) {
+        return privateRepository.findByIdAndMembersContaining(id, member)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.private.byIdAndMember", id, member.getId()));
     }
     
-    private GroupChat findGroupByIdAndUser(Long id, User user) {
-        return groupRepository.findByIdAndMembersContaining(id, user)
-                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndUser", id, user.getId()));
+    private GroupChat findGroupByIdAndMember(Long id, User member) {
+        return groupRepository.findByIdAndMembersContaining(id, member)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndMember", id, member.getId()));
     }
     
-    private GroupChat findGroupByIdAndOwnerId(Long id, Long ownerId) {
-        return groupRepository.findByIdAndOwnerId(id, ownerId)
-                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndOwnerId", id, ownerId));
+    private GroupChat findGroupByIdAndOwner(Long id, User owner) {
+        return groupRepository.findByIdAndOwner(id, owner)
+                .orElseThrow(() -> new NotFoundException("notFound.chat.group.byIdAndOwner", id, owner.getId()));
     }
 }

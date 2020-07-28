@@ -11,23 +11,23 @@ import com.social.backend.model.user.User;
 public interface ChatService {
     Chat createPrivate(User user, User target);
     
-    void deletePrivate(Long id, User user);
+    void deletePrivate(Long id, User member);
     
     Chat createGroup(User creator, String name, Set<User> members);
     
     Chat updateGroup(Long id, User member, String name);
     
-    Chat updateGroupMembers(Long id, Long ownerId, Set<User> members);
+    Chat updateGroupMembers(Long id, User owner, Set<User> members);
     
-    Chat setOwner(Long id, Long ownerId, User newOwner);
+    Chat setOwner(Long id, User owner, User newOwner);
     
     void leaveGroup(Long id, User member);
     
-    void deleteGroup(Long id, Long ownerId);
+    void deleteGroup(Long id, User owner);
     
     Page<User> getMembers(Long id, User member, Pageable pageable);
     
-    Chat findByIdAndUser(Long id, User user);
+    Chat findByIdAndMember(Long id, User member);
     
-    Page<Chat> findAllByUser(User user, Pageable pageable);
+    Page<Chat> findAllByMember(User member, Pageable pageable);
 }

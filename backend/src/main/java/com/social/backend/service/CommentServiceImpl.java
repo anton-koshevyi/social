@@ -45,26 +45,26 @@ public class CommentServiceImpl implements CommentService {
     }
     
     @Override
-    public Comment update(Long id, Long authorId, String body) {
-        Comment entity = findByIdAndAuthorId(id, authorId);
+    public Comment update(Long id, User author, String body) {
+        Comment entity = findByIdAndAuthor(id, author);
         entity.setUpdated(ZonedDateTime.now());
         entity.setBody(body);
         return repository.save(entity);
     }
     
     @Override
-    public void delete(Long id, Long authorId) {
-        Comment entity = findByIdAndAuthorId(id, authorId);
+    public void delete(Long id, User author) {
+        Comment entity = findByIdAndAuthor(id, author);
         repository.delete(entity);
     }
     
     @Override
-    public Page<Comment> findAllByPostId(Long postId, Pageable pageable) {
-        return repository.findAllByPostId(postId, pageable);
+    public Page<Comment> findAllByPostId(Post post, Pageable pageable) {
+        return repository.findAllByPost(post, pageable);
     }
     
-    private Comment findByIdAndAuthorId(Long id, Long authorId) {
-        return repository.findByIdAndAuthorId(id, authorId)
-                .orElseThrow(() -> new NotFoundException("notFound.comment.byIdAndAuthorId", id, authorId));
+    private Comment findByIdAndAuthor(Long id, User author) {
+        return repository.findByIdAndAuthor(id, author)
+                .orElseThrow(() -> new NotFoundException("notFound.comment.byIdAndAuthor", id, author.getId()));
     }
 }

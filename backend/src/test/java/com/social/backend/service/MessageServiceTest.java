@@ -39,14 +39,14 @@ public class MessageServiceTest {
     
     @Test
     public void create() {
-        User sender = entityManager.persist(user()
-                .setEmail("sender@mail.com")
-                .setUsername("sender"));
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(Sets.newHashSet(sender)));
-        
-        messageService.create(chat, sender, "body");
-        
+                .setMembers(Sets.newHashSet(author)));
+    
+        messageService.create(chat, author, "body");
+    
         assertThat(entityManager.find(Message.class, 1L))
                 .usingComparator(messageComparator())
                 .isEqualTo(new Message()
@@ -56,34 +56,34 @@ public class MessageServiceTest {
                         .setBody("body")
                         .setAuthor(user()
                                 .setId(1L)
-                                .setEmail("sender@mail.com")
-                                .setUsername("sender")));
+                                .setEmail("author@mail.com")
+                                .setUsername("author")));
     }
     
     @Test
-    public void update_exception_whenNoEntityWithIdAndAuthorId() {
-        entityManager.persist(user());
+    public void update_exception_whenNoEntityWithIdAndAuthor() {
+        User author = entityManager.persist(user());
         
-        assertThatThrownBy(() -> messageService.update(0L, 1L, "body"))
+        assertThatThrownBy(() -> messageService.update(0L, author, "body"))
                 .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthorId"})
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
     public void update() {
-        User sender = entityManager.persist(user()
-                .setEmail("sender@mail.com")
-                .setUsername("sender"));
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(Sets.newHashSet(sender)));
+                .setMembers(Sets.newHashSet(author)));
         entityManager.persist(new Message()
                 .setChat(chat)
                 .setBody("message body")
-                .setAuthor(sender));
-        
-        messageService.update(1L, 1L, "new body");
-        
+                .setAuthor(author));
+    
+        messageService.update(1L, author, "new body");
+    
         assertThat(entityManager.find(Message.class, 1L))
                 .usingComparator(messageComparator())
                 .usingComparatorForFields(notNullFirst(), "updated")
@@ -94,49 +94,49 @@ public class MessageServiceTest {
                         .setBody("new body")
                         .setAuthor(user()
                                 .setId(1L)
-                                .setEmail("sender@mail.com")
-                                .setUsername("sender")));
+                                .setEmail("author@mail.com")
+                                .setUsername("author")));
     }
     
     @Test
-    public void delete_exception_whenNoEntityWithIdAndAuthorId() {
-        entityManager.persist(user());
+    public void delete_exception_whenNoEntityWithIdAndAuthor() {
+        User author = entityManager.persist(user());
         
-        assertThatThrownBy(() -> messageService.delete(0L, 1L))
+        assertThatThrownBy(() -> messageService.delete(0L, author))
                 .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthorId"})
+                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
                 .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
     }
     
     @Test
     public void delete() {
-        User sender = entityManager.persist(user()
-                .setEmail("sender@mail.com")
-                .setUsername("sender"));
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(Sets.newHashSet(sender)));
+                .setMembers(Sets.newHashSet(author)));
         entityManager.persist(message()
                 .setChat(chat)
-                .setAuthor(sender));
-        
-        messageService.delete(1L, 1L);
-        
+                .setAuthor(author));
+    
+        messageService.delete(1L, author);
+    
         assertThat(entityManager.find(Message.class, 1L))
                 .isNull();
     }
     
     @Test
-    public void findAllByChatId() {
-        User sender = entityManager.persist(user()
-                .setEmail("sender@mail.com")
-                .setUsername("sender"));
+    public void findAllByChat() {
+        User author = entityManager.persist(user()
+                .setEmail("author@mail.com")
+                .setUsername("author"));
         Chat chat = entityManager.persist(privateChat()
-                .setMembers(Sets.newHashSet(sender)));
+                .setMembers(Sets.newHashSet(author)));
         entityManager.persist(message()
                 .setChat(chat)
-                .setAuthor(sender));
+                .setAuthor(author));
         
-        assertThat(messageService.findAllByChatId(1L, Pageable.unpaged()))
+        assertThat(messageService.findAllByChat(chat, Pageable.unpaged()))
                 .usingComparatorForType(messageComparator(), Message.class)
                 .containsExactly((Message) message()
                         .setChat(privateChat()
@@ -144,7 +144,7 @@ public class MessageServiceTest {
                         .setId(1L)
                         .setAuthor(user()
                                 .setId(1L)
-                                .setEmail("sender@mail.com")
-                                .setUsername("sender")));
+                                .setEmail("author@mail.com")
+                                .setUsername("author")));
     }
 }
