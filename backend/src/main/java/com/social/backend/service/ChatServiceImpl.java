@@ -2,9 +2,7 @@ package com.social.backend.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,53 +42,13 @@ public class ChatServiceImpl implements ChatService {
         if (privateRepository.existsByMembersIn(Arrays.asList(user, target))) {
             throw new IllegalActionException("illegalAction.chat.private.alreadyExist", target.getId());
         }
-        
+    
         if (!target.isPublic() && !target.hasFriendship(user)) {
             throw new IllegalActionException("illegalAction.chat.private.createWithNotFriend", target.getId());
         }
-        
+    
         PrivateChat entity = new PrivateChat();
         entity.setMembers(Arrays.asList(user, target));
-        return baseRepository.save(entity);
-    }
-    
-    @Override
-    public Chat createGroup(User creator, String name, List<User> members) {
-        for (User member : members) {
-            if (!member.isPublic() && !member.hasFriendship(creator)) {
-                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
-            }
-        }
-    
-        ArrayList<User> finalMembers = new ArrayList<>(members);
-        finalMembers.add(creator);
-    
-        GroupChat entity = new GroupChat();
-        entity.setName(name);
-        entity.setOwner(creator);
-        entity.setMembers(finalMembers);
-        return baseRepository.save(entity);
-    }
-    
-    @Override
-    public Chat updateGroup(Long id, User member, String name, List<User> newMembers) {
-        GroupChat entity = findGroupByIdAndUser(id, member);
-        List<User> finalMembers = new ArrayList<>(entity.getMembers());
-        
-        for (User newMember : newMembers) {
-            if (entity.hasMember(newMember)) {
-                throw new IllegalActionException("illegalAction.chat.group.addExistentMember", newMember.getId());
-            }
-            
-            if (!newMember.isPublic() && !newMember.hasFriendship(member)) {
-                throw new IllegalActionException("illegalAction.chat.group.addNotFriend", newMember.getId());
-            }
-            
-            finalMembers.add(newMember);
-        }
-        
-        entity.setName(name);
-        entity.setMembers(finalMembers);
         return baseRepository.save(entity);
     }
     
@@ -101,33 +59,85 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public void leaveGroup(Long id, User member) {
-        GroupChat entity = findGroupByIdAndUser(id, member);
-        this.removeGroupMembers(id, entity.getOwner().getId(), Collections.singletonList(member));
+    public Chat createGroup(User creator, String name, List<User> members) {
+        for (User member : members) {
+            if (!member.isPublic() && !member.hasFriendship(creator)) {
+                throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
+            }
+        }
+        
+        List<User> finalMembers = new ArrayList<>(members);
+        
+        if (!finalMembers.contains(creator)) {
+            finalMembers.add(creator);
+        }
+        
+        GroupChat entity = new GroupChat();
+        entity.setName(name);
+        entity.setOwner(creator);
+        entity.setMembers(finalMembers);
+        return baseRepository.save(entity);
     }
     
     @Override
-    public Chat removeGroupMembers(Long id, Long ownerId, List<User> members) {
+    public Chat updateGroup(Long id, User member, String name) {
+        GroupChat entity = findGroupByIdAndUser(id, member);
+        entity.setName(name);
+        return baseRepository.save(entity);
+    }
+    
+    @Override
+    public Chat updateGroupMembers(Long id, Long ownerId, List<User> members) {
         GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
-        List<User> finalMembers = new ArrayList<>(entity.getMembers());
+        User owner = entity.getOwner();
         
-        for (User memberToRemove : members) {
-            for (int i = 0; i < finalMembers.size(); i++) {
-                User member = finalMembers.get(i);
-                
-                if (Objects.equals(memberToRemove.getId(), member.getId())) {
-                    if (entity.isOwner(member)) {
-                        throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, ownerId);
-                    }
-                    
-                    finalMembers.remove(i);
-                    break;
-                }
+        if (!members.contains(owner)) {
+            throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, ownerId);
+        }
+        
+        List<User> finalMembers = new ArrayList<>();
+        
+        for (User member : members) {
+            if (entity.hasMember(member)) {
+                finalMembers.add(member);
+                continue;
             }
+            
+            if (!member.isPublic() && !member.hasFriendship(owner)) {
+                throw new IllegalActionException("illegalAction.chat.group.addNotFriend", member.getId());
+            }
+            
+            finalMembers.add(member);
         }
         
         entity.setMembers(finalMembers);
         return baseRepository.save(entity);
+    }
+    
+    @Override
+    public Chat setOwner(Long id, Long ownerId, User newOwner) {
+        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
+    
+        if (!entity.hasMember(newOwner)) {
+            throw new IllegalActionException("illegalAction.chat.group.setOwnerNotMember", id, newOwner.getId());
+        }
+    
+        entity.setOwner(newOwner);
+        return baseRepository.save(entity);
+    }
+    
+    @Override
+    public void leaveGroup(Long id, User member) {
+        GroupChat entity = findGroupByIdAndUser(id, member);
+        
+        if (entity.isOwner(member)) {
+            throw new IllegalActionException("illegalAction.chat.group.leaveOwner", id, member.getId());
+        }
+        
+        List<User> finalMembers = new ArrayList<>(entity.getMembers());
+        finalMembers.remove(member);
+        entity.setMembers(finalMembers);
+        baseRepository.save(entity);
     }
     
     @Override
@@ -137,20 +147,7 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public Chat setOwner(Long id, Long ownerId, User newOwner) {
-        GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
-        
-        if (!entity.hasMember(newOwner)) {
-            throw new IllegalActionException("illegalAction.chat.group.setOwnerNotMember", id, newOwner.getId());
-        }
-        
-        entity.setOwner(newOwner);
-        return baseRepository.save(entity);
-    }
-    
-    @Override
     public Page<User> getMembers(Long id, User user, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         List<User> members = this.findByIdAndUser(id, user).getMembers();
         return new PageImpl<>(members, pageable, members.size());
     }
@@ -163,7 +160,6 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public Page<Chat> findAllByUser(User user, Pageable pageable) {
-        Objects.requireNonNull(pageable, "Pageable must not be null");
         return baseRepository.findAllByMembersContaining(user, pageable);
     }
     
