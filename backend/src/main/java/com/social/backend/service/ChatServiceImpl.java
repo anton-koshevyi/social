@@ -2,7 +2,10 @@ package com.social.backend.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,7 +51,7 @@ public class ChatServiceImpl implements ChatService {
         }
     
         PrivateChat entity = new PrivateChat();
-        entity.setMembers(Arrays.asList(user, target));
+        entity.setMembers(Sets.newHashSet(user, target));
         return baseRepository.save(entity);
     }
     
@@ -59,18 +62,15 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public Chat createGroup(User creator, String name, List<User> members) {
+    public Chat createGroup(User creator, String name, Set<User> members) {
         for (User member : members) {
             if (!member.isPublic() && !member.hasFriendship(creator)) {
                 throw new IllegalActionException("illegalAction.chat.group.createWithNotFriend", member.getId());
             }
         }
         
-        List<User> finalMembers = new ArrayList<>(members);
-        
-        if (!finalMembers.contains(creator)) {
-            finalMembers.add(creator);
-        }
+        Set<User> finalMembers = new HashSet<>(members);
+        finalMembers.add(creator);
         
         GroupChat entity = new GroupChat();
         entity.setName(name);
@@ -87,7 +87,7 @@ public class ChatServiceImpl implements ChatService {
     }
     
     @Override
-    public Chat updateGroupMembers(Long id, Long ownerId, List<User> members) {
+    public Chat updateGroupMembers(Long id, Long ownerId, Set<User> members) {
         GroupChat entity = findGroupByIdAndOwnerId(id, ownerId);
         User owner = entity.getOwner();
         
@@ -95,7 +95,7 @@ public class ChatServiceImpl implements ChatService {
             throw new IllegalActionException("illegalAction.chat.group.removeOwner", id, ownerId);
         }
         
-        List<User> finalMembers = new ArrayList<>();
+        Set<User> finalMembers = new HashSet<>();
         
         for (User member : members) {
             if (entity.hasMember(member)) {
@@ -133,8 +133,8 @@ public class ChatServiceImpl implements ChatService {
         if (entity.isOwner(member)) {
             throw new IllegalActionException("illegalAction.chat.group.leaveOwner", id, member.getId());
         }
-        
-        List<User> finalMembers = new ArrayList<>(entity.getMembers());
+    
+        Set<User> finalMembers = new HashSet<>(entity.getMembers());
         finalMembers.remove(member);
         entity.setMembers(finalMembers);
         baseRepository.save(entity);
@@ -148,8 +148,8 @@ public class ChatServiceImpl implements ChatService {
     
     @Override
     public Page<User> getMembers(Long id, User user, Pageable pageable) {
-        List<User> members = this.findByIdAndUser(id, user).getMembers();
-        return new PageImpl<>(members, pageable, members.size());
+        Set<User> members = this.findByIdAndUser(id, user).getMembers();
+        return new PageImpl<>(new ArrayList<>(members), pageable, members.size());
     }
     
     @Override
