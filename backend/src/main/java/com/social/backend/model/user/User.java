@@ -2,6 +2,7 @@ package com.social.backend.model.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -74,10 +75,7 @@ public class User {
     
     @Transient
     public boolean hasFriendship(User user) {
-        Long id = user.getId();
-        return friends.stream()
-                .map(User::getId)
-                .anyMatch(id::equals);
+        return friends.contains(user);
     }
     
     @Transient
@@ -93,6 +91,24 @@ public class User {
     @Transient
     public boolean isPrivate() {
         return Publicity.PRIVATE == publicity;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return Objects.equals(email, user.email)
+                && Objects.equals(username, user.username);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(email, username);
     }
     
     public User setId(Long id) {

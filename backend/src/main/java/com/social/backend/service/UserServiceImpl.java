@@ -151,16 +151,7 @@ public class UserServiceImpl implements UserService {
     @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
     private static List<User> removeFriend(User user, User target) {
         List<User> friends = new ArrayList<>(user.getFriends());
-        
-        for (int i = 0; i < friends.size(); i++) {
-            User friend = friends.get(i);
-            
-            if (Objects.equals(friend.getId(), target.getId())) {
-                friends.remove(i);
-                break;
-            }
-        }
-        
+        friends.remove(target);
         return friends;
     }
 }

@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.time.ZonedDateTime;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,16 +29,12 @@ public class CommentServiceImpl implements CommentService {
     public Comment create(Post post, User author, String body) {
         User postAuthor = post.getAuthor();
     
-        if (postAuthor.isPrivate()) {
-            if (!Objects.equals(postAuthor.getId(), author.getId())) {
-                throw new IllegalActionException("illegalAction.comment.privatePost");
-            }
+        if (postAuthor.isPrivate() && !postAuthor.equals(author)) {
+            throw new IllegalActionException("illegalAction.comment.privatePost");
         }
     
-        if (postAuthor.isInternal()) {
-            if (!postAuthor.hasFriendship(author)) {
-                throw new IllegalActionException("illegalAction.comment.internalPost");
-            }
+        if (postAuthor.isInternal() && !postAuthor.hasFriendship(author)) {
+            throw new IllegalActionException("illegalAction.comment.internalPost");
         }
     
         Comment entity = new Comment();
