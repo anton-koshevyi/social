@@ -40,7 +40,8 @@ public class CommentController {
     @GetMapping("/post/{postId}/comments")
     public Page<Comment> postAll(@PathVariable Long postId,
                                  Pageable pageable) {
-        return commentService.findAllByPostId(postId, pageable);
+        Post post = postService.findById(postId);
+        return commentService.findAllByPost(post, pageable);
     }
     
     @PostMapping("/post/{postId}/comments")
@@ -57,13 +58,15 @@ public class CommentController {
     public Comment updated(@PathVariable Long id,
                            @AuthenticationPrincipal(expression = "id") Long userId,
                            @Valid @RequestBody ContentDto dto) {
+        User author = userService.findById(userId);
         String body = dto.getBody();
-        return commentService.update(id, userId, body);
+        return commentService.update(id, author, body);
     }
     
     @DeleteMapping("/post/{postId}/comments/{id}")
     public void delete(@PathVariable Long id,
                        @AuthenticationPrincipal(expression = "id") Long userId) {
-        commentService.delete(id, userId);
+        User author = userService.findById(userId);
+        commentService.delete(id, author);
     }
 }

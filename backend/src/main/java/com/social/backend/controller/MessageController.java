@@ -39,8 +39,11 @@ public class MessageController {
     
     @GetMapping("/chats/{chatId}/messages")
     public Page<Message> chatAll(@PathVariable Long chatId,
+                                 @AuthenticationPrincipal(expression = "id") Long userId,
                                  Pageable pageable) {
-        return messageService.findAllByChatId(chatId, pageable);
+        User member = userService.findById(userId);
+        Chat chat = chatService.findByIdAndMember(chatId, member);
+        return messageService.findAllByChat(chat, pageable);
     }
     
     @PostMapping("/chats/{chatId}/messages")
@@ -48,7 +51,7 @@ public class MessageController {
                            @AuthenticationPrincipal(expression = "id") Long userId,
                            @Valid @RequestBody ContentDto dto) {
         User author = userService.findById(userId);
-        Chat chat = chatService.findByIdAndUser(chatId, author);
+        Chat chat = chatService.findByIdAndMember(chatId, author);
         String body = dto.getBody();
         return messageService.create(chat, author, body);
     }
@@ -57,13 +60,15 @@ public class MessageController {
     public Message updated(@PathVariable Long id,
                            @AuthenticationPrincipal(expression = "id") Long userId,
                            @Valid @RequestBody ContentDto dto) {
+        User author = userService.findById(userId);
         String body = dto.getBody();
-        return messageService.update(id, userId, body);
+        return messageService.update(id, author, body);
     }
     
     @DeleteMapping("/chats/{chatId}/messages/{id}")
     public void delete(@PathVariable Long id,
                        @AuthenticationPrincipal(expression = "id") Long userId) {
-        messageService.delete(id, userId);
+        User author = userService.findById(userId);
+        messageService.delete(id, author);
     }
 }

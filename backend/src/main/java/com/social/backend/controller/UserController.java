@@ -62,7 +62,8 @@ public class UserController {
     @GetMapping("/users/{id}/posts")
     public Page<Post> userPosts(@PathVariable Long id,
                                 Pageable pageable) {
-        return postService.findAllByAuthorId(id, pageable);
+        User author = userService.findById(id);
+        return postService.findAllByAuthor(author, pageable);
     }
     
     @PostMapping("/users/{id}/chats")

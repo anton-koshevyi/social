@@ -53,13 +53,15 @@ public class PostController {
     public Post updated(@PathVariable Long id,
                         @AuthenticationPrincipal(expression = "id") Long userId,
                         @Valid @RequestBody ContentDto dto) {
+        User author = userService.findById(userId);
         String body = dto.getBody();
-        return postService.update(id, userId, body);
+        return postService.update(id, author, body);
     }
     
     @DeleteMapping("/posts/{id}")
     public void delete(@PathVariable Long id,
                        @AuthenticationPrincipal(expression = "id") Long userId) {
-        postService.delete(id, userId);
+        User author = userService.findById(userId);
+        postService.delete(id, author);
     }
 }
