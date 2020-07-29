@@ -1,7 +1,13 @@
 package com.social.backend.controller.advice;
 
+import java.util.Arrays;
+import java.util.List;
+
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -69,11 +75,30 @@ public class SafeResponseBodyAdviceTest {
                 .setControllerAdvice(new HandledType())
                 .alwaysDo(MockMvcResultHandlers.log())
                 .build());
-        
+    
         RestAssuredMockMvc
                 .get("/test")
                 .then()
                 .body(equalTo("changed string"));
+    }
+    
+    @Test
+    public void when_handleTypeIsIterableWithTarget_then_processBodyOfItem() throws JSONException {
+        RestAssuredMockMvc.mockMvc(MockMvcBuilders
+                .standaloneSetup(new TestController())
+                .setControllerAdvice(new HandledType())
+                .alwaysDo(MockMvcResultHandlers.log())
+                .build());
+        
+        String actual = RestAssuredMockMvc
+                .get("/iterable")
+                .asString();
+        
+        String expected = "["
+                + "'changed string',"
+                + "1"
+                + "]";
+        JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
     }
     
     @Controller
@@ -86,6 +111,12 @@ public class SafeResponseBodyAdviceTest {
         @GetMapping("/test")
         private ResponseEntity<String> test() {
             return ResponseEntity.ok("string");
+        }
+        
+        @ResponseBody
+        @GetMapping("/iterable")
+        private List<?> iterable() {
+            return Arrays.asList("string", 1);
         }
     }
     

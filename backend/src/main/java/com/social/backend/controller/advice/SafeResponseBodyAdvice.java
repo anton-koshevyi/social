@@ -1,5 +1,8 @@
 package com.social.backend.controller.advice;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,7 @@ public abstract class SafeResponseBodyAdvice<T, R> implements ResponseBodyAdvice
         return true;
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS", "unchecked"})
     @Override
     public final Object beforeBodyWrite(Object body,
                                         MethodParameter returnType,
@@ -57,19 +60,34 @@ public abstract class SafeResponseBodyAdvice<T, R> implements ResponseBodyAdvice
         Class<?> expectedType = types[0];
         Class<?> actualType = body.getClass();
         
-        if (!expectedType.isAssignableFrom(actualType)) {
-            logger.debug("Expected type '{}' neither equal nor parent of body of type '{}'", expectedType, actualType);
-            return body;
+        if (expectedType.isAssignableFrom(actualType)) {
+            logger.debug("Processing body of type '{}'", actualType);
+            return this.beforeBodyWriteSafely(
+                    (T) body,
+                    returnType,
+                    selectedContentType,
+                    selectedConverterType,
+                    request,
+                    response
+            );
         }
         
-        logger.debug("Processing body of type '{}'", actualType);
-        return this.beforeBodyWriteSafely(
-                (T) body,
-                returnType,
-                selectedContentType,
-                selectedConverterType,
-                request,
-                response
-        );
+        // TODO: Fix missing pagination metadata
+        
+        if (Iterable.class.isAssignableFrom(actualType)) {
+            logger.debug("Processing collection of type '{}'", actualType);
+            Iterable<?> iterable = (Iterable<?>) body;
+            List<Object> objects = new ArrayList<>();
+            
+            for (Object item : iterable) {
+                objects.add(this.beforeBodyWrite(
+                        item, returnType, selectedContentType, selectedConverterType, request, response));
+            }
+            
+            return objects;
+        }
+        
+        logger.debug("Expected type '{}' neither equal nor parent of body of type '{}'", expectedType, actualType);
+        return body;
     }
 }
