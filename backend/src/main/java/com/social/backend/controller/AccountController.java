@@ -46,7 +46,7 @@ public class AccountController {
         String password = dto.getPassword();
         
         User account = userService.create(email, username, firstName, lastName, password);
-        request.login(dto.getUsername(), dto.getPassword());
+        request.login(username, password);
         return account;
     }
     
