@@ -2,18 +2,18 @@ package com.social.backend.dto;
 
 import org.springframework.stereotype.Component;
 
-import com.social.backend.dto.user.ResponseDto;
+import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.User;
 
 @Component
-public class UserMapper implements ResponseMapper<User, ResponseDto> {
+public class UserMapper implements ResponseMapper<User, UserDto> {
     @Override
-    public ResponseDto map(User source) {
+    public UserDto map(User source) {
         if (source == null) {
             return null;
         }
         
-        return new ResponseDto()
+        return new UserDto()
                 .setId(source.getId())
                 .setEmail(source.getEmail())
                 .setUsername(source.getUsername())
@@ -25,7 +25,7 @@ public class UserMapper implements ResponseMapper<User, ResponseDto> {
     }
     
     @Override
-    public ResponseDto mapHidden(User source) {
+    public UserDto mapHidden(User source) {
         return this.map(source)
                 .setEmail(null);
     }

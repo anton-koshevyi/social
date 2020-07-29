@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.social.backend.config.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.ResponseMapper;
-import com.social.backend.dto.user.ResponseDto;
+import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
@@ -36,7 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 @ExtendWith(SpringExtension.class)
 public class UserResponseAdviceTest {
     @Mock
-    private ResponseMapper<User, ResponseDto> responseMapper;
+    private ResponseMapper<User, UserDto> responseMapper;
     
     @BeforeEach
     public void setUp() {
@@ -53,7 +53,7 @@ public class UserResponseAdviceTest {
     public void given_notPublicPublicity_when_nullAuthentication_then_hiddenBody() {
         Mockito.when(responseMapper.mapHidden(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -66,7 +66,7 @@ public class UserResponseAdviceTest {
     public void given_publicPublicity_when_anyRequest_then_regularBody() {
         Mockito.when(responseMapper.map(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -79,7 +79,7 @@ public class UserResponseAdviceTest {
     public void given_privatePublicity_when_principalIsNotIdentified_then_hiddenBodyByDefault() {
         Mockito.when(responseMapper.mapHidden(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -99,7 +99,7 @@ public class UserResponseAdviceTest {
     public void given_privatePublicity_when_principalAndBodyAreNotEqual_then_hiddenBody() {
         Mockito.when(responseMapper.mapHidden(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -120,7 +120,7 @@ public class UserResponseAdviceTest {
     public void given_privatePublicity_when_principalAndBodyAreEqual_then_regularBodyForOwner() {
         Mockito.when(responseMapper.map(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -142,7 +142,7 @@ public class UserResponseAdviceTest {
     public void given_internalPublicity_when_anonymousRequest_then_hiddenBody() {
         Mockito.when(responseMapper.mapHidden(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -156,7 +156,7 @@ public class UserResponseAdviceTest {
     public void given_internalPublicity_when_authenticatedRequest_then_regularBody() {
         Mockito.when(responseMapper.map(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -171,7 +171,7 @@ public class UserResponseAdviceTest {
     public void given_anyPublicity_when_administrationRequest_then_extendedBody(String endpoint) {
         Mockito.when(responseMapper.mapExtended(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc
@@ -185,7 +185,7 @@ public class UserResponseAdviceTest {
     public void given_privatePublicity_when_notOwnerNorAdministrationRequest_hiddenBody() {
         Mockito.when(responseMapper.mapHidden(
                 any(User.class)
-        )).thenReturn(new ResponseDto()
+        )).thenReturn(new UserDto()
                 .setUsername("mocked"));
         
         RestAssuredMockMvc

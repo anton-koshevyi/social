@@ -15,25 +15,25 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import com.social.backend.config.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.ResponseMapper;
-import com.social.backend.dto.user.ResponseDto;
+import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.User;
 import com.social.backend.util.AuthenticationUtil;
 
 @ControllerAdvice
-public class UserResponseAdvice extends SafeResponseBodyAdvice<User, ResponseDto> {
+public class UserResponseAdvice extends SafeResponseBodyAdvice<User, UserDto> {
     @Autowired
-    public UserResponseAdvice(ResponseMapper<User, ResponseDto> responseMapper) {
+    public UserResponseAdvice(ResponseMapper<User, UserDto> responseMapper) {
         super(responseMapper);
     }
     
     @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
     @Override
-    public ResponseDto beforeBodyWriteSafely(User user,
-                                             MethodParameter returnType,
-                                             MediaType selectedContentType,
-                                             Class<? extends HttpMessageConverter<?>> selectedConverterType,
-                                             ServerHttpRequest request,
-                                             ServerHttpResponse response) {
+    public UserDto beforeBodyWriteSafely(User user,
+                                         MethodParameter returnType,
+                                         MediaType selectedContentType,
+                                         Class<? extends HttpMessageConverter<?>> selectedConverterType,
+                                         ServerHttpRequest request,
+                                         ServerHttpResponse response) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         if (authentication == null) {
