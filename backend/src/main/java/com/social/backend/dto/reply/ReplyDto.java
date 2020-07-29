@@ -2,42 +2,42 @@ package com.social.backend.dto.reply;
 
 import java.time.ZonedDateTime;
 
-import com.social.backend.model.user.User;
+import com.social.backend.dto.user.UserDto;
 
-public abstract class ResponseDto {
+public abstract class ReplyDto {
     private Long id;
     private ZonedDateTime creationDate;
     private ZonedDateTime updateDate;
     private Boolean updated;
     private String body;
-    private User author;
+    private UserDto author;
     
-    public ResponseDto setId(Long id) {
+    public ReplyDto setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public ResponseDto setCreationDate(ZonedDateTime creationDate) {
+    public ReplyDto setCreationDate(ZonedDateTime creationDate) {
         this.creationDate = creationDate;
         return this;
     }
     
-    public ResponseDto setUpdateDate(ZonedDateTime updateDate) {
+    public ReplyDto setUpdateDate(ZonedDateTime updateDate) {
         this.updateDate = updateDate;
         return this;
     }
     
-    public ResponseDto setUpdated(Boolean updated) {
+    public ReplyDto setUpdated(Boolean updated) {
         this.updated = updated;
         return this;
     }
     
-    public ResponseDto setBody(String body) {
+    public ReplyDto setBody(String body) {
         this.body = body;
         return this;
     }
     
-    public ResponseDto setAuthor(User author) {
+    public ReplyDto setAuthor(UserDto author) {
         this.author = author;
         return this;
     }
@@ -62,7 +62,7 @@ public abstract class ResponseDto {
         return body;
     }
     
-    public User getAuthor() {
+    public UserDto getAuthor() {
         return author;
     }
 }

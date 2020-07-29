@@ -2,48 +2,48 @@ package com.social.backend.dto.post;
 
 import java.time.ZonedDateTime;
 
-import com.social.backend.model.user.User;
+import com.social.backend.dto.user.UserDto;
 
-public class ResponseDto {
+public class PostDto {
     private Long id;
     private ZonedDateTime creationDate;
     private ZonedDateTime updateDate;
     private Boolean updated;
     private String body;
-    private User author;
+    private UserDto author;
     private Integer comments;
     
-    public ResponseDto setId(Long id) {
+    public PostDto setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public ResponseDto setCreationDate(ZonedDateTime creationDate) {
+    public PostDto setCreationDate(ZonedDateTime creationDate) {
         this.creationDate = creationDate;
         return this;
     }
     
-    public ResponseDto setUpdateDate(ZonedDateTime updateDate) {
+    public PostDto setUpdateDate(ZonedDateTime updateDate) {
         this.updateDate = updateDate;
         return this;
     }
     
-    public ResponseDto setUpdated(Boolean updated) {
+    public PostDto setUpdated(Boolean updated) {
         this.updated = updated;
         return this;
     }
     
-    public ResponseDto setBody(String body) {
+    public PostDto setBody(String body) {
         this.body = body;
         return this;
     }
     
-    public ResponseDto setAuthor(User author) {
+    public PostDto setAuthor(UserDto author) {
         this.author = author;
         return this;
     }
     
-    public ResponseDto setComments(Integer comments) {
+    public PostDto setComments(Integer comments) {
         this.comments = comments;
         return this;
     }
@@ -68,7 +68,7 @@ public class ResponseDto {
         return body;
     }
     
-    public User getAuthor() {
+    public UserDto getAuthor() {
         return author;
     }
     
