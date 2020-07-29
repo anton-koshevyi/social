@@ -32,27 +32,27 @@ public class PostController {
     }
     
     @GetMapping("/posts")
-    public Page<Post> all(Pageable pageable) {
+    public Page<Post> getAll(Pageable pageable) {
         return postService.findAll(pageable);
     }
     
     @PostMapping("/posts")
-    public Post created(@AuthenticationPrincipal(expression = "id") Long userId,
-                        @Valid @RequestBody ContentDto dto) {
+    public Post create(@AuthenticationPrincipal(expression = "id") Long userId,
+                       @Valid @RequestBody ContentDto dto) {
         User author = userService.findById(userId);
         String body = dto.getBody();
         return postService.create(author, body);
     }
     
     @GetMapping("/posts/{id}")
-    public Post postById(@PathVariable Long id) {
+    public Post get(@PathVariable Long id) {
         return postService.findById(id);
     }
     
     @PatchMapping("/posts/{id}")
-    public Post updated(@PathVariable Long id,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Valid @RequestBody ContentDto dto) {
+    public Post update(@PathVariable Long id,
+                       @AuthenticationPrincipal(expression = "id") Long userId,
+                       @Valid @RequestBody ContentDto dto) {
         // TODO: Implement as PATCH-request
         User author = userService.findById(userId);
         String body = dto.getBody();

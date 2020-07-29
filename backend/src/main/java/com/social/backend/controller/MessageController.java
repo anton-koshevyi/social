@@ -38,18 +38,18 @@ public class MessageController {
     }
     
     @GetMapping("/chats/{chatId}/messages")
-    public Page<Message> chatAll(@PathVariable Long chatId,
-                                 @AuthenticationPrincipal(expression = "id") Long userId,
-                                 Pageable pageable) {
+    public Page<Message> getAll(@PathVariable Long chatId,
+                                @AuthenticationPrincipal(expression = "id") Long userId,
+                                Pageable pageable) {
         User member = userService.findById(userId);
         Chat chat = chatService.findByIdAndMember(chatId, member);
         return messageService.findAllByChat(chat, pageable);
     }
     
     @PostMapping("/chats/{chatId}/messages")
-    public Message created(@PathVariable Long chatId,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
-                           @Valid @RequestBody ContentDto dto) {
+    public Message create(@PathVariable Long chatId,
+                          @AuthenticationPrincipal(expression = "id") Long userId,
+                          @Valid @RequestBody ContentDto dto) {
         User author = userService.findById(userId);
         Chat chat = chatService.findByIdAndMember(chatId, author);
         String body = dto.getBody();
@@ -57,9 +57,9 @@ public class MessageController {
     }
     
     @PatchMapping("/chats/{chatId}/messages/{id}")
-    public Message updated(@PathVariable Long id,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
-                           @Valid @RequestBody ContentDto dto) {
+    public Message update(@PathVariable Long id,
+                          @AuthenticationPrincipal(expression = "id") Long userId,
+                          @Valid @RequestBody ContentDto dto) {
         // TODO: Implement as PATCH-request
         User author = userService.findById(userId);
         String body = dto.getBody();

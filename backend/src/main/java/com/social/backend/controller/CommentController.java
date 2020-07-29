@@ -38,16 +38,16 @@ public class CommentController {
     }
     
     @GetMapping("/post/{postId}/comments")
-    public Page<Comment> postAll(@PathVariable Long postId,
-                                 Pageable pageable) {
+    public Page<Comment> getAll(@PathVariable Long postId,
+                                Pageable pageable) {
         Post post = postService.findById(postId);
         return commentService.findAllByPost(post, pageable);
     }
     
     @PostMapping("/post/{postId}/comments")
-    public Comment created(@PathVariable Long postId,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
-                           @Valid @RequestBody ContentDto dto) {
+    public Comment create(@PathVariable Long postId,
+                          @AuthenticationPrincipal(expression = "id") Long userId,
+                          @Valid @RequestBody ContentDto dto) {
         Post post = postService.findById(postId);
         User author = userService.findById(userId);
         String body = dto.getBody();
@@ -55,9 +55,9 @@ public class CommentController {
     }
     
     @PatchMapping("/post/{postId}/comments/{id}")
-    public Comment updated(@PathVariable Long id,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
-                           @Valid @RequestBody ContentDto dto) {
+    public Comment update(@PathVariable Long id,
+                          @AuthenticationPrincipal(expression = "id") Long userId,
+                          @Valid @RequestBody ContentDto dto) {
         // TODO: Implement as PATCH-request
         User author = userService.findById(userId);
         String body = dto.getBody();

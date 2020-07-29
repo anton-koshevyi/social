@@ -38,23 +38,23 @@ public class ChatController {
     }
     
     @GetMapping("/chats")
-    public Page<Chat> userAll(@AuthenticationPrincipal(expression = "id") Long userId,
-                              Pageable pageable) {
+    public Page<Chat> getAll(@AuthenticationPrincipal(expression = "id") Long userId,
+                             Pageable pageable) {
         User member = userService.findById(userId);
         return chatService.findAllByMember(member, pageable);
     }
     
     @GetMapping("/chats/{id}")
-    public Chat chatByIdAndMember(@PathVariable Long id,
-                                  @AuthenticationPrincipal(expression = "id") Long userId) {
+    public Chat get(@PathVariable Long id,
+                    @AuthenticationPrincipal(expression = "id") Long userId) {
         User member = userService.findById(userId);
         return chatService.findByIdAndMember(id, member);
     }
     
     @GetMapping("/chats/{id}/members")
-    public Page<User> members(@PathVariable("id") Long id,
-                              @AuthenticationPrincipal(expression = "id") Long userId,
-                              Pageable pageable) {
+    public Page<User> getMembers(@PathVariable("id") Long id,
+                                 @AuthenticationPrincipal(expression = "id") Long userId,
+                                 Pageable pageable) {
         User member = userService.findById(userId);
         return chatService.getMembers(id, member, pageable);
     }
@@ -67,8 +67,8 @@ public class ChatController {
     }
     
     @PostMapping("/chats/group")
-    public Chat group(@AuthenticationPrincipal(expression = "id") Long userId,
-                      @Valid @RequestBody CreateGroupDto dto) {
+    public Chat createGroup(@AuthenticationPrincipal(expression = "id") Long userId,
+                            @Valid @RequestBody CreateGroupDto dto) {
         User creator = userService.findById(userId);
         String name = dto.getName();
         Set<User> members = findUsersByIds(dto.getMemberIds());
@@ -76,9 +76,9 @@ public class ChatController {
     }
     
     @PatchMapping("/chats/group/{id}")
-    public Chat updatedGroup(@PathVariable Long id,
-                             @AuthenticationPrincipal(expression = "id") Long userId,
-                             @Valid @RequestBody UpdateGroupDto dto) {
+    public Chat updateGroup(@PathVariable Long id,
+                            @AuthenticationPrincipal(expression = "id") Long userId,
+                            @Valid @RequestBody UpdateGroupDto dto) {
         // TODO: Implement as PATCH-request
         User member = userService.findById(userId);
         String name = dto.getName();
@@ -100,18 +100,18 @@ public class ChatController {
     }
     
     @PutMapping("/chats/group/{id}/members")
-    public Chat updatedGroupMembers(@PathVariable Long id,
-                                    @AuthenticationPrincipal(expression = "id") Long userId,
-                                    @Valid @RequestBody UpdateGroupMembersDto dto) {
+    public Chat updateGroupMembers(@PathVariable Long id,
+                                   @AuthenticationPrincipal(expression = "id") Long userId,
+                                   @Valid @RequestBody UpdateGroupMembersDto dto) {
         User member = userService.findById(userId);
         Set<User> members = findUsersByIds(dto.getMemberIds());
         return chatService.updateGroupMembers(id, member, members);
     }
     
     @PutMapping("/chats/group/{id}/members/{newOwnerId}")
-    public Chat newOwner(@PathVariable Long id,
-                         @AuthenticationPrincipal(expression = "id") Long userId,
-                         @PathVariable Long newOwnerId) {
+    public Chat changeOwner(@PathVariable Long id,
+                            @AuthenticationPrincipal(expression = "id") Long userId,
+                            @PathVariable Long newOwnerId) {
         User owner = userService.findById(userId);
         User newOwner = userService.findById(newOwnerId);
         return chatService.setOwner(id, owner, newOwner);

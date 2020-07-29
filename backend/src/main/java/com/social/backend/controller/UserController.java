@@ -32,18 +32,18 @@ public class UserController {
     }
     
     @GetMapping("/users")
-    public Page<User> users(Pageable pageable) {
+    public Page<User> getAll(Pageable pageable) {
         return userService.findAll(pageable);
     }
     
     @GetMapping("/users/{id}")
-    public User userById(@PathVariable Long id) {
+    public User get(@PathVariable Long id) {
         return userService.findById(id);
     }
     
     @GetMapping("/users/{id}/friends")
-    public Page<User> userFriends(@PathVariable Long id,
-                                  Pageable pageable) {
+    public Page<User> getFriends(@PathVariable Long id,
+                                 Pageable pageable) {
         return userService.getFriends(id, pageable);
     }
     
@@ -60,15 +60,15 @@ public class UserController {
     }
     
     @GetMapping("/users/{id}/posts")
-    public Page<Post> userPosts(@PathVariable Long id,
-                                Pageable pageable) {
+    public Page<Post> getPosts(@PathVariable Long id,
+                               Pageable pageable) {
         User author = userService.findById(id);
         return postService.findAllByAuthor(author, pageable);
     }
     
     @PostMapping("/users/{id}/chats")
-    public Chat privateChat(@AuthenticationPrincipal(expression = "id") Long userId,
-                            @PathVariable("id") Long targetId) {
+    public Chat createPrivateChat(@AuthenticationPrincipal(expression = "id") Long userId,
+                                  @PathVariable("id") Long targetId) {
         User user = userService.findById(userId);
         User target = userService.findById(targetId);
         return chatService.createPrivate(user, target);

@@ -32,13 +32,13 @@ public class AccountController {
     }
     
     @GetMapping("/account")
-    public User account(@AuthenticationPrincipal(expression = "id") Long id) {
+    public User get(@AuthenticationPrincipal(expression = "id") Long id) {
         return userService.findById(id);
     }
     
     @PostMapping("/account")
-    public User created(@Valid @RequestBody CreateDto dto,
-                        HttpServletRequest request) throws ServletException {
+    public User create(@Valid @RequestBody CreateDto dto,
+                       HttpServletRequest request) throws ServletException {
         String email = dto.getEmail();
         String username = dto.getUsername();
         String firstName = dto.getFirstName();
@@ -51,8 +51,8 @@ public class AccountController {
     }
     
     @PatchMapping("/account")
-    public User updated(@AuthenticationPrincipal(expression = "id") Long id,
-                        @Valid @RequestBody UpdateDto dto) {
+    public User update(@AuthenticationPrincipal(expression = "id") Long id,
+                       @Valid @RequestBody UpdateDto dto) {
         // TODO: Implement as PATCH-request
         String email = dto.getEmail();
         String username = dto.getUsername();
@@ -78,8 +78,8 @@ public class AccountController {
     }
     
     @PatchMapping("/account/role")
-    public User updatedRole(@AuthenticationPrincipal(expression = "id") Long id,
-                            @Valid @RequestBody RoleDto dto) {
+    public User updateRole(@AuthenticationPrincipal(expression = "id") Long id,
+                           @Valid @RequestBody RoleDto dto) {
         // TODO: Implement as PATCH-request
         Boolean moder = dto.getModer();
         return userService.updateRole(id, moder);
