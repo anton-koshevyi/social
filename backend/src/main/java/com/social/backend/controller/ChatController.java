@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.social.backend.dto.chat.CreateGroupDto;
-import com.social.backend.dto.chat.UpdateGroupDto;
-import com.social.backend.dto.chat.UpdateGroupMembersDto;
+import com.social.backend.dto.chat.GroupCreateDto;
+import com.social.backend.dto.chat.GroupMembersDto;
+import com.social.backend.dto.chat.GroupUpdateDto;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
@@ -68,7 +68,7 @@ public class ChatController {
     
     @PostMapping("/chats/group")
     public Chat createGroup(@AuthenticationPrincipal(expression = "id") Long userId,
-                            @Valid @RequestBody CreateGroupDto dto) {
+                            @Valid @RequestBody GroupCreateDto dto) {
         User creator = userService.findById(userId);
         String name = dto.getName();
         Set<User> members = findUsersByIds(dto.getMemberIds());
@@ -78,7 +78,7 @@ public class ChatController {
     @PatchMapping("/chats/group/{id}")
     public Chat updateGroup(@PathVariable Long id,
                             @AuthenticationPrincipal(expression = "id") Long userId,
-                            @Valid @RequestBody UpdateGroupDto dto) {
+                            @Valid @RequestBody GroupUpdateDto dto) {
         // TODO: Implement as PATCH-request
         User member = userService.findById(userId);
         String name = dto.getName();
@@ -102,7 +102,7 @@ public class ChatController {
     @PutMapping("/chats/group/{id}/members")
     public Chat updateGroupMembers(@PathVariable Long id,
                                    @AuthenticationPrincipal(expression = "id") Long userId,
-                                   @Valid @RequestBody UpdateGroupMembersDto dto) {
+                                   @Valid @RequestBody GroupMembersDto dto) {
         User member = userService.findById(userId);
         Set<User> members = findUsersByIds(dto.getMemberIds());
         return chatService.updateGroupMembers(id, member, members);
