@@ -1,6 +1,6 @@
 package com.social.backend.dto.user;
 
-public class ResponseDto {
+public class UserDto {
     private Long id;
     private String email;
     private String username;
@@ -10,42 +10,42 @@ public class ResponseDto {
     private Boolean moder;
     private Boolean admin;
     
-    public ResponseDto setId(Long id) {
+    public UserDto setId(Long id) {
         this.id = id;
         return this;
     }
     
-    public ResponseDto setEmail(String email) {
+    public UserDto setEmail(String email) {
         this.email = email;
         return this;
     }
     
-    public ResponseDto setUsername(String username) {
+    public UserDto setUsername(String username) {
         this.username = username;
         return this;
     }
     
-    public ResponseDto setFirstName(String firstName) {
+    public UserDto setFirstName(String firstName) {
         this.firstName = firstName;
         return this;
     }
     
-    public ResponseDto setLastName(String lastName) {
+    public UserDto setLastName(String lastName) {
         this.lastName = lastName;
         return this;
     }
     
-    public ResponseDto setPublicity(Integer publicity) {
+    public UserDto setPublicity(Integer publicity) {
         this.publicity = publicity;
         return this;
     }
     
-    public ResponseDto setModer(Boolean moder) {
+    public UserDto setModer(Boolean moder) {
         this.moder = moder;
         return this;
     }
     
-    public ResponseDto setAdmin(Boolean admin) {
+    public UserDto setAdmin(Boolean admin) {
         this.admin = admin;
         return this;
     }
