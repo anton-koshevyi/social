@@ -1,15 +1,20 @@
 package com.social.backend.controller;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.dto.user.RoleDto;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -39,6 +44,14 @@ public class UserController {
     @GetMapping("/users/{id}")
     public User get(@PathVariable Long id) {
         return userService.findById(id);
+    }
+    
+    @PatchMapping("/users/{id}/roles")
+    public User updateRole(@AuthenticationPrincipal(expression = "id") Long id,
+                           @Valid @RequestBody RoleDto dto) {
+        // TODO: Implement as PATCH-request
+        Boolean moder = dto.getModer();
+        return userService.updateRole(id, moder);
     }
     
     @GetMapping("/users/{id}/friends")

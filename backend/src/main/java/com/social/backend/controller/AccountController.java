@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.social.backend.dto.user.CreateDto;
 import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
-import com.social.backend.dto.user.RoleDto;
 import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.model.user.User;
 import com.social.backend.service.UserService;
@@ -75,13 +74,5 @@ public class AccountController {
         String actual = dto.getActual();
         String change = dto.getChange();
         userService.changePassword(id, actual, change);
-    }
-    
-    @PatchMapping("/account/role")
-    public User updateRole(@AuthenticationPrincipal(expression = "id") Long id,
-                           @Valid @RequestBody RoleDto dto) {
-        // TODO: Implement as PATCH-request
-        Boolean moder = dto.getModer();
-        return userService.updateRole(id, moder);
     }
 }
