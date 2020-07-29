@@ -41,7 +41,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .antMatchers("/auth").anonymous()
                         .antMatchers("/logout").authenticated()
                         .antMatchers(HttpMethod.POST, "/account").anonymous()
-                        .antMatchers("/account", "/account/password").authenticated()
+                        .antMatchers("/account/**").authenticated()
+                        .antMatchers(HttpMethod.GET, "/posts/**").permitAll()
+                        .antMatchers("/posts/**").authenticated()
                         .anyRequest().authenticated())
                 .formLogin(c -> c
                         .loginProcessingUrl("/auth")
