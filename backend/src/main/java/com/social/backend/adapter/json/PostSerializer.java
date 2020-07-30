@@ -21,15 +21,16 @@ public class PostSerializer
         if (source == null) {
             return null;
         }
-        
+    
         ZonedDateTime updateDate = source.getUpdated();
-        return new PostDto()
-                .setId(source.getId())
-                .setCreationDate(source.getCreated())
-                .setUpdateDate(updateDate)
-                .setUpdated(updateDate != null)
-                .setBody(source.getBody())
-                .setComments(source.getComments().size())
-                .setAuthor(source.getAuthor());
+        PostDto dto = new PostDto();
+        dto.setId(source.getId());
+        dto.setCreationDate(source.getCreated());
+        dto.setUpdateDate(updateDate);
+        dto.setUpdated(updateDate != null);
+        dto.setBody(source.getBody());
+        dto.setComments(source.getComments().size());
+        dto.setAuthor(source.getAuthor());
+        return dto;
     }
 }

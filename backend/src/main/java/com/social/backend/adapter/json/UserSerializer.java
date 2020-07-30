@@ -67,21 +67,23 @@ public class UserSerializer
         if (source == null) {
             return null;
         }
-        
-        return new UserDto()
-                .setId(source.getId())
-                .setEmail(source.getEmail())
-                .setUsername(source.getUsername())
-                .setFirstName(source.getFirstName())
-                .setLastName(source.getLastName())
-                .setPublicity(source.getPublicity())
-                .setModer(source.isModer())
-                .setAdmin(source.isAdmin());
+    
+        UserDto dto = new UserDto();
+        dto.setId(source.getId());
+        dto.setEmail(source.getEmail());
+        dto.setUsername(source.getUsername());
+        dto.setFirstName(source.getFirstName());
+        dto.setLastName(source.getLastName());
+        dto.setPublicity(source.getPublicity());
+        dto.setModer(source.isModer());
+        dto.setAdmin(source.isAdmin());
+        return dto;
     }
     
     @Override
     public UserDto mapHidden(User source) {
-        return this.map(source)
-                .setEmail(null);
+        UserDto dto = this.map(source);
+        dto.setEmail(null);
+        return dto;
     }
 }

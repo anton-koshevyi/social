@@ -21,15 +21,16 @@ public class CommentSerializer
         if (source == null) {
             return null;
         }
-        
+    
         ZonedDateTime updateDate = source.getUpdated();
-        return (CommentDto) new CommentDto()
-                .setPost(source.getPost())
-                .setAuthor(source.getAuthor())
-                .setId(source.getId())
-                .setCreationDate(source.getCreated())
-                .setUpdateDate(updateDate)
-                .setUpdated(updateDate != null)
-                .setBody(source.getBody());
+        CommentDto dto = new CommentDto();
+        dto.setId(source.getId());
+        dto.setCreationDate(source.getCreated());
+        dto.setUpdateDate(updateDate);
+        dto.setUpdated(updateDate != null);
+        dto.setBody(source.getBody());
+        dto.setPost(source.getPost());
+        dto.setAuthor(source.getAuthor());
+        return dto;
     }
 }
