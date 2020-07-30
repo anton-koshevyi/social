@@ -1,16 +1,16 @@
 package com.social.backend.dto.reply;
 
-import com.social.backend.dto.post.PostDto;
+import com.social.backend.model.post.Post;
 
 public class CommentDto extends ReplyDto {
-    private PostDto post;
+    private Post post;
     
-    public CommentDto setPost(PostDto post) {
+    public CommentDto setPost(Post post) {
         this.post = post;
         return this;
     }
     
-    public PostDto getPost() {
+    public Post getPost() {
         return post;
     }
 }

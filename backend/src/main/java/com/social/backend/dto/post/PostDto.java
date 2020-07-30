@@ -2,7 +2,7 @@ package com.social.backend.dto.post;
 
 import java.time.ZonedDateTime;
 
-import com.social.backend.dto.user.UserDto;
+import com.social.backend.model.user.User;
 
 public class PostDto {
     private Long id;
@@ -10,7 +10,7 @@ public class PostDto {
     private ZonedDateTime updateDate;
     private Boolean updated;
     private String body;
-    private UserDto author;
+    private User author;
     private Integer comments;
     
     public PostDto setId(Long id) {
@@ -38,7 +38,7 @@ public class PostDto {
         return this;
     }
     
-    public PostDto setAuthor(UserDto author) {
+    public PostDto setAuthor(User author) {
         this.author = author;
         return this;
     }
@@ -68,7 +68,7 @@ public class PostDto {
         return body;
     }
     
-    public UserDto getAuthor() {
+    public User getAuthor() {
         return author;
     }
     

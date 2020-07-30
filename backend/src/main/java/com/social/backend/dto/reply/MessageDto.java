@@ -1,16 +1,16 @@
 package com.social.backend.dto.reply;
 
-import com.social.backend.dto.chat.ChatDto;
+import com.social.backend.model.chat.Chat;
 
 public class MessageDto extends ReplyDto {
-    private ChatDto chat;
+    private Chat chat;
     
-    public MessageDto setChat(ChatDto chat) {
+    public MessageDto setChat(Chat chat) {
         this.chat = chat;
         return this;
     }
     
-    public ChatDto getChat() {
+    public Chat getChat() {
         return chat;
     }
 }
