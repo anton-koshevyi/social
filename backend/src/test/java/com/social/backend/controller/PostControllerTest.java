@@ -7,9 +7,9 @@ import io.restassured.authentication.FormAuthConfig;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -61,26 +61,27 @@ public class PostControllerTest {
     }
     
     @Test
-    @Disabled("Pagination metadata is absent")
     public void getAll() throws JSONException {
         User author = userRepository.save(user());
         postRepository.save(post()
                 .setAuthor(author));
-        
-        String actual = RestAssured
+    
+        String response = RestAssured
                 .get("/posts")
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)
                 .extract()
                 .asString();
-        
-        // TODO: Fix missing pagination metadata
-        
+        String actual = new JSONObject(response)
+                .getJSONArray("content")
+                .toString();
+    
         String expected = "[{"
                 + "id: 1,"
                 + "creationDate: (customized),"
                 + "updated: false,"
                 + "body: 'post body',"
+                + "comments: 0,"
                 + "author: {"
                 + "  id: 1,"
                 + "  username: 'username',"
@@ -89,11 +90,10 @@ public class PostControllerTest {
                 + "  publicity: 10,"
                 + "  moder: false,"
                 + "  admin: false"
-                + "},"
-                + "comments: 0"
+                + "}"
                 + "}]";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("[*].creationDate", (o1, o2) -> true)
+                customization("[*].creationDate", (act, exp) -> true)
         ));
     }
     
@@ -128,7 +128,7 @@ public class PostControllerTest {
                 + "path: '/posts'"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("timestamp", (o1, o2) -> true)
+                customization("timestamp", (act, exp) -> true)
         ));
     }
     
@@ -169,7 +169,7 @@ public class PostControllerTest {
                 + "comments: 0"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("creationDate", (o1, o2) -> true)
+                customization("creationDate", (act, exp) -> true)
         ));
     }
     
@@ -203,7 +203,7 @@ public class PostControllerTest {
                 + "comments: 0"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("creationDate", (o1, o2) -> true)
+                customization("creationDate", (act, exp) -> true)
         ));
     }
     
@@ -241,7 +241,7 @@ public class PostControllerTest {
                 + "path: '/posts/1'"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("timestamp", (o1, o2) -> true)
+                customization("timestamp", (act, exp) -> true)
         ));
     }
     
@@ -287,8 +287,8 @@ public class PostControllerTest {
                 + "comments: 0"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-                customization("creationDate", (o1, o2) -> true),
-                customization("updateDate", (o1, o2) -> true)
+                customization("creationDate", (act, exp) -> true),
+                customization("updateDate", (act, exp) -> true)
         ));
     }
     
