@@ -7,9 +7,9 @@ import io.restassured.authentication.FormAuthConfig;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
@@ -67,8 +67,58 @@ public class CommentControllerTest {
     }
     
     @Test
-    @Disabled("Pagination metadata is absent")
-    public void getAll() {
+    public void getAll() throws JSONException {
+        User author = userRepository.save(user());
+        Post post = postRepository.save(TestEntity.post()
+                .setAuthor(author));
+        commentRepository.save((Comment) comment()
+                .setPost(post)
+                .setAuthor(author));
+        
+        String response = RestAssured
+                .get("/posts/{postId}/comments", 1)
+                .then()
+                .statusCode(HttpServletResponse.SC_OK)
+                .extract()
+                .asString();
+        String actual = new JSONObject(response)
+                .getJSONArray("content")
+                .toString();
+        
+        String expected = "[{"
+                + "id: 1,"
+                + "creationDate: (customized),"
+                + "updated: false,"
+                + "body: 'comment body',"
+                + "author: {"
+                + "  id: 1,"
+                + "  username: 'username',"
+                + "  firstName: 'first',"
+                + "  lastName: 'last',"
+                + "  publicity: 10,"
+                + "  moder: false,"
+                + "  admin: false"
+                + "},"
+                + "post: {"
+                + "  id: 1,"
+                + "  creationDate: (customized),"
+                + "  updated: false,"
+                + "  body: 'post body',"
+                + "  comments: 1,"
+                + "  author: {"
+                + "    id: 1,"
+                + "    username: 'username',"
+                + "    firstName: 'first',"
+                + "    lastName: 'last',"
+                + "    publicity: 10,"
+                + "    moder: false,"
+                + "    admin: false"
+                + "  }"
+                + "}"
+                + "}]";
+        assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
+                customization("**.creationDate", (act, exp) -> true)
+        ));
     }
     
     @Test
@@ -87,7 +137,7 @@ public class CommentControllerTest {
                 .header("Content-Type", "application/json")
                 .body("{}")
                 .when()
-                .post("/post/{postId}/comments", 1)
+                .post("/posts/{postId}/comments", 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_BAD_REQUEST)
                 .extract()
@@ -101,7 +151,7 @@ public class CommentControllerTest {
                 + "errors: {"
                 + "  'body': ['must not be null']"
                 + "},"
-                + "path: '/post/1/comments'"
+                + "path: '/posts/1/comments'"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
                 customization("timestamp", (o1, o2) -> true)
@@ -124,7 +174,7 @@ public class CommentControllerTest {
                 .header("Content-Type", "application/json")
                 .body("{ \"body\": \"comment body\"}")
                 .when()
-                .post("/post/{postId}/comments", 1)
+                .post("/posts/{postId}/comments", 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)
                 .extract()
@@ -188,7 +238,7 @@ public class CommentControllerTest {
                 .header("Content-Type", "application/json")
                 .body("{}")
                 .when()
-                .patch("/post/{postId}/comments/{id}", 1, 1)
+                .patch("/posts/{postId}/comments/{id}", 1, 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_BAD_REQUEST)
                 .extract()
@@ -202,7 +252,7 @@ public class CommentControllerTest {
                 + "errors: {"
                 + "  'body': ['must not be null']"
                 + "},"
-                + "path: '/post/1/comments/1'"
+                + "path: '/posts/1/comments/1'"
                 + "}";
         assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
                 customization("timestamp", (o1, o2) -> true)
@@ -229,7 +279,7 @@ public class CommentControllerTest {
                 .header("Content-Type", "application/json")
                 .body("{ \"body\": \"new body\"}")
                 .when()
-                .patch("/post/{postId}/comments/{id}", 1, 1)
+                .patch("/posts/{postId}/comments/{id}", 1, 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)
                 .extract()
@@ -285,13 +335,13 @@ public class CommentControllerTest {
         commentRepository.save((Comment) comment()
                 .setPost(post)
                 .setAuthor(author));
-        
+    
         RestAssured
                 .given()
                 .auth()
                 .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
                 .when()
-                .delete("/post/{postId}/comments/{id}", 1, 1)
+                .delete("/posts/{postId}/comments/{id}", 1, 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK);
     }
