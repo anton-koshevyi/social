@@ -30,7 +30,7 @@ public class PostSerializerTest {
     }
     
     @Test
-    public void give_anyPost_when_anyRequest_then_regularBody()
+    public void given_anyPost_when_anyRequest_then_regularBody()
             throws IOException, JSONException {
         Post object = new Post()
                 .setId(1L)
@@ -38,7 +38,7 @@ public class PostSerializerTest {
                 .setUpdated(ZonedDateTime.now())
                 .setBody("body")
                 .setComments(Collections.emptyList());
-        
+    
         String actual = mapper.writeValueAsString(object);
         
         String expected = "{"
