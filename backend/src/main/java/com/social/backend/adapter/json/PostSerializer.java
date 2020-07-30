@@ -1,14 +1,21 @@
-package com.social.backend.dto;
+package com.social.backend.adapter.json;
 
 import java.time.ZonedDateTime;
 
-import org.springframework.stereotype.Component;
+import org.springframework.boot.jackson.JsonComponent;
 
 import com.social.backend.dto.post.PostDto;
 import com.social.backend.model.post.Post;
 
-@Component
-public class PostMapper implements ResponseMapper<Post, PostDto> {
+@JsonComponent
+public class PostSerializer
+        extends AbstractSerializer<Post>
+        implements EntityMapper<Post, PostDto> {
+    @Override
+    public Object beforeSerialize(Post post) {
+        return this.map(post);
+    }
+    
     @Override
     public PostDto map(Post source) {
         if (source == null) {
@@ -22,6 +29,7 @@ public class PostMapper implements ResponseMapper<Post, PostDto> {
                 .setUpdateDate(updateDate)
                 .setUpdated(updateDate != null)
                 .setBody(source.getBody())
-                .setComments(source.getComments().size());
+                .setComments(source.getComments().size())
+                .setAuthor(source.getAuthor());
     }
 }

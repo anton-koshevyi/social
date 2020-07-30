@@ -1,4 +1,4 @@
-package com.social.backend.dto;
+package com.social.backend.adapter.json;
 
 /**
  * Base interface for mapping of response. By default, maps entity to dto.
@@ -7,7 +7,7 @@ package com.social.backend.dto;
  * @param <T> Source (entity) type
  * @param <R> Target (dto) type
  */
-public interface ResponseMapper<T, R> {
+public interface EntityMapper<T, R> {
     /**
      * Return public entity data, available for all users or anonymous.
      */
