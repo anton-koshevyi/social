@@ -300,7 +300,6 @@ public class PostControllerTest {
                 .given()
                 .auth()
                 .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
-                .header("Content-Type", "application/json")
                 .when()
                 .delete("/posts/{id}", 1)
                 .then()
