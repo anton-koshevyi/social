@@ -37,14 +37,14 @@ public class CommentController {
         this.userService = userService;
     }
     
-    @GetMapping("/post/{postId}/comments")
+    @GetMapping("/posts/{postId}/comments")
     public Page<Comment> getAll(@PathVariable Long postId,
                                 Pageable pageable) {
         Post post = postService.findById(postId);
         return commentService.findAllByPost(post, pageable);
     }
     
-    @PostMapping("/post/{postId}/comments")
+    @PostMapping("/posts/{postId}/comments")
     public Comment create(@PathVariable Long postId,
                           @AuthenticationPrincipal(expression = "id") Long userId,
                           @Valid @RequestBody ContentDto dto) {
@@ -54,7 +54,7 @@ public class CommentController {
         return commentService.create(post, author, body);
     }
     
-    @PatchMapping("/post/{postId}/comments/{id}")
+    @PatchMapping("/posts/{postId}/comments/{id}")
     public Comment update(@PathVariable Long id,
                           @AuthenticationPrincipal(expression = "id") Long userId,
                           @Valid @RequestBody ContentDto dto) {
@@ -64,7 +64,7 @@ public class CommentController {
         return commentService.update(id, author, body);
     }
     
-    @DeleteMapping("/post/{postId}/comments/{id}")
+    @DeleteMapping("/posts/{postId}/comments/{id}")
     public void delete(@PathVariable Long id,
                        @AuthenticationPrincipal(expression = "id") Long userId) {
         User author = userService.findById(userId);
