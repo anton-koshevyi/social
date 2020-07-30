@@ -42,9 +42,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .antMatchers("/logout").authenticated()
                         .antMatchers(HttpMethod.POST, "/account").anonymous()
                         .antMatchers("/account/**").authenticated()
-                        .antMatchers(HttpMethod.GET, "/posts/**").permitAll()
-                        .antMatchers("/posts/**").authenticated()
-                        .anyRequest().authenticated())
+                        .antMatchers(HttpMethod.GET, "/posts", "/posts/{id}").permitAll()
+                        .antMatchers("/posts", "/posts/{id}").authenticated()
+                        .antMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
+                        .antMatchers("/posts/{postId}/comments",
+                                "/posts/{postId}/comments/{id}").authenticated()
+                        .anyRequest().denyAll())
                 .formLogin(c -> c
                         .loginProcessingUrl("/auth")
                         .usernameParameter("username")
