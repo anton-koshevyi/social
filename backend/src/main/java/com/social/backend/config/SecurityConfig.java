@@ -47,6 +47,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .antMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
                         .antMatchers("/posts/{postId}/comments/**").authenticated()
                         .antMatchers("/chats/**").authenticated()
+                        .antMatchers(HttpMethod.GET, "/users/**").permitAll()
+                        .antMatchers("/users/{id}/roles").hasAuthority(Authority.ADMIN)
+                        .antMatchers("/users/{id}/friends").authenticated()
+                        .antMatchers("/users/{id}/chats/private").authenticated()
                         .anyRequest().denyAll())
                 .formLogin(c -> c
                         .loginProcessingUrl("/auth")
