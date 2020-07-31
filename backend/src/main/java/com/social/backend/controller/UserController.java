@@ -79,7 +79,7 @@ public class UserController {
         return postService.findAllByAuthor(author, pageable);
     }
     
-    @PostMapping("/users/{id}/chats")
+    @PostMapping("/users/{id}/chats/private")
     public Chat createPrivateChat(@AuthenticationPrincipal(expression = "id") Long userId,
                                   @PathVariable("id") Long targetId) {
         User user = userService.findById(userId);
