@@ -8,7 +8,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
-import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.json.AbstractJsonMarshalTester;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -25,7 +25,7 @@ import static com.social.backend.TestEntity.user;
 @ComponentScan("com.social.backend.dto")
 public class ChatSerializerTest {
     @Autowired
-    private JacksonTester<Chat> tester;
+    private AbstractJsonMarshalTester<Chat> tester;
     
     @Test
     public void given_privateChat_when_anyRequest_then_regularBody() throws IOException {
