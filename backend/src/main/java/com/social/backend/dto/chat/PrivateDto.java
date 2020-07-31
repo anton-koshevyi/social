@@ -2,17 +2,17 @@ package com.social.backend.dto.chat;
 
 import java.util.List;
 
-import com.social.backend.dto.user.UserDto;
+import com.social.backend.model.user.User;
 
 public class PrivateDto extends ChatDto {
-    private List<UserDto> members;
+    private List<User> members;
     
-    public PrivateDto setMembers(List<UserDto> members) {
+    public PrivateDto setMembers(List<User> members) {
         this.members = members;
         return this;
     }
     
-    public List<UserDto> getMembers() {
+    public List<User> getMembers() {
         return members;
     }
 }

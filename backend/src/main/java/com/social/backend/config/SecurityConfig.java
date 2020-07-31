@@ -3,6 +3,7 @@ package com.social.backend.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,7 +40,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .requestMatchers(EndpointRequest.toAnyEndpoint()).hasAuthority(Authority.ADMIN)
                         .antMatchers("/auth").anonymous()
                         .antMatchers("/logout").authenticated()
-                        .anyRequest().authenticated())
+                        .antMatchers(HttpMethod.POST, "/account").anonymous()
+                        .antMatchers("/account/**").authenticated()
+                        .antMatchers(HttpMethod.GET, "/posts", "/posts/{id}").permitAll()
+                        .antMatchers("/posts", "/posts/{id}").authenticated()
+                        .antMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
+                        .antMatchers("/posts/{postId}/comments/**").authenticated()
+                        .antMatchers("/chats/**").authenticated()
+                        .antMatchers(HttpMethod.GET, "/users/**").permitAll()
+                        .antMatchers("/users/{id}/roles").hasAuthority(Authority.ADMIN)
+                        .antMatchers("/users/{id}/friends").authenticated()
+                        .antMatchers("/users/{id}/chats/private").authenticated()
+                        .anyRequest().denyAll())
                 .formLogin(c -> c
                         .loginProcessingUrl("/auth")
                         .usernameParameter("username")
