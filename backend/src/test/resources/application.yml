@@ -16,4 +16,4 @@ management:
     enabled-by-default: false
 logging:
   level:
-    com.social: debug
+    com.social.backend: debug

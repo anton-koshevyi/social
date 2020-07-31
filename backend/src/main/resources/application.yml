@@ -30,7 +30,7 @@ server:
     include-stacktrace: on_trace_param
 logging:
   level:
-    com.social: debug
+    com.social.backend: debug
 management:
   endpoints:
     web:
