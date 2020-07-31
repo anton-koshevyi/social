@@ -47,7 +47,7 @@ public class UserController {
     }
     
     @PatchMapping("/users/{id}/roles")
-    public User updateRole(@AuthenticationPrincipal(expression = "id") Long id,
+    public User updateRole(@PathVariable Long id,
                            @Valid @RequestBody RoleDto dto) {
         // TODO: Implement as PATCH-request
         Boolean moder = dto.getModer();
