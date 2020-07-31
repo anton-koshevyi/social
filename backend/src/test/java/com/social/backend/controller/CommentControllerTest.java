@@ -76,6 +76,9 @@ public class CommentControllerTest {
                 .setAuthor(author));
         
         String response = RestAssured
+                .given()
+                .header("Accept", "application/json")
+                .when()
                 .get("/posts/{postId}/comments", 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)

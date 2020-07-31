@@ -67,6 +67,9 @@ public class PostControllerTest {
                 .setAuthor(author));
     
         String response = RestAssured
+                .given()
+                .header("Accept", "application/json")
+                .when()
                 .get("/posts")
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)
@@ -180,6 +183,9 @@ public class PostControllerTest {
                 .setAuthor(author));
         
         String actual = RestAssured
+                .given()
+                .header("Accept", "application/json")
+                .when()
                 .get("/posts/{id}", 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)

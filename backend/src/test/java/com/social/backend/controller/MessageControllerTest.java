@@ -82,6 +82,7 @@ public class MessageControllerTest {
                 .given()
                 .auth()
                 .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+                .header("Accept", "application/json")
                 .get("/chats/{chatId}/messages", 1)
                 .then()
                 .statusCode(HttpServletResponse.SC_OK)
