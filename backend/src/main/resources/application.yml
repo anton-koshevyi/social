@@ -19,6 +19,8 @@ spring:
   datasource:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:dev
+  jpa:
+    generate-ddl: true
   flyway:
     locations: classpath:dev/db/migration
     clean-on-validation-error: true
@@ -26,6 +28,9 @@ server:
   error:
     include-exception: true
     include-stacktrace: on_trace_param
+logging:
+  level:
+    com.social.backend: debug
 management:
   endpoints:
     web:
