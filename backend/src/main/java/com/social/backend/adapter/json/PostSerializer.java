@@ -1,36 +1,23 @@
 package com.social.backend.adapter.json;
 
-import java.time.ZonedDateTime;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.JsonComponent;
 
+import com.social.backend.dto.EntityMapper;
 import com.social.backend.dto.post.PostDto;
 import com.social.backend.model.post.Post;
 
 @JsonComponent
-public class PostSerializer
-        extends AbstractSerializer<Post>
-        implements EntityMapper<Post, PostDto> {
-    @Override
-    public Object beforeSerialize(Post post) {
-        return this.map(post);
+public class PostSerializer extends AbstractSerializer<Post> {
+    private final EntityMapper<Post, PostDto> entityMapper;
+    
+    @Autowired
+    public PostSerializer(EntityMapper<Post, PostDto> entityMapper) {
+        this.entityMapper = entityMapper;
     }
     
     @Override
-    public PostDto map(Post source) {
-        if (source == null) {
-            return null;
-        }
-    
-        ZonedDateTime updateDate = source.getUpdated();
-        PostDto dto = new PostDto();
-        dto.setId(source.getId());
-        dto.setCreationDate(source.getCreated());
-        dto.setUpdateDate(updateDate);
-        dto.setUpdated(updateDate != null);
-        dto.setBody(source.getBody());
-        dto.setComments(source.getComments().size());
-        dto.setAuthor(source.getAuthor());
-        return dto;
+    public Object beforeSerialize(Post post) {
+        return entityMapper.map(post);
     }
 }

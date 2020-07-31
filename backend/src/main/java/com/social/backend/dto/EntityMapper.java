@@ -1,4 +1,4 @@
-package com.social.backend.adapter.json;
+package com.social.backend.dto;
 
 /**
  * Base interface for mapping of response. By default, maps entity to dto.
