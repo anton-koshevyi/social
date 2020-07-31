@@ -73,22 +73,35 @@ public class ChatSerializerTest {
         GroupChat chat = new GroupChat();
         chat.setId(1L);
         chat.setName("chat name");
+        chat.setOwner(user()
+                .setId(1L)
+                .setEmail("owner@mail.com")
+                .setUsername("owner"));
         chat.setMembers(Sets.newHashSet(
                 user()
                         .setId(1L)
-                        .setEmail("first@mail.com")
-                        .setUsername("first_user"),
+                        .setEmail("owner@mail.com")
+                        .setUsername("owner"),
                 user()
                         .setId(2L)
-                        .setEmail("second@mail.com")
-                        .setUsername("second_user")
+                        .setEmail("member@mail.com")
+                        .setUsername("member")
         ));
         
         String expected = "{"
                 + "id: 1,"
                 + "type: 'group',"
                 + "name: 'chat name',"
-                + "members: 2"
+                + "members: 2,"
+                + "owner: {"
+                + "  id: 1,"
+                + "  username: 'owner',"
+                + "  firstName: 'first',"
+                + "  lastName: 'last',"
+                + "  publicity: 10,"
+                + "  moder: false,"
+                + "  admin: false"
+                + "}"
                 + "}";
         assertThat(tester.write(chat))
                 .isEqualToJson(expected, JSONCompareMode.NON_EXTENSIBLE);
