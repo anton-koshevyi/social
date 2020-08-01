@@ -9,15 +9,17 @@ import com.social.backend.model.chat.Message;
 
 @JsonComponent
 public class MessageSerializer extends AbstractSerializer<Message> {
-    private final EntityMapper<Message, MessageDto> entityMapper;
-    
-    @Autowired
-    public MessageSerializer(EntityMapper<Message, MessageDto> entityMapper) {
-        this.entityMapper = entityMapper;
-    }
-    
-    @Override
-    public Object beforeSerialize(Message message) {
-        return entityMapper.map(message);
-    }
+  
+  private final EntityMapper<Message, MessageDto> entityMapper;
+  
+  @Autowired
+  public MessageSerializer(EntityMapper<Message, MessageDto> entityMapper) {
+    this.entityMapper = entityMapper;
+  }
+  
+  @Override
+  public Object beforeSerialize(Message message) {
+    return entityMapper.map(message);
+  }
+  
 }

@@ -9,15 +9,17 @@ import com.social.backend.model.post.Post;
 
 @JsonComponent
 public class PostSerializer extends AbstractSerializer<Post> {
-    private final EntityMapper<Post, PostDto> entityMapper;
-    
-    @Autowired
-    public PostSerializer(EntityMapper<Post, PostDto> entityMapper) {
-        this.entityMapper = entityMapper;
-    }
-    
-    @Override
-    public Object beforeSerialize(Post post) {
-        return entityMapper.map(post);
-    }
+  
+  private final EntityMapper<Post, PostDto> entityMapper;
+  
+  @Autowired
+  public PostSerializer(EntityMapper<Post, PostDto> entityMapper) {
+    this.entityMapper = entityMapper;
+  }
+  
+  @Override
+  public Object beforeSerialize(Post post) {
+    return entityMapper.map(post);
+  }
+  
 }

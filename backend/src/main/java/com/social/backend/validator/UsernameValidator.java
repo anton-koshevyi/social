@@ -11,15 +11,17 @@ import com.social.backend.repository.UserRepository;
 
 @Component
 public class UsernameValidator implements ConstraintValidator<Username, String> {
-    private final UserRepository userRepository;
-    
-    @Autowired
-    public UsernameValidator(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-    
-    @Override
-    public boolean isValid(String username, ConstraintValidatorContext context) {
-        return username == null || !userRepository.existsByUsername(username);
-    }
+  
+  private final UserRepository userRepository;
+  
+  @Autowired
+  public UsernameValidator(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+  
+  @Override
+  public boolean isValid(String username, ConstraintValidatorContext context) {
+    return username == null || !userRepository.existsByUsername(username);
+  }
+  
 }

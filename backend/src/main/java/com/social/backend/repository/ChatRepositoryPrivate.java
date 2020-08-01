@@ -6,5 +6,7 @@ import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
 
 public interface ChatRepositoryPrivate extends ChatRepositoryBase<PrivateChat> {
-    boolean existsByMembersIn(List<User> members);
+  
+  boolean existsByMembersIn(List<User> members);
+  
 }

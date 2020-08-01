@@ -11,7 +11,9 @@ import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    Optional<Message> findByIdAndAuthor(Long id, User author);
-    
-    Page<Message> findAllByChat(Chat chat, Pageable pageable);
+  
+  Optional<Message> findByIdAndAuthor(Long id, User author);
+  
+  Page<Message> findAllByChat(Chat chat, Pageable pageable);
+  
 }

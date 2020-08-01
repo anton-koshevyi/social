@@ -13,9 +13,11 @@ import com.social.backend.validator.PublicityValidator;
 @Target(ElementType.FIELD)
 @Constraint(validatedBy = PublicityValidator.class)
 public @interface Publicity {
-    String message() default "invalid publicity value";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "invalid publicity value";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

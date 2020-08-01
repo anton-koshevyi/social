@@ -19,61 +19,66 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    private final UserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+  
+  private final UserDetailsService userDetailsService;
+  private final PasswordEncoder passwordEncoder;
+  
+  @Autowired
+  public SecurityConfig(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    this.userDetailsService = userDetailsService;
+    this.passwordEncoder = passwordEncoder;
+  }
+  
+  @Bean
+  public static PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+  
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {
+    http.csrf(CsrfConfigurer::disable)
+        .authorizeRequests(c -> c
+            .requestMatchers(EndpointRequest.toAnyEndpoint()).hasAuthority(Authority.ADMIN)
+            .antMatchers("/auth").anonymous()
+            .antMatchers("/logout").authenticated()
+            .antMatchers(HttpMethod.POST, "/account").anonymous()
+            .antMatchers("/account/**").authenticated()
+            .antMatchers(HttpMethod.GET, "/posts", "/posts/{id}").permitAll()
+            .antMatchers("/posts", "/posts/{id}").authenticated()
+            .antMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
+            .antMatchers("/posts/{postId}/comments/**").authenticated()
+            .antMatchers("/chats/**").authenticated()
+            .antMatchers(HttpMethod.GET, "/users/**").permitAll()
+            .antMatchers("/users/{id}/roles").hasAuthority(Authority.ADMIN)
+            .antMatchers("/users/{id}/friends").authenticated()
+            .antMatchers("/users/{id}/chats/private").authenticated()
+            .anyRequest().denyAll())
+        .formLogin(c -> c
+            .loginProcessingUrl("/auth")
+            .usernameParameter("username")
+            .passwordParameter("password")
+            .successHandler(new SimpleUrlAuthenticationSuccessHandler("/account")))
+        .logout(c -> c
+            .logoutUrl("/logout")
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
+        .exceptionHandling(c -> c
+            .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+            .accessDeniedHandler(new AccessDeniedHandlerImpl()));
+  }
+  
+  @Override
+  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+  }
+  
+  public static final class Authority {
     
-    @Autowired
-    public SecurityConfig(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-        this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
+    public static final String MODER = "ROLE_MODER";
+    public static final String ADMIN = "ROLE_ADMIN";
+    
+    private Authority() {
     }
     
-    @Bean
-    public static PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.csrf(CsrfConfigurer::disable)
-                .authorizeRequests(c -> c
-                        .requestMatchers(EndpointRequest.toAnyEndpoint()).hasAuthority(Authority.ADMIN)
-                        .antMatchers("/auth").anonymous()
-                        .antMatchers("/logout").authenticated()
-                        .antMatchers(HttpMethod.POST, "/account").anonymous()
-                        .antMatchers("/account/**").authenticated()
-                        .antMatchers(HttpMethod.GET, "/posts", "/posts/{id}").permitAll()
-                        .antMatchers("/posts", "/posts/{id}").authenticated()
-                        .antMatchers(HttpMethod.GET, "/posts/{postId}/comments").permitAll()
-                        .antMatchers("/posts/{postId}/comments/**").authenticated()
-                        .antMatchers("/chats/**").authenticated()
-                        .antMatchers(HttpMethod.GET, "/users/**").permitAll()
-                        .antMatchers("/users/{id}/roles").hasAuthority(Authority.ADMIN)
-                        .antMatchers("/users/{id}/friends").authenticated()
-                        .antMatchers("/users/{id}/chats/private").authenticated()
-                        .anyRequest().denyAll())
-                .formLogin(c -> c
-                        .loginProcessingUrl("/auth")
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        .successHandler(new SimpleUrlAuthenticationSuccessHandler("/account")))
-                .logout(c -> c
-                        .logoutUrl("/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
-                .exceptionHandling(c -> c
-                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
-                        .accessDeniedHandler(new AccessDeniedHandlerImpl()));
-    }
-    
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
-    }
-    
-    public static final class Authority {
-        public static final String MODER = "ROLE_MODER";
-        public static final String ADMIN = "ROLE_ADMIN";
-        
-        private Authority() {}
-    }
+  }
+  
 }

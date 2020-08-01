@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 @SuppressWarnings("checkstyle:HideUtilityClassConstructor")
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 public class BootRunner {
-    public static void main(String[] args) {
-        SpringApplication.run(BootRunner.class, args);
-    }
+  
+  public static void main(String[] args) {
+    SpringApplication.run(BootRunner.class, args);
+  }
+  
 }

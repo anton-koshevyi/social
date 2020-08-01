@@ -8,9 +8,11 @@ import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class ActuatorConfig {
-    @Bean
-    @Profile("dev")
-    public HttpTraceRepository httpTraceRepository() {
-        return new InMemoryHttpTraceRepository();
-    }
+  
+  @Bean
+  @Profile("dev")
+  public HttpTraceRepository httpTraceRepository() {
+    return new InMemoryHttpTraceRepository();
+  }
+  
 }

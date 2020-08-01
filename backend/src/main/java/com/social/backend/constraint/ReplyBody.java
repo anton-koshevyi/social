@@ -13,9 +13,11 @@ import javax.validation.constraints.Size;
 @Size(min = 1, max = 250)
 @Constraint(validatedBy = {})
 public @interface ReplyBody {
-    String message() default "invalid reply body";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "invalid reply body";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

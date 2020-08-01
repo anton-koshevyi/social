@@ -24,52 +24,54 @@ import com.social.backend.service.UserService;
 
 @RestController
 public class MessageController {
-    private final MessageService messageService;
-    private final ChatService chatService;
-    private final UserService userService;
-    
-    @Autowired
-    public MessageController(MessageService messageService,
-                             ChatService chatService,
-                             UserService userService) {
-        this.messageService = messageService;
-        this.chatService = chatService;
-        this.userService = userService;
-    }
-    
-    @GetMapping("/chats/{chatId}/messages")
-    public Page<Message> getAll(@PathVariable Long chatId,
-                                @AuthenticationPrincipal(expression = "id") Long userId,
-                                Pageable pageable) {
-        User member = userService.findById(userId);
-        Chat chat = chatService.findByIdAndMember(chatId, member);
-        return messageService.findAllByChat(chat, pageable);
-    }
-    
-    @PostMapping("/chats/{chatId}/messages")
-    public Message create(@PathVariable Long chatId,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody ContentDto dto) {
-        User author = userService.findById(userId);
-        Chat chat = chatService.findByIdAndMember(chatId, author);
-        String body = dto.getBody();
-        return messageService.create(chat, author, body);
-    }
-    
-    @PatchMapping("/chats/{chatId}/messages/{id}")
-    public Message update(@PathVariable Long id,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody ContentDto dto) {
-        // TODO: Implement as PATCH-request
-        User author = userService.findById(userId);
-        String body = dto.getBody();
-        return messageService.update(id, author, body);
-    }
-    
-    @DeleteMapping("/chats/{chatId}/messages/{id}")
-    public void delete(@PathVariable Long id,
-                       @AuthenticationPrincipal(expression = "id") Long userId) {
-        User author = userService.findById(userId);
-        messageService.delete(id, author);
-    }
+  
+  private final MessageService messageService;
+  private final ChatService chatService;
+  private final UserService userService;
+  
+  @Autowired
+  public MessageController(MessageService messageService,
+                           ChatService chatService,
+                           UserService userService) {
+    this.messageService = messageService;
+    this.chatService = chatService;
+    this.userService = userService;
+  }
+  
+  @GetMapping("/chats/{chatId}/messages")
+  public Page<Message> getAll(@PathVariable Long chatId,
+                              @AuthenticationPrincipal(expression = "id") Long userId,
+                              Pageable pageable) {
+    User member = userService.find(userId);
+    Chat chat = chatService.find(chatId, member);
+    return messageService.findAll(chat, pageable);
+  }
+  
+  @PostMapping("/chats/{chatId}/messages")
+  public Message create(@PathVariable Long chatId,
+                        @AuthenticationPrincipal(expression = "id") Long userId,
+                        @Valid @RequestBody ContentDto dto) {
+    User author = userService.find(userId);
+    Chat chat = chatService.find(chatId, author);
+    String body = dto.getBody();
+    return messageService.create(chat, author, body);
+  }
+  
+  @PatchMapping("/chats/{chatId}/messages/{id}")
+  public Message update(@PathVariable Long id,
+                        @AuthenticationPrincipal(expression = "id") Long userId,
+                        @Valid @RequestBody ContentDto dto) {
+    // TODO: Implement as PATCH-request
+    User author = userService.find(userId);
+    String body = dto.getBody();
+    return messageService.update(id, author, body);
+  }
+  
+  @DeleteMapping("/chats/{chatId}/messages/{id}")
+  public void delete(@PathVariable Long id,
+                     @AuthenticationPrincipal(expression = "id") Long userId) {
+    User author = userService.find(userId);
+    messageService.delete(id, author);
+  }
+  
 }

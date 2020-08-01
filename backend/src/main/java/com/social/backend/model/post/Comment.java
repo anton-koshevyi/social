@@ -10,16 +10,18 @@ import com.social.backend.model.Reply;
 @Entity
 @Table(name = "comments")
 public class Comment extends Reply {
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
-    
-    public Comment setPost(Post post) {
-        this.post = post;
-        return this;
-    }
-    
-    public Post getPost() {
-        return post;
-    }
+  
+  @ManyToOne
+  @JoinColumn(name = "post_id")
+  private Post post;
+  
+  public Comment setPost(Post post) {
+    this.post = post;
+    return this;
+  }
+  
+  public Post getPost() {
+    return post;
+  }
+  
 }
