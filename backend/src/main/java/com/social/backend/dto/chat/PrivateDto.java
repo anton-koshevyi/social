@@ -2,19 +2,15 @@ package com.social.backend.dto.chat;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.user.User;
 
+@Getter
+@Setter
 public class PrivateDto extends ChatDto {
   
   private List<User> members;
-  
-  public PrivateDto setMembers(List<User> members) {
-    this.members = members;
-    return this;
-  }
-  
-  public List<User> getMembers() {
-    return members;
-  }
   
 }

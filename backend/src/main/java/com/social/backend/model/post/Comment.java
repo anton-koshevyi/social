@@ -5,8 +5,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.Reply;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "comments")
 public class Comment extends Reply {
@@ -14,14 +19,5 @@ public class Comment extends Reply {
   @ManyToOne
   @JoinColumn(name = "post_id")
   private Post post;
-  
-  public Comment setPost(Post post) {
-    this.post = post;
-    return this;
-  }
-  
-  public Post getPost() {
-    return post;
-  }
   
 }

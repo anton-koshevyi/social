@@ -5,8 +5,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.Reply;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "messages")
 public class Message extends Reply {
@@ -14,14 +19,5 @@ public class Message extends Reply {
   @ManyToOne
   @JoinColumn(name = "chat_id")
   private Chat chat;
-  
-  public Message setChat(Chat chat) {
-    this.chat = chat;
-    return this;
-  }
-  
-  public Chat getChat() {
-    return chat;
-  }
   
 }

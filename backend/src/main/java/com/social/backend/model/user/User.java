@@ -16,12 +16,17 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class User {
@@ -112,150 +117,6 @@ public class User {
   @Override
   public int hashCode() {
     return Objects.hash(email, username);
-  }
-  
-  public User setId(Long id) {
-    this.id = id;
-    return this;
-  }
-  
-  public User setEmail(String email) {
-    this.email = email;
-    return this;
-  }
-  
-  public User setUsername(String username) {
-    this.username = username;
-    return this;
-  }
-  
-  public User setFirstName(String firstName) {
-    this.firstName = firstName;
-    return this;
-  }
-  
-  public User setLastName(String lastName) {
-    this.lastName = lastName;
-    return this;
-  }
-  
-  public User setPublicity(int publicity) {
-    this.publicity = publicity;
-    return this;
-  }
-  
-  public User setPassword(String password) {
-    this.password = password;
-    return this;
-  }
-  
-  public User setModer(boolean moder) {
-    this.moder = moder;
-    return this;
-  }
-  
-  public User setAdmin(boolean admin) {
-    this.admin = admin;
-    return this;
-  }
-  
-  public User setFriends(Set<User> friends) {
-    this.friends = friends;
-    return this;
-  }
-  
-  public User setFriendFor(Set<User> friendOf) {
-    this.friendFor = friendOf;
-    return this;
-  }
-  
-  public User setChats(List<Chat> chats) {
-    this.chats = chats;
-    return this;
-  }
-  
-  public User setOwnedChats(List<GroupChat> ownedChats) {
-    this.ownedChats = ownedChats;
-    return this;
-  }
-  
-  public User setPosts(List<Post> posts) {
-    this.posts = posts;
-    return this;
-  }
-  
-  public User setComments(List<Comment> comments) {
-    this.comments = comments;
-    return this;
-  }
-  
-  public User setMessages(List<Message> messages) {
-    this.messages = messages;
-    return this;
-  }
-  
-  public Long getId() {
-    return id;
-  }
-  
-  public String getEmail() {
-    return email;
-  }
-  
-  public String getUsername() {
-    return username;
-  }
-  
-  public String getFirstName() {
-    return firstName;
-  }
-  
-  public String getLastName() {
-    return lastName;
-  }
-  
-  public int getPublicity() {
-    return publicity;
-  }
-  
-  public String getPassword() {
-    return password;
-  }
-  
-  public boolean isModer() {
-    return moder;
-  }
-  
-  public boolean isAdmin() {
-    return admin;
-  }
-  
-  public Set<User> getFriends() {
-    return friends;
-  }
-  
-  public Set<User> getFriendFor() {
-    return friendFor;
-  }
-  
-  public List<Chat> getChats() {
-    return chats;
-  }
-  
-  public List<GroupChat> getOwnedChats() {
-    return ownedChats;
-  }
-  
-  public List<Post> getPosts() {
-    return posts;
-  }
-  
-  public List<Comment> getComments() {
-    return comments;
-  }
-  
-  public List<Message> getMessages() {
-    return messages;
   }
   
 }

@@ -14,8 +14,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.user.User;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -40,59 +45,5 @@ public class Post {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User author;
-  
-  public Post setId(Long id) {
-    this.id = id;
-    return this;
-  }
-  
-  public Post setCreated(ZonedDateTime created) {
-    this.created = created;
-    return this;
-  }
-  
-  public Post setUpdated(ZonedDateTime updated) {
-    this.updated = updated;
-    return this;
-  }
-  
-  public Post setBody(String body) {
-    this.body = body;
-    return this;
-  }
-  
-  public Post setComments(List<Comment> comments) {
-    this.comments = comments;
-    return this;
-  }
-  
-  public Post setAuthor(User author) {
-    this.author = author;
-    return this;
-  }
-  
-  public Long getId() {
-    return id;
-  }
-  
-  public ZonedDateTime getCreated() {
-    return created;
-  }
-  
-  public ZonedDateTime getUpdated() {
-    return updated;
-  }
-  
-  public String getBody() {
-    return body;
-  }
-  
-  public List<Comment> getComments() {
-    return comments;
-  }
-  
-  public User getAuthor() {
-    return author;
-  }
   
 }

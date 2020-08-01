@@ -9,8 +9,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.user.User;
 
+@Getter
+@Setter
 @MappedSuperclass
 public abstract class Reply {
   
@@ -31,50 +36,5 @@ public abstract class Reply {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User author;
-  
-  public Reply setId(Long id) {
-    this.id = id;
-    return this;
-  }
-  
-  public Reply setCreated(ZonedDateTime created) {
-    this.created = created;
-    return this;
-  }
-  
-  public Reply setUpdated(ZonedDateTime updated) {
-    this.updated = updated;
-    return this;
-  }
-  
-  public Reply setBody(String body) {
-    this.body = body;
-    return this;
-  }
-  
-  public Reply setAuthor(User author) {
-    this.author = author;
-    return this;
-  }
-  
-  public Long getId() {
-    return id;
-  }
-  
-  public ZonedDateTime getCreated() {
-    return created;
-  }
-  
-  public ZonedDateTime getUpdated() {
-    return updated;
-  }
-  
-  public String getBody() {
-    return body;
-  }
-  
-  public User getAuthor() {
-    return author;
-  }
   
 }
