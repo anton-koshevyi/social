@@ -2,6 +2,7 @@ plugins {
     java
     jacoco
     checkstyle
+    id("io.freefair.lombok") version "5.1.0"
     id("org.springframework.boot") version "2.2.0.RELEASE"
     id("io.spring.dependency-management") version "1.0.9.RELEASE"
 }
@@ -44,11 +45,12 @@ tasks {
     }
 
     jacocoTestReport {
-        classDirectories.setFrom(fileTree("$buildDir/classes/java/main/com/social/backend")
-                .exclude("config/**",
-                        "dto/**",
-                        "exception/**",
-                        "model/**",
-                        "*.class"))
+        val classDirs = fileTree("$buildDir/classes/java/main/com/social/backend")
+                .exclude("dto/**", "exception/**", "model/**")
+        classDirectories.setFrom(classDirs)
+    }
+
+    generateLombokConfig {
+        enabled = false
     }
 }
