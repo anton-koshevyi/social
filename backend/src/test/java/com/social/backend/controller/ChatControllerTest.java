@@ -249,7 +249,7 @@ public class ChatControllerTest {
         + "message: 'Invalid body: 2 error(s)',"
         + "errors: {"
         + "  'name': ['must not be null'],"
-        + "  'memberIds': ['must not be null']"
+        + "  'members': ['must not be null']"
         + "},"
         + "path: '/chats/group'"
         + "}";
@@ -281,7 +281,7 @@ public class ChatControllerTest {
         .header("Content-Type", "application/json")
         .body("{"
             + "\"name\": \"name\","
-            + "\"memberIds\": [ 2 ]"
+            + "\"members\": [ 2 ]"
             + "}")
         .when()
         .post("/chats/group")
@@ -487,7 +487,7 @@ public class ChatControllerTest {
         + "error: 'Bad Request',"
         + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'memberIds': ['must not be null']"
+        + "  'members': ['must not be null']"
         + "},"
         + "path: '/chats/group/1/members'"
         + "}";
@@ -522,7 +522,7 @@ public class ChatControllerTest {
         .form("owner", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"memberIds\": [ 1, 2 ] }")
+        .body("{ \"members\": [ 1, 2 ] }")
         .when()
         .put("/chats/group/{id}/members", 1)
         .then()

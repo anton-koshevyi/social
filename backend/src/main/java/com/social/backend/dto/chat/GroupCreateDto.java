@@ -14,6 +14,6 @@ public class GroupCreateDto {
   private String name;
   
   @NotNull
-  private List<@NotNull Long> memberIds;
+  private List<@NotNull Long> members;
   
 }

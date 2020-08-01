@@ -72,7 +72,7 @@ public class ChatController {
                           @Valid @RequestBody GroupCreateDto dto) {
     User creator = userService.find(userId);
     String name = dto.getName();
-    Set<User> members = findUsersByIds(dto.getMemberIds());
+    Set<User> members = findUsersByIds(dto.getMembers());
     return chatService.createGroup(creator, name, members);
   }
   
@@ -105,7 +105,7 @@ public class ChatController {
                                  @AuthenticationPrincipal(expression = "id") Long userId,
                                  @Valid @RequestBody GroupMembersDto dto) {
     User member = userService.find(userId);
-    Set<User> members = findUsersByIds(dto.getMemberIds());
+    Set<User> members = findUsersByIds(dto.getMembers());
     return chatService.updateGroupMembers(id, member, members);
   }
   

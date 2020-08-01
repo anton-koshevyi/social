@@ -11,6 +11,6 @@ import lombok.Setter;
 public class GroupMembersDto {
   
   @NotNull
-  private List<@NotNull Long> memberIds;
+  private List<@NotNull Long> members;
   
 }
