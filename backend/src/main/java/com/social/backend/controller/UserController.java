@@ -31,7 +31,8 @@ public class UserController {
   
   @Autowired
   public UserController(UserService userService,
-                        PostService postService, ChatService chatService) {
+                        PostService postService,
+                        ChatService chatService) {
     this.userService = userService;
     this.postService = postService;
     this.chatService = chatService;

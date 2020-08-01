@@ -24,6 +24,7 @@ import com.social.backend.model.user.User;
 @ActiveProfiles("test")
 @ComponentScan("com.social.backend.dto")
 public class CommentSerializerTest {
+  
   @Autowired
   private AbstractJsonMarshalTester<Comment> tester;
   
@@ -87,4 +88,5 @@ public class CommentSerializerTest {
             new Customization("**.updateDate", (act, exp) -> true)
         ));
   }
+  
 }

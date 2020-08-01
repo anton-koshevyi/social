@@ -22,6 +22,7 @@ import com.social.backend.model.user.User;
 @ActiveProfiles("test")
 @ComponentScan("com.social.backend.dto")
 public class ChatSerializerTest {
+  
   @Autowired
   private AbstractJsonMarshalTester<Chat> tester;
   
@@ -105,4 +106,5 @@ public class ChatSerializerTest {
         .assertThat(tester.write(chat))
         .isEqualToJson(expected, JSONCompareMode.NON_EXTENSIBLE);
   }
+  
 }

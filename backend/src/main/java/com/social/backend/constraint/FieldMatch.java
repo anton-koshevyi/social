@@ -32,7 +32,9 @@ public @interface FieldMatch {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.TYPE)
   @interface List {
+  
     FieldMatch[] value();
+  
   }
   
 }
