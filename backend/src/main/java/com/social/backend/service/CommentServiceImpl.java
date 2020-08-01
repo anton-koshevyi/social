@@ -48,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public Comment update(Long id, User author, String body) {
     Comment entity = findByIdAndAuthor(id, author);
-    entity.setUpdated(ZonedDateTime.now());
+    entity.setUpdatedAt(ZonedDateTime.now());
     entity.setBody(body);
     return repository.save(entity);
   }

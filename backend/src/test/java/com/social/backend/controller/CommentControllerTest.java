@@ -88,8 +88,7 @@ public class CommentControllerTest {
     
     String expected = "[{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'comment body',"
         + "author: {"
         + "  id: 1,"
@@ -102,8 +101,7 @@ public class CommentControllerTest {
         + "},"
         + "post: {"
         + "  id: 1,"
-        + "  creationDate: (customized),"
-        + "  updated: false,"
+        + "  createdAt: (customized),"
         + "  body: 'post body',"
         + "  comments: 1,"
         + "  author: {"
@@ -119,7 +117,7 @@ public class CommentControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.creationDate", (act, exp) -> true)
+            new Customization("**.createdAt", (act, exp) -> true)
         ));
   }
   
@@ -189,8 +187,7 @@ public class CommentControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'comment body',"
         + "author: {"
         + "  id: 1,"
@@ -204,8 +201,7 @@ public class CommentControllerTest {
         + "},"
         + "post: {"
         + "  id: 1,"
-        + "  creationDate: (customized),"
-        + "  updated: false,"
+        + "  createdAt: (customized),"
         + "  body: 'post body',"
         + "  comments: 1,"
         + "  author: {"
@@ -222,7 +218,7 @@ public class CommentControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.creationDate", (o1, o2) -> true)
+            new Customization("**.createdAt", (o1, o2) -> true)
         ));
   }
   
@@ -300,9 +296,8 @@ public class CommentControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updateDate: (customized),"
-        + "updated: true,"
+        + "createdAt: (customized),"
+        + "updatedAt: (customized),"
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"
@@ -316,8 +311,7 @@ public class CommentControllerTest {
         + "},"
         + "post: {"
         + "  id: 1,"
-        + "  creationDate: (customized),"
-        + "  updated: false,"
+        + "  createdAt: (customized),"
         + "  body: 'post body',"
         + "  comments: 1,"
         + "  author: {"
@@ -334,8 +328,8 @@ public class CommentControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.creationDate", (o1, o2) -> true),
-            new Customization("updateDate", (o1, o2) -> true)
+            new Customization("**.createdAt", (o1, o2) -> true),
+            new Customization("updatedAt", (o1, o2) -> true)
         ));
   }
   

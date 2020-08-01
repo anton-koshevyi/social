@@ -2,7 +2,6 @@ package com.social.backend.adapter.json;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,22 +29,17 @@ public class PostSerializerTest {
   public void given_anyPost_when_anyRequest_then_regularBody() throws IOException {
     Post post = new Post();
     post.setId(1L);
-    post.setCreated(ZonedDateTime
-        .now());
-    post.setUpdated(ZonedDateTime
-        .now());
+    post.setCreatedAt(ZonedDateTime.now());
+    post.setUpdatedAt(ZonedDateTime.now());
     post.setBody("body");
-    post.setComments(Collections
-        .emptyList());
     post.setAuthor(TestEntity
         .user()
         .setId(1L));
-    
+  
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized)',"
-        + "updateDate: (customized)',"
-        + "updated: true,"
+        + "createdAt: (customized)',"
+        + "updatedAt: (customized)',"
         + "body: 'body',"
         + "comments: 0,"
         + "author: {"
@@ -61,8 +55,8 @@ public class PostSerializerTest {
     Assertions
         .assertThat(tester.write(post))
         .isEqualToJson(expected, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true),
-            new Customization("updateDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true),
+            new Customization("updatedAt", (act, exp) -> true)
         ));
   }
   

@@ -31,10 +31,8 @@ public class MessageSerializerTest {
   public void given_privateChatMessage_when_anyRequest_then_regularBody() throws IOException {
     Message message = new Message();
     message.setId(1L);
-    message.setCreated(ZonedDateTime
-        .now());
-    message.setUpdated(ZonedDateTime
-        .now());
+    message.setCreatedAt(ZonedDateTime.now());
+    message.setUpdatedAt(ZonedDateTime.now());
     message.setBody("message body");
     message.setAuthor(TestEntity
         .user()
@@ -50,9 +48,8 @@ public class MessageSerializerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updateDate: (customized),"
-        + "updated: true,"
+        + "createdAt: (customized),"
+        + "updatedAt: (customized),"
         + "body: 'message body',"
         + "author: {"
         + "  id: 1,"
@@ -79,8 +76,8 @@ public class MessageSerializerTest {
         + "}";
     Assertions.assertThat(tester.write(message))
         .isEqualToJson(expected, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true),
-            new Customization("updateDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true),
+            new Customization("updatedAt", (act, exp) -> true)
         ));
   }
   
@@ -91,10 +88,8 @@ public class MessageSerializerTest {
         .setId(1L);
     Message message = new Message();
     message.setId(1L);
-    message.setCreated(ZonedDateTime
-        .now());
-    message.setUpdated(ZonedDateTime
-        .now());
+    message.setCreatedAt(ZonedDateTime.now());
+    message.setUpdatedAt(ZonedDateTime.now());
     message.setBody("message body");
     message.setAuthor(author);
     message.setChat(TestEntity
@@ -107,9 +102,8 @@ public class MessageSerializerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updateDate: (customized),"
-        + "updated: true,"
+        + "createdAt: (customized),"
+        + "updatedAt: (customized),"
         + "body: 'message body',"
         + "author: {"
         + "  id: 1,"
@@ -139,8 +133,8 @@ public class MessageSerializerTest {
     Assertions
         .assertThat(tester.write(message))
         .isEqualToJson(expected, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true),
-            new Customization("updateDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true),
+            new Customization("updatedAt", (act, exp) -> true)
         ));
   }
   

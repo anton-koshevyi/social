@@ -94,8 +94,7 @@ public class MessageControllerTest {
     
     String expected = "[{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'message body',"
         + "author: {"
         + "  id: 1,"
@@ -124,7 +123,7 @@ public class MessageControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].creationDate", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> true)
         ));
   }
   
@@ -196,8 +195,7 @@ public class MessageControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
@@ -226,7 +224,7 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true)
         ));
   }
   
@@ -306,9 +304,8 @@ public class MessageControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updateDate: (customized),"
-        + "updated: true,"
+        + "createdAt: (customized),"
+        + "updatedAt: (customized),"
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"
@@ -337,8 +334,8 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true),
-            new Customization("updateDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true),
+            new Customization("updatedAt", (act, exp) -> true)
         ));
   }
   

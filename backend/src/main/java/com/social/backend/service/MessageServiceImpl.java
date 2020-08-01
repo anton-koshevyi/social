@@ -35,7 +35,7 @@ public class MessageServiceImpl implements MessageService {
   @Override
   public Message update(Long id, User author, String body) {
     Message entity = findByIdAndAuthor(id, author);
-    entity.setUpdated(ZonedDateTime.now());
+    entity.setUpdatedAt(ZonedDateTime.now());
     entity.setBody(body);
     return repository.save(entity);
   }

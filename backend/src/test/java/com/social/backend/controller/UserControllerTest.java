@@ -309,8 +309,7 @@ public class UserControllerTest {
     
     String expected = "[{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'post body',"
         + "comments: 0,"
         + "author: {"
@@ -325,7 +324,7 @@ public class UserControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].creationDate", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> true)
         ));
   }
   

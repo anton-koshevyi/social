@@ -35,7 +35,7 @@ public class PostServiceImpl implements PostService {
   @Override
   public Post update(Long id, User author, String body) {
     Post entity = findByIdAndAuthor(id, author);
-    entity.setUpdated(ZonedDateTime.now());
+    entity.setUpdatedAt(ZonedDateTime.now());
     entity.setBody(body);
     return repository.save(entity);
   }

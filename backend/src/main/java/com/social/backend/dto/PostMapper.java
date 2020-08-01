@@ -1,7 +1,5 @@
 package com.social.backend.dto;
 
-import java.time.ZonedDateTime;
-
 import org.springframework.stereotype.Component;
 
 import com.social.backend.dto.post.PostDto;
@@ -15,13 +13,11 @@ public class PostMapper implements EntityMapper<Post, PostDto> {
     if (source == null) {
       return null;
     }
-    
-    ZonedDateTime updateDate = source.getUpdated();
+  
     PostDto dto = new PostDto();
     dto.setId(source.getId());
-    dto.setCreationDate(source.getCreated());
-    dto.setUpdateDate(updateDate);
-    dto.setUpdated(updateDate != null);
+    dto.setCreatedAt(source.getCreatedAt());
+    dto.setUpdatedAt(source.getUpdatedAt());
     dto.setBody(source.getBody());
     dto.setComments(source.getComments().size());
     dto.setAuthor(source.getAuthor());

@@ -79,8 +79,7 @@ public class PostControllerTest {
     
     String expected = "[{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'post body',"
         + "comments: 0,"
         + "author: {"
@@ -95,7 +94,7 @@ public class PostControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].creationDate", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> true)
         ));
   }
   
@@ -158,8 +157,7 @@ public class PostControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
@@ -175,7 +173,7 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true)
         ));
   }
   
@@ -198,8 +196,7 @@ public class PostControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updated: false,"
+        + "createdAt: (customized),"
         + "body: 'post body',"
         + "author: {"
         + "  id: 1,"
@@ -214,7 +211,7 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true)
         ));
   }
   
@@ -284,9 +281,8 @@ public class PostControllerTest {
     
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized),"
-        + "updateDate: (customized),"
-        + "updated: true,"
+        + "createdAt: (customized),"
+        + "updatedAt: (customized),"
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"
@@ -302,8 +298,8 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("creationDate", (act, exp) -> true),
-            new Customization("updateDate", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> true),
+            new Customization("updatedAt", (act, exp) -> true)
         ));
   }
   

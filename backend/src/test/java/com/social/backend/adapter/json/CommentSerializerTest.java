@@ -2,8 +2,8 @@ package com.social.backend.adapter.json;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 
+import com.google.common.collect.Lists;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
@@ -39,21 +39,18 @@ public class CommentSerializerTest {
         .setAuthor(author);
     Comment comment = new Comment();
     comment.setId(1L);
-    comment.setCreated(ZonedDateTime
-        .now());
-    comment.setUpdated(ZonedDateTime
-        .now());
+    comment.setCreatedAt(ZonedDateTime.now());
+    comment.setUpdatedAt(ZonedDateTime.now());
     comment.setBody("body");
     comment.setAuthor(author);
     comment.setPost(post
-        .setComments(Collections
-            .singletonList(comment)));
-    
+        .setComments(Lists
+            .newArrayList(comment)));
+  
     String expected = "{"
         + "id: 1,"
-        + "creationDate: (customized)',"
-        + "updateDate: (customized)',"
-        + "updated: true,"
+        + "createdAt: (customized)',"
+        + "updatedAt: (customized)',"
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
@@ -66,8 +63,7 @@ public class CommentSerializerTest {
         + "},"
         + "post: {"
         + "  id: 1,"
-        + "  creationDate: (customized)',"
-        + "  updated: false,"
+        + "  createdAt: (customized)',"
         + "  body: 'post body',"
         + "  comments: 1,"
         + "  author: {"
@@ -84,8 +80,8 @@ public class CommentSerializerTest {
     Assertions
         .assertThat(tester.write(comment))
         .isEqualToJson(expected, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.creationDate", (act, exp) -> true),
-            new Customization("**.updateDate", (act, exp) -> true)
+            new Customization("**.createdAt", (act, exp) -> true),
+            new Customization("**.updatedAt", (act, exp) -> true)
         ));
   }
   

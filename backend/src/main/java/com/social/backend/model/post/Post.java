@@ -30,11 +30,11 @@ public class Post {
   @Column(name = "id")
   private Long id;
   
-  @Column(name = "created", nullable = false)
-  private ZonedDateTime created = ZonedDateTime.now();
+  @Column(name = "created_at", nullable = false)
+  private ZonedDateTime createdAt = ZonedDateTime.now();
   
-  @Column(name = "updated")
-  private ZonedDateTime updated;
+  @Column(name = "updated_at")
+  private ZonedDateTime updatedAt;
   
   @Column(name = "body", nullable = false)
   private String body;

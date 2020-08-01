@@ -12,9 +12,8 @@ import com.social.backend.model.user.User;
 public abstract class ReplyDto {
   
   private Long id;
-  private ZonedDateTime creationDate;
-  private ZonedDateTime updateDate;
-  private Boolean updated;
+  private ZonedDateTime createdAt;
+  private ZonedDateTime updatedAt;
   private String body;
   private User author;
   
