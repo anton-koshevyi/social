@@ -15,9 +15,11 @@ import com.social.backend.validator.UsernameValidator;
 @Size(min = 1, max = 32)
 @Constraint(validatedBy = UsernameValidator.class)
 public @interface Username {
-    String message() default "username already exists";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "username already exists";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

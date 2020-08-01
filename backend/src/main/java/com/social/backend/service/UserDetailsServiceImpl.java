@@ -18,35 +18,38 @@ import com.social.backend.repository.UserRepository;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
-    private final UserRepository userRepository;
+  
+  private final UserRepository userRepository;
+  
+  @Autowired
+  public UserDetailsServiceImpl(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+  
+  @Override
+  public UserDetails loadUserByUsername(String username) {
+    User entity = userRepository.findByEmail(username)
+        .orElseGet(() -> userRepository.findByUsername(username)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                "No user with email or username: " + username)));
+    Set<String> authorities = new HashSet<>();
     
-    @Autowired
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    if (entity.isModer()) {
+      authorities.add(Authority.MODER);
     }
     
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        User entity = userRepository.findByEmail(username)
-                .orElseGet(() -> userRepository.findByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("No user with username: " + username)));
-        Set<String> authorities = new HashSet<>();
-        
-        if (entity.isModer()) {
-            authorities.add(Authority.MODER);
-        }
-        
-        if (entity.isAdmin()) {
-            authorities.add(Authority.ADMIN);
-        }
-        
-        return new IdentifiedUserDetails(
-                entity.getId(),
-                username,
-                entity.getPassword(),
-                authorities.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toSet())
-        );
+    if (entity.isAdmin()) {
+      authorities.add(Authority.ADMIN);
     }
+    
+    return new IdentifiedUserDetails(
+        entity.getId(),
+        username,
+        entity.getPassword(),
+        authorities.stream()
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toSet())
+    );
+  }
+  
 }

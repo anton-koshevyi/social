@@ -11,7 +11,9 @@ import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Optional<Comment> findByIdAndAuthor(Long id, User author);
-    
-    Page<Comment> findAllByPost(Post post, Pageable pageable);
+  
+  Optional<Comment> findByIdAndAuthor(Long id, User author);
+  
+  Page<Comment> findAllByPost(Post post, Pageable pageable);
+  
 }

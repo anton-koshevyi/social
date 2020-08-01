@@ -8,24 +8,26 @@ package com.social.backend.dto;
  * @param <R> Target (dto) type
  */
 public interface EntityMapper<T, R> {
-    /**
-     * Return public entity data, available for all users or anonymous.
-     */
-    R map(T source);
-    
-    /**
-     * Return data which not available for specific groups of users
-     * (e.g. available only for owner (and for administration)).
-     */
-    default R mapHidden(T source) {
-        return this.map(source);
-    }
-    
-    /**
-     * Return regular data including possible sensitive data.
-     * Invoked on request from user with administrative authority.
-     */
-    default R mapExtended(T source) {
-        return this.map(source);
-    }
+  
+  /**
+   * Return public entity data, available for all users or anonymous.
+   */
+  R map(T source);
+  
+  /**
+   * Return data which not available for specific groups of users
+   * (e.g. available only for owner (and for administration)).
+   */
+  default R mapHidden(T source) {
+    return this.map(source);
+  }
+  
+  /**
+   * Return regular data including possible sensitive data.
+   * Invoked on request from user with administrative authority.
+   */
+  default R mapExtended(T source) {
+    return this.map(source);
+  }
+  
 }

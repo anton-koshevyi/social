@@ -12,27 +12,30 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class MvcConfig implements WebMvcConfigurer {
-    private final Environment env;
-    
-    @Autowired
-    public MvcConfig(Environment env) {
-        this.env = env;
-    }
-    
-    @Bean
-    public ErrorAttributes errorAttributes(MessageSource messageSource) {
-        boolean includeException = env.getProperty("server.error.include-exception", Boolean.class, false);
-        return new LocalizedErrorAttributes(messageSource, includeException);
-    }
-    
-    @Bean
-    @Profile("!prod")
-    public CommonsRequestLoggingFilter loggingFilter() {
-        CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
-        filter.setIncludeQueryString(true);
-        filter.setIncludeClientInfo(true);
-        filter.setIncludeHeaders(true);
-        filter.setIncludePayload(true);
-        return filter;
-    }
+  
+  private final Environment env;
+  
+  @Autowired
+  public MvcConfig(Environment env) {
+    this.env = env;
+  }
+  
+  @Bean
+  public ErrorAttributes errorAttributes(MessageSource messageSource) {
+    boolean includeException = env.getProperty(
+        "server.error.include-exception", Boolean.class, false);
+    return new LocalizedErrorAttributes(messageSource, includeException);
+  }
+  
+  @Bean
+  @Profile("!prod")
+  public CommonsRequestLoggingFilter loggingFilter() {
+    CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+    filter.setIncludeQueryString(true);
+    filter.setIncludeClientInfo(true);
+    filter.setIncludeHeaders(true);
+    filter.setIncludePayload(true);
+    return filter;
+  }
+  
 }

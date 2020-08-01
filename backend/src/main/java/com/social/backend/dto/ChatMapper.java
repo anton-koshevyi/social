@@ -13,30 +13,32 @@ import com.social.backend.model.chat.PrivateChat;
 
 @Component
 public class ChatMapper implements EntityMapper<Chat, ChatDto> {
-    private static final String TYPE_PRIVATE = "private";
-    private static final String TYPE_GROUP = "group";
-    
-    @Override
-    public ChatDto map(Chat source) {
-        if (source instanceof PrivateChat) {
-            PrivateDto dto = new PrivateDto();
-            dto.setId(source.getId());
-            dto.setType(TYPE_PRIVATE);
-            dto.setMembers(new ArrayList<>(source.getMembers()));
-            return dto;
-        }
-        
-        if (source instanceof GroupChat) {
-            GroupChat groupChat = (GroupChat) source;
-            GroupDto dto = new GroupDto();
-            dto.setId(source.getId());
-            dto.setType(TYPE_GROUP);
-            dto.setName(groupChat.getName());
-            dto.setMembers(source.getMembers().size());
-            dto.setOwner(groupChat.getOwner());
-            return dto;
-        }
-        
-        return null;
+  
+  private static final String TYPE_PRIVATE = "private";
+  private static final String TYPE_GROUP = "group";
+  
+  @Override
+  public ChatDto map(Chat source) {
+    if (source instanceof PrivateChat) {
+      PrivateDto dto = new PrivateDto();
+      dto.setId(source.getId());
+      dto.setType(TYPE_PRIVATE);
+      dto.setMembers(new ArrayList<>(source.getMembers()));
+      return dto;
     }
+    
+    if (source instanceof GroupChat) {
+      GroupChat groupChat = (GroupChat) source;
+      GroupDto dto = new GroupDto();
+      dto.setId(source.getId());
+      dto.setType(TYPE_GROUP);
+      dto.setName(groupChat.getName());
+      dto.setMembers(source.getMembers().size());
+      dto.setOwner(groupChat.getOwner());
+      return dto;
+    }
+    
+    return null;
+  }
+  
 }

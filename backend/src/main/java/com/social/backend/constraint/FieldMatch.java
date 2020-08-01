@@ -15,21 +15,26 @@ import com.social.backend.validator.FieldMatchValidator;
 @Repeatable(FieldMatch.List.class)
 @Constraint(validatedBy = FieldMatchValidator.class)
 public @interface FieldMatch {
-    String field();
-    
-    String compared();
-    
-    String message() default "fields '{field}' and '{compared}' must ${notMatch ? 'not ' : ''}be equal";
-    
-    boolean notMatch() default false;
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
-    
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @interface List {
-        FieldMatch[] value();
-    }
+  
+  String field();
+  
+  String compared();
+  
+  String message() default "fields '{field}' and '{compared}'"
+      + " must ${notMatch ? 'not ' : ''}be equal";
+  
+  boolean notMatch() default false;
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  @interface List {
+  
+    FieldMatch[] value();
+  
+  }
+  
 }

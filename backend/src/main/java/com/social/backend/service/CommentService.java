@@ -8,11 +8,13 @@ import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 
 public interface CommentService {
-    Comment create(Post post, User author, String body);
-    
-    Comment update(Long id, User author, String body);
-    
-    void delete(Long id, User author);
-    
-    Page<Comment> findAllByPost(Post post, Pageable pageable);
+  
+  Comment create(Post post, User author, String body);
+  
+  Comment update(Long id, User author, String body);
+  
+  void delete(Long id, User author);
+  
+  Page<Comment> findAll(Post post, Pageable pageable);
+  
 }

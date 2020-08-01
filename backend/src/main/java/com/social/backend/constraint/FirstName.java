@@ -13,9 +13,11 @@ import javax.validation.constraints.Size;
 @Size(min = 1, max = 64)
 @Constraint(validatedBy = {})
 public @interface FirstName {
-    String message() default "invalid first name";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "invalid first name";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

@@ -16,53 +16,56 @@ import com.social.backend.repository.PostRepository;
 @Service
 @Transactional
 public class PostServiceImpl implements PostService {
-    private final PostRepository repository;
-    
-    @Autowired
-    public PostServiceImpl(PostRepository repository) {
-        this.repository = repository;
-    }
-    
-    @Override
-    public Post create(User author, String body) {
-        Post entity = new Post();
-        entity.setBody(body);
-        entity.setAuthor(author);
-        return repository.save(entity);
-    }
-    
-    @Override
-    public Post update(Long id, User author, String body) {
-        Post entity = findByIdAndAuthor(id, author);
-        entity.setUpdated(ZonedDateTime.now());
-        entity.setBody(body);
-        return repository.save(entity);
-    }
-    
-    @Override
-    public void delete(Long id, User author) {
-        Post entity = findByIdAndAuthor(id, author);
-        repository.delete(entity);
-    }
-    
-    @Override
-    public Post findById(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("notFound.post.byId", id));
-    }
-    
-    @Override
-    public Page<Post> findAll(Pageable pageable) {
-        return repository.findAll(pageable);
-    }
-    
-    @Override
-    public Page<Post> findAllByAuthor(User author, Pageable pageable) {
-        return repository.findAllByAuthor(author, pageable);
-    }
-    
-    private Post findByIdAndAuthor(Long id, User author) {
-        return repository.findByIdAndAuthor(id, author)
-                .orElseThrow(() -> new NotFoundException("notFound.post.byIdAndAuthor", id, author.getId()));
-    }
+  
+  private final PostRepository repository;
+  
+  @Autowired
+  public PostServiceImpl(PostRepository repository) {
+    this.repository = repository;
+  }
+  
+  @Override
+  public Post create(User author, String body) {
+    Post entity = new Post();
+    entity.setBody(body);
+    entity.setAuthor(author);
+    return repository.save(entity);
+  }
+  
+  @Override
+  public Post update(Long id, User author, String body) {
+    Post entity = findByIdAndAuthor(id, author);
+    entity.setUpdated(ZonedDateTime.now());
+    entity.setBody(body);
+    return repository.save(entity);
+  }
+  
+  @Override
+  public void delete(Long id, User author) {
+    Post entity = findByIdAndAuthor(id, author);
+    repository.delete(entity);
+  }
+  
+  @Override
+  public Post find(Long id) {
+    return repository.findById(id)
+        .orElseThrow(() -> new NotFoundException("notFound.post.byId", id));
+  }
+  
+  @Override
+  public Page<Post> findAll(Pageable pageable) {
+    return repository.findAll(pageable);
+  }
+  
+  @Override
+  public Page<Post> findAll(User author, Pageable pageable) {
+    return repository.findAllByAuthor(author, pageable);
+  }
+  
+  private Post findByIdAndAuthor(Long id, User author) {
+    return repository.findByIdAndAuthor(id, author)
+        .orElseThrow(() -> new NotFoundException(
+            "notFound.post.byIdAndAuthor", id, author.getId()));
+  }
+  
 }

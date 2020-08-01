@@ -9,15 +9,17 @@ import com.social.backend.model.chat.Chat;
 
 @JsonComponent
 public class ChatSerializer extends AbstractSerializer<Chat> {
-    private final EntityMapper<Chat, ChatDto> entityMapper;
-    
-    @Autowired
-    public ChatSerializer(EntityMapper<Chat, ChatDto> entityMapper) {
-        this.entityMapper = entityMapper;
-    }
-    
-    @Override
-    public Object beforeSerialize(Chat chat) {
-        return entityMapper.map(chat);
-    }
+  
+  private final EntityMapper<Chat, ChatDto> entityMapper;
+  
+  @Autowired
+  public ChatSerializer(EntityMapper<Chat, ChatDto> entityMapper) {
+    this.entityMapper = entityMapper;
+  }
+  
+  @Override
+  public Object beforeSerialize(Chat chat) {
+    return entityMapper.map(chat);
+  }
+  
 }

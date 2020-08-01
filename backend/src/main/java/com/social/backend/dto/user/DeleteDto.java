@@ -5,16 +5,18 @@ import javax.validation.constraints.NotNull;
 import com.social.backend.constraint.Password;
 
 public class DeleteDto {
-    @NotNull
-    @Password
-    private String password;
-    
-    public DeleteDto setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-    
-    public String getPassword() {
-        return password;
-    }
+  
+  @NotNull
+  @Password
+  private String password;
+  
+  public DeleteDto setPassword(String password) {
+    this.password = password;
+    return this;
+  }
+  
+  public String getPassword() {
+    return password;
+  }
+  
 }

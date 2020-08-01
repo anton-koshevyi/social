@@ -24,50 +24,52 @@ import com.social.backend.service.UserService;
 
 @RestController
 public class CommentController {
-    private final CommentService commentService;
-    private final PostService postService;
-    private final UserService userService;
-    
-    @Autowired
-    public CommentController(CommentService commentService,
-                             PostService postService,
-                             UserService userService) {
-        this.commentService = commentService;
-        this.postService = postService;
-        this.userService = userService;
-    }
-    
-    @GetMapping("/posts/{postId}/comments")
-    public Page<Comment> getAll(@PathVariable Long postId,
-                                Pageable pageable) {
-        Post post = postService.findById(postId);
-        return commentService.findAllByPost(post, pageable);
-    }
-    
-    @PostMapping("/posts/{postId}/comments")
-    public Comment create(@PathVariable Long postId,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody ContentDto dto) {
-        Post post = postService.findById(postId);
-        User author = userService.findById(userId);
-        String body = dto.getBody();
-        return commentService.create(post, author, body);
-    }
-    
-    @PatchMapping("/posts/{postId}/comments/{id}")
-    public Comment update(@PathVariable Long id,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody ContentDto dto) {
-        // TODO: Implement as PATCH-request
-        User author = userService.findById(userId);
-        String body = dto.getBody();
-        return commentService.update(id, author, body);
-    }
-    
-    @DeleteMapping("/posts/{postId}/comments/{id}")
-    public void delete(@PathVariable Long id,
-                       @AuthenticationPrincipal(expression = "id") Long userId) {
-        User author = userService.findById(userId);
-        commentService.delete(id, author);
-    }
+  
+  private final CommentService commentService;
+  private final PostService postService;
+  private final UserService userService;
+  
+  @Autowired
+  public CommentController(CommentService commentService,
+                           PostService postService,
+                           UserService userService) {
+    this.commentService = commentService;
+    this.postService = postService;
+    this.userService = userService;
+  }
+  
+  @GetMapping("/posts/{postId}/comments")
+  public Page<Comment> getAll(@PathVariable Long postId,
+                              Pageable pageable) {
+    Post post = postService.find(postId);
+    return commentService.findAll(post, pageable);
+  }
+  
+  @PostMapping("/posts/{postId}/comments")
+  public Comment create(@PathVariable Long postId,
+                        @AuthenticationPrincipal(expression = "id") Long userId,
+                        @Valid @RequestBody ContentDto dto) {
+    Post post = postService.find(postId);
+    User author = userService.find(userId);
+    String body = dto.getBody();
+    return commentService.create(post, author, body);
+  }
+  
+  @PatchMapping("/posts/{postId}/comments/{id}")
+  public Comment update(@PathVariable Long id,
+                        @AuthenticationPrincipal(expression = "id") Long userId,
+                        @Valid @RequestBody ContentDto dto) {
+    // TODO: Implement as PATCH-request
+    User author = userService.find(userId);
+    String body = dto.getBody();
+    return commentService.update(id, author, body);
+  }
+  
+  @DeleteMapping("/posts/{postId}/comments/{id}")
+  public void delete(@PathVariable Long id,
+                     @AuthenticationPrincipal(expression = "id") Long userId) {
+    User author = userService.find(userId);
+    commentService.delete(id, author);
+  }
+  
 }

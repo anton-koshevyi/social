@@ -13,9 +13,11 @@ import javax.validation.constraints.Size;
 @Size(min = 1, max = 1000)
 @Constraint(validatedBy = {})
 public @interface PostBody {
-    String message() default "invalid post body";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "invalid post body";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

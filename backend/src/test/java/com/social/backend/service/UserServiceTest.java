@@ -1,10 +1,9 @@
 package com.social.backend.service;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -16,407 +15,470 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.social.backend.TestComparator;
+import com.social.backend.TestEntity;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import static com.social.backend.TestComparator.userComparator;
-import static com.social.backend.TestEntity.user;
-
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(UserServiceImpl.class)
 public class UserServiceTest {
-    @MockBean
-    private PasswordEncoder passwordEncoder;
+  
+  @MockBean
+  private PasswordEncoder passwordEncoder;
+  
+  @Autowired
+  private UserService userService;
+  
+  @Autowired
+  private TestEntityManager entityManager;
+  
+  @Test
+  public void create_encodePassword() {
+    Mockito
+        .when(passwordEncoder.encode("password"))
+        .thenReturn("encoded");
     
-    @Autowired
-    private UserService userService;
+    userService.create(
+        "email@mail.com",
+        "username",
+        "first",
+        "last",
+        "password"
+    );
     
-    @Autowired
-    private TestEntityManager entityManager;
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(new User()
+            .setId(1L)
+            .setEmail("email@mail.com")
+            .setUsername("username")
+            .setFirstName("first")
+            .setLastName("last")
+            .setPassword("encoded"));
+  }
+  
+  @Test
+  public void update_exception_whenNoUserWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.update(
+            1L,
+            "email@mail.com",
+            "username",
+            "first",
+            "last",
+            Publicity.PUBLIC
+        ))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void update() {
+    entityManager.persist(TestEntity.user());
     
-    @Test
-    public void create_encodePassword() {
-        Mockito.when(passwordEncoder.encode(
-                "password"
-        )).thenReturn("encoded");
+    userService.update(
+        1L,
+        "new@mail.com",
+        "new username",
+        "new first",
+        "new last",
+        Publicity.INTERNAL
+    );
     
-        userService.create("email@mail.com", "username", "first", "last", "password");
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(new User()
+            .setId(1L)
+            .setEmail("new@mail.com")
+            .setUsername("new username")
+            .setFirstName("new first")
+            .setLastName("new last")
+            .setPublicity(Publicity.INTERNAL)
+            .setPassword("encoded"));
+  }
+  
+  @Test
+  public void updateRole_exception_whenNoUserWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.updateRole(1L, false))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void updateRole() {
+    entityManager.persist(TestEntity
+        .user()
+        .setModer(false));
     
-        assertThat(entityManager.find(User.class, 1L))
-                .usingComparator(userComparator())
-                .isEqualTo(new User()
-                        .setId(1L)
-                        .setEmail("email@mail.com")
-                        .setUsername("username")
-                        .setFirstName("first")
-                        .setLastName("last")
-                        .setPassword("encoded"));
-    }
+    userService.updateRole(1L, true);
     
-    @Test
-    public void update_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.update(1L, "email@mail.com", "usrnm", "first", "last", Publicity.PUBLIC))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(TestEntity
+            .user()
+            .setId(1L)
+            .setModer(true));
+  }
+  
+  @Test
+  public void changePassword_exception_whenNoUserWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void changePassword_exception_whenWrongActualPassword() {
+    entityManager.persist(TestEntity
+        .user()
+        .setPassword("wrongActual"));
     
-    @Test
-    public void update() {
-        entityManager.persist(user());
+    Assertions
+        .assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
+        .isExactlyInstanceOf(WrongCredentialsException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
+  }
+  
+  @Test
+  public void changePassword_encodeAndSetNew() {
+    entityManager.persist(TestEntity
+        .user()
+        .setPassword("encodedOld"));
+    Mockito
+        .when(passwordEncoder.matches("password", "encodedOld"))
+        .thenReturn(true);
+    Mockito
+        .when(passwordEncoder.encode("change"))
+        .thenReturn("encodedNew");
     
-        userService.update(1L, "new@mail.com", "new username", "new first", "new last", Publicity.INTERNAL);
+    userService.changePassword(1L, "password", "change");
     
-        assertThat(entityManager.find(User.class, 1L))
-                .usingComparator(userComparator())
-                .isEqualTo(new User()
-                        .setId(1L)
-                        .setEmail("new@mail.com")
-                        .setUsername("new username")
-                        .setFirstName("new first")
-                        .setLastName("new last")
-                        .setPublicity(Publicity.INTERNAL)
-                        .setPassword("encoded"));
-    }
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(TestEntity
+            .user()
+            .setId(1L)
+            .setPassword("encodedNew"));
+  }
+  
+  @Test
+  public void delete_exception_whenNoEntityWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.delete(1L, "password"))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void delete_exception_whenWrongActualPassword() {
+    entityManager.persist(TestEntity
+        .user()
+        .setPassword("wrongActual"));
     
-    @Test
-    public void updateRole_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.updateRole(1L, false))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
+    Assertions
+        .assertThatThrownBy(() -> userService.delete(1L, "password"))
+        .isExactlyInstanceOf(WrongCredentialsException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
+  }
+  
+  @Test
+  public void delete() {
+    entityManager.persist(TestEntity.user());
+    Mockito
+        .when(passwordEncoder.matches("password", "encoded"))
+        .thenReturn(true);
     
-    @Test
-    public void updateRole() {
-        entityManager.persist(user()
-                .setModer(false));
+    userService.delete(1L, "password");
     
-        userService.updateRole(1L, true);
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .isNull();
+  }
+  
+  @Test
+  public void addFriend_exception_whenEqualUserIdAndTargetId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.addFriend(1L, 1L))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addHimself"});
+  }
+  
+  @Test
+  public void addFriend_exception_whenNoEntityWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void addFriend_exception_whenNoTargetEntityWithId() {
+    entityManager.persist(TestEntity.user());
     
-        assertThat(entityManager.find(User.class, 1L))
-                .usingComparator(userComparator())
-                .isEqualTo(user()
-                        .setId(1L)
-                        .setModer(true));
-    }
+    Assertions
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+  }
+  
+  @Test
+  public void addFriend_exception_whenPrivateTargetEntity() {
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target")
+        .setPublicity(Publicity.PRIVATE));
     
-    @Test
-    public void changePassword_exception_whenNoUserWithId() {
-        assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
+    Assertions
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPrivate"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+  }
+  
+  @Test
+  public void addFriend_exception_whenFriendAlreadyPresent() {
+    User user = entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    User target = entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target")
+        .setPublicity(Publicity.PUBLIC));
+    user.setFriends(Sets.newHashSet(target));
+    target.setFriends(Sets.newHashSet(user));
     
-    @Test
-    public void changePassword_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(user()
-                .setPassword("wrongActual"));
+    Assertions
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+  }
+  
+  @Test
+  public void addFriend() {
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target")
+        .setPublicity(Publicity.PUBLIC));
     
-        assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
-                .isExactlyInstanceOf(WrongCredentialsException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
-    }
+    userService.addFriend(1L, 2L);
     
-    @Test
-    public void changePassword_encodeAndSetNew() {
-        entityManager.persist(user()
-                .setPassword("encodedOld"));
-        Mockito.when(passwordEncoder.matches(
-                "password",
-                "encodedOld"
-        )).thenReturn(true);
-        Mockito.when(passwordEncoder.encode(
-                "change"
-        )).thenReturn("encodedNew");
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .describedAs("Should add target to entity friends")
+        .usingRecursiveComparison()
+        .ignoringAllOverriddenEquals()
+        .ignoringFields("friends.friends", "friendFor")
+        .isEqualTo(TestEntity
+            .user()
+            .setId(1L)
+            .setEmail("user@mail.com")
+            .setUsername("user")
+            .setPublicity(Publicity.PRIVATE)
+            .setFriends(Sets
+                .newHashSet(TestEntity
+                    .user()
+                    .setId(2L)
+                    .setEmail("target@mail.com")
+                    .setUsername("target")
+                    .setPublicity(Publicity.PUBLIC))
+            ));
+    Assertions
+        .assertThat(entityManager.find(User.class, 2L))
+        .describedAs("Should add entity to target friends")
+        .usingRecursiveComparison()
+        .ignoringAllOverriddenEquals()
+        .ignoringFields("friends.friends", "friendFor")
+        .isEqualTo(TestEntity
+            .user()
+            .setId(2L)
+            .setEmail("target@mail.com")
+            .setUsername("target")
+            .setPublicity(Publicity.PUBLIC)
+            .setFriends(Sets
+                .newHashSet(TestEntity
+                    .user()
+                    .setId(1L)
+                    .setEmail("user@mail.com")
+                    .setUsername("user")
+                    .setPublicity(Publicity.PRIVATE))
+            ));
+  }
+  
+  @Test
+  public void removeFriend_exception_whenEqualUserIdAndTargetId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 1L))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeHimself"});
+  }
+  
+  @Test
+  public void removeFriend_exception_whenNoEntityWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void removeFriend_exception_whenNoTargetWithId() {
+    entityManager.persist(TestEntity.user());
     
-        userService.changePassword(1L, "password", "change");
+    Assertions
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+  }
+  
+  @Test
+  public void removeFriend_exception_whenNoTargetInFriends() {
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target"));
     
-        assertThat(entityManager.find(User.class, 1L))
-                .usingComparator(userComparator())
-                .isEqualTo(user()
-                        .setId(1L)
-                        .setPassword("encodedNew"));
-    }
+    Assertions
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeAbsent"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
+  }
+  
+  @Test
+  public void removeFriend() {
+    User user = entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    User target = entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target"));
+    user.setFriends(Sets.newHashSet(target));
+    target.setFriends(Sets.newHashSet(user));
     
-    @Test
-    public void delete_exception_whenNoEntityWithId() {
-        assertThatThrownBy(() -> userService.delete(1L, "password"))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
+    userService.removeFriend(1L, 2L);
     
-    @Test
-    public void delete_exception_whenActualPasswordIsWrong() {
-        entityManager.persist(user()
-                .setPassword("wrongActual"));
+    Assertions
+        .assertThat(entityManager.find(User.class, 1L))
+        .describedAs("Should remove target from entity friends")
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(TestEntity
+            .user()
+            .setId(1L)
+            .setEmail("user@mail.com")
+            .setUsername("user"));
+    Assertions
+        .assertThat(entityManager.find(User.class, 2L))
+        .describedAs("Should remove entity from target friends")
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(TestEntity
+            .user()
+            .setId(2L)
+            .setEmail("target@mail.com")
+            .setUsername("target"));
+  }
+  
+  @Test
+  public void getFriends() {
+    User user = entityManager.persist(TestEntity
+        .user()
+        .setEmail("user@mail.com")
+        .setUsername("user"));
+    User target = entityManager.persist(TestEntity
+        .user()
+        .setEmail("target@mail.com")
+        .setUsername("target"));
+    user.setFriends(Sets.newHashSet(target));
+    target.setFriends(Sets.newHashSet(user));
     
-        assertThatThrownBy(() -> userService.delete(1L, "password"))
-                .isExactlyInstanceOf(WrongCredentialsException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
-    }
+    Assertions
+        .assertThat(userService.getFriends(1L, Pageable.unpaged()))
+        .usingComparatorForType(TestComparator
+            .userComparator(), User.class)
+        .containsExactly(TestEntity
+            .user()
+            .setId(2L)
+            .setEmail("target@mail.com")
+            .setUsername("target"));
+  }
+  
+  @Test
+  public void find_byId_exception_whenNoEntityWithId() {
+    Assertions
+        .assertThatThrownBy(() -> userService.find(1L))
+        .isExactlyInstanceOf(NotFoundException.class)
+        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+  }
+  
+  @Test
+  public void find_byId() {
+    entityManager.persist(TestEntity.user());
     
-    @Test
-    public void delete() {
-        entityManager.persist(user());
-        Mockito.when(passwordEncoder.matches(
-                "password",
-                "encoded"
-        )).thenReturn(true);
+    Assertions
+        .assertThat(userService.find(1L))
+        .usingComparator(TestComparator
+            .userComparator())
+        .isEqualTo(TestEntity
+            .user()
+            .setId(1L));
+  }
+  
+  @Test
+  public void findAll() {
+    entityManager.persist(TestEntity.user());
     
-        userService.delete(1L, "password");
-        
-        assertThat(entityManager.find(User.class, 1L))
-                .isNull();
-    }
-    
-    @Test
-    public void addFriend_exception_whenUserAndTargetIdAreEquals() {
-        assertThatThrownBy(() -> userService.addFriend(1L, 1L))
-                .isExactlyInstanceOf(IllegalActionException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addHimself"});
-    }
-    
-    @Test
-    public void addFriend_exception_whenNoEntityWithId() {
-        assertThatThrownBy(() -> userService.addFriend(1L, 2L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
-    
-    @Test
-    public void addFriend_exception_whenNoTargetEntityWithId() {
-        entityManager.persist(user());
-        
-        assertThatThrownBy(() -> userService.addFriend(1L, 2L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-    }
-    
-    @Test
-    public void addFriend_exception_whenTargetEntityIsPrivate() {
-        entityManager.persist(user()
-                .setEmail("email1@mail.com")
-                .setUsername("username1"));
-        entityManager.persist(user()
-                .setEmail("email2@mail.com")
-                .setUsername("username2"));
-        
-        assertThatThrownBy(() -> userService.addFriend(1L, 2L))
-                .isExactlyInstanceOf(IllegalActionException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPrivate"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-    }
-    
-    @Test
-    public void addFriend_exception_whenFriendAlreadyPresent() {
-        entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1")
-                .setPublicity(Publicity.PRIVATE)
-                .setFriends(Sets.newHashSet(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setPublicity(Publicity.PUBLIC))));
-        entityManager.persist(user()
-                .setEmail("email_2@mail.com")
-                .setUsername("username_2")
-                .setPublicity(Publicity.PUBLIC)
-                .setFriends(Sets.newHashSet(user()
-                        .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setPublicity(Publicity.PRIVATE))));
-    
-        assertThatThrownBy(() -> userService.addFriend(1L, 2L))
-                .isExactlyInstanceOf(IllegalActionException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-    }
-    
-    @Test
-    public void addFriend() {
-        entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1")
-                .setPublicity(Publicity.PRIVATE));
-        entityManager.persist(user()
-                .setEmail("email_2@mail.com")
-                .setUsername("username_2")
-                .setPublicity(Publicity.PUBLIC));
-    
-        userService.addFriend(1L, 2L);
-    
-        assertThat(entityManager.find(User.class, 1L))
-                .describedAs("Should add target to entity friends")
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .ignoringFields("friends.friends", "friendFor")
-                .isEqualTo(user()
-                        .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1")
-                        .setPublicity(Publicity.PRIVATE)
-                        .setFriends(ImmutableSet.of(user()
-                                .setId(2L)
-                                .setEmail("email_2@mail.com")
-                                .setUsername("username_2")
-                                .setPublicity(Publicity.PUBLIC))));
-        assertThat(entityManager.find(User.class, 2L))
-                .describedAs("Should add entity to target friends")
-                .usingRecursiveComparison()
-                .ignoringAllOverriddenEquals()
-                .ignoringFields("friends.friends", "friendFor")
-                .isEqualTo(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2")
-                        .setPublicity(Publicity.PUBLIC)
-                        .setFriends(ImmutableSet.of(user()
-                                .setId(1L)
-                                .setEmail("email_1@mail.com")
-                                .setUsername("username_1")
-                                .setPublicity(Publicity.PRIVATE))));
-    }
-    
-    @Test
-    public void removeFriend_exception_whenUserIdAndTargetIdAreEquals() {
-        assertThatThrownBy(() -> userService.removeFriend(1L, 1L))
-                .isExactlyInstanceOf(IllegalActionException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeHimself"});
-    }
-    
-    @Test
-    public void removeFriend_exception_whenNoEntityWithId() {
-        assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
-    
-    @Test
-    public void removeFriend_exception_whenNoTargetWithId() {
-        entityManager.persist(user());
-        
-        assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-    }
-    
-    @Test
-    public void removeFriend_exception_whenNoTargetInFriends() {
-        entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1"));
-        entityManager.persist(user()
-                .setEmail("email_2@mail.com")
-                .setUsername("username_2"));
-    
-        assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
-                .isExactlyInstanceOf(IllegalActionException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeAbsent"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
-    }
-    
-    @Test
-    public void removeFriend() {
-        entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1")
-                .setFriends(Sets.newHashSet(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2"))));
-        entityManager.persist(user()
-                .setEmail("email_2@mail.com")
-                .setUsername("username_2")
-                .setFriends(Sets.newHashSet(user()
-                        .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1"))));
-    
-        userService.removeFriend(1L, 2L);
-    
-        assertThat(entityManager.find(User.class, 1L))
-                .describedAs("Should remove target from entity friends")
-                .usingComparator(userComparator())
-                .isEqualTo(user()
-                        .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1"));
-        assertThat(entityManager.find(User.class, 2L))
-                .describedAs("Should remove entity from target friends")
-                .usingComparator(userComparator())
-                .isEqualTo(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2"));
-    }
-    
-    @Test
-    public void getFriends() {
-        entityManager.persist(user()
-                .setEmail("email_1@mail.com")
-                .setUsername("username_1")
-                .setFriends(Sets.newHashSet(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2"))));
-        entityManager.persist(user()
-                .setEmail("email_2@mail.com")
-                .setUsername("username_2")
-                .setFriends(Sets.newHashSet(user()
-                        .setId(1L)
-                        .setEmail("email_1@mail.com")
-                        .setUsername("username_1"))));
-    
-        assertThat(userService.getFriends(1L, Pageable.unpaged()))
-                .usingComparatorForType(userComparator(), User.class)
-                .containsExactly(user()
-                        .setId(2L)
-                        .setEmail("email_2@mail.com")
-                        .setUsername("username_2"));
-    }
-    
-    @Test
-    public void findById_exception_whenNoEntityWithId() {
-        assertThatThrownBy(() -> userService.findById(1L))
-                .isExactlyInstanceOf(NotFoundException.class)
-                .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-                .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
-    }
-    
-    @Test
-    public void findById() {
-        entityManager.persist(user());
-    
-        assertThat(userService.findById(1L))
-                .usingComparator(userComparator())
-                .isEqualTo(user()
-                        .setId(1L));
-    }
-    
-    @Test
-    public void findAll() {
-        entityManager.persist(user());
-    
-        assertThat(userService.findAll(Pageable.unpaged()))
-                .usingComparatorForType(userComparator(), User.class)
-                .containsExactly(user()
-                        .setId(1L));
-    }
+    Assertions
+        .assertThat(userService.findAll(Pageable.unpaged()))
+        .usingComparatorForType(TestComparator
+            .userComparator(), User.class)
+        .containsExactly(TestEntity
+            .user()
+            .setId(1L));
+  }
+  
 }

@@ -13,9 +13,11 @@ import javax.validation.constraints.Size;
 @Size(min = 8, max = 16)
 @Constraint(validatedBy = {})
 public @interface Password {
-    String message() default "invalid password";
-    
-    Class<?>[] groups() default {};
-    
-    Class<? extends Payload>[] payload() default {};
+  
+  String message() default "invalid password";
+  
+  Class<?>[] groups() default {};
+  
+  Class<? extends Payload>[] payload() default {};
+  
 }

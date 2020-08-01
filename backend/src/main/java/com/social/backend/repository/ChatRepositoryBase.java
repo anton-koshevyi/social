@@ -10,7 +10,9 @@ import com.social.backend.model.chat.Chat;
 import com.social.backend.model.user.User;
 
 public interface ChatRepositoryBase<T extends Chat> extends JpaRepository<T, Long> {
-    Optional<T> findByIdAndMembersContaining(Long id, User user);
-    
-    Page<T> findAllByMembersContaining(User user, Pageable pageable);
+  
+  Optional<T> findByIdAndMembersContaining(Long id, User user);
+  
+  Page<T> findAllByMembersContaining(User user, Pageable pageable);
+  
 }
