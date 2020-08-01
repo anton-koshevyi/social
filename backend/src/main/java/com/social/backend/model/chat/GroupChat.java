@@ -7,8 +7,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Transient;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.user.User;
 
+@Getter
+@Setter
 @Entity
 @DiscriminatorValue("group")
 public class GroupChat extends Chat {
@@ -28,24 +33,6 @@ public class GroupChat extends Chat {
   @Transient
   public boolean isOwner(User user) {
     return owner.equals(user);
-  }
-  
-  public GroupChat setName(String name) {
-    this.name = name;
-    return this;
-  }
-  
-  public GroupChat setOwner(User creator) {
-    this.owner = creator;
-    return this;
-  }
-  
-  public String getName() {
-    return name;
-  }
-  
-  public User getOwner() {
-    return owner;
   }
   
 }

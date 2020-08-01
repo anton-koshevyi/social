@@ -1,18 +1,14 @@
 package com.social.backend.dto.reply;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.post.Post;
 
+@Getter
+@Setter
 public class CommentDto extends ReplyDto {
   
   private Post post;
-  
-  public CommentDto setPost(Post post) {
-    this.post = post;
-    return this;
-  }
-  
-  public Post getPost() {
-    return post;
-  }
   
 }

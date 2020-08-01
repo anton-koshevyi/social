@@ -18,8 +18,13 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import com.social.backend.model.user.User;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "chats")
 @Inheritance
@@ -38,32 +43,5 @@ public abstract class Chat {
   
   @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
   private List<Message> messages = new ArrayList<>();
-  
-  public Chat setId(Long id) {
-    this.id = id;
-    return this;
-  }
-  
-  public Chat setMembers(Set<User> members) {
-    this.members = members;
-    return this;
-  }
-  
-  public Chat setMessages(List<Message> messages) {
-    this.messages = messages;
-    return this;
-  }
-  
-  public Long getId() {
-    return id;
-  }
-  
-  public Set<User> getMembers() {
-    return members;
-  }
-  
-  public List<Message> getMessages() {
-    return messages;
-  }
   
 }
