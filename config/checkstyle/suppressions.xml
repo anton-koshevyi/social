@@ -6,7 +6,5 @@
     <suppress files="src/test/.*Test.java"
               checks="FinalClass|MagicNumber|MethodName"/>
     <suppress files="util/.*.java"
-              checks="CyclomaticComplexity|DeclarationOrder|JavaNCSS|MagicNumber"/>
-    <suppress files="model/.*.java"
-              checks="CyclomaticComplexity|JavaNCSS"/>
+              checks="CyclomaticComplexity|JavaNCSS|MagicNumber"/>
 </suppressions>
