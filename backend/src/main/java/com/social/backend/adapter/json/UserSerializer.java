@@ -18,6 +18,7 @@ import com.social.backend.util.AuthenticationUtil;
 
 @JsonComponent
 public class UserSerializer extends AbstractSerializer<User> {
+  
   private final Logger logger = LoggerFactory.getLogger(UserSerializer.class);
   private final EntityMapper<User, UserDto> entityMapper;
   
@@ -73,4 +74,5 @@ public class UserSerializer extends AbstractSerializer<User> {
     logger.debug("Hidden body by default");
     return entityMapper.mapHidden(user);
   }
+  
 }
