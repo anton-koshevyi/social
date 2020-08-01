@@ -79,14 +79,15 @@ public class ChatSerializerTest {
     chat.setId(1L);
     chat.setName("chat name");
     chat.setOwner(owner);
-    chat.setMembers(Sets.newHashSet(
-        owner,
-        TestEntity.user()
-            .setId(2L)
-            .setEmail("member@mail.com")
-            .setUsername("member")
-    ));
-    
+    chat.setMembers(Sets
+        .newHashSet(
+            owner,
+            TestEntity.user()
+                .setId(2L)
+                .setEmail("member@mail.com")
+                .setUsername("member")
+        ));
+  
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
