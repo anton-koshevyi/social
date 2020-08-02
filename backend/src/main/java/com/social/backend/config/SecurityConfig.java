@@ -52,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/users/{id}/roles").hasAuthority(Authority.ADMIN)
             .antMatchers("/users/{id}/friends").authenticated()
             .antMatchers("/users/{id}/chats/private").authenticated()
-            .anyRequest().denyAll())
+            .anyRequest().permitAll())
         .formLogin(c -> c
             .loginProcessingUrl("/auth")
             .usernameParameter("username")
