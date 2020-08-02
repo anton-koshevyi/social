@@ -41,8 +41,9 @@ public class PostController {
   public Post create(@AuthenticationPrincipal(expression = "id") Long userId,
                      @Valid @RequestBody ContentDto dto) {
     User author = userService.find(userId);
+    String title = dto.getTitle();
     String body = dto.getBody();
-    return postService.create(author, body);
+    return postService.create(author, title, body);
   }
   
   @GetMapping("/posts/{id}")
@@ -56,8 +57,9 @@ public class PostController {
                      @Valid @RequestBody ContentDto dto) {
     // TODO: Implement as PATCH-request
     User author = userService.find(userId);
+    String title = dto.getTitle();
     String body = dto.getBody();
-    return postService.update(id, author, body);
+    return postService.update(id, author, title, body);
   }
   
   @DeleteMapping("/posts/{id}")

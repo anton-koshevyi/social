@@ -31,6 +31,7 @@ public class PostSerializerTest {
     post.setId(1L);
     post.setCreatedAt(ZonedDateTime.now());
     post.setUpdatedAt(ZonedDateTime.now());
+    post.setTitle("title");
     post.setBody("body");
     post.setAuthor(TestEntity
         .user()
@@ -40,6 +41,7 @@ public class PostSerializerTest {
         + "id: 1,"
         + "createdAt: (customized)',"
         + "updatedAt: (customized)',"
+        + "title: 'title',"
         + "body: 'body',"
         + "comments: 0,"
         + "author: {"

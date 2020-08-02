@@ -8,9 +8,9 @@ import com.social.backend.model.user.User;
 
 public interface PostService {
   
-  Post create(User author, String body);
+  Post create(User author, String title, String body);
   
-  Post update(Long id, User author, String body);
+  Post update(Long id, User author, String title, String body);
   
   void delete(Long id, User author);
   

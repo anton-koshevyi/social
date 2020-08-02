@@ -64,6 +64,7 @@ public class CommentSerializerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized)',"
+        + "  title: 'title',"
         + "  body: 'post body',"
         + "  comments: 1,"
         + "  author: {"

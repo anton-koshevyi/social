@@ -25,17 +25,19 @@ public class PostServiceImpl implements PostService {
   }
   
   @Override
-  public Post create(User author, String body) {
+  public Post create(User author, String title, String body) {
     Post entity = new Post();
+    entity.setTitle(title);
     entity.setBody(body);
     entity.setAuthor(author);
     return repository.save(entity);
   }
   
   @Override
-  public Post update(Long id, User author, String body) {
+  public Post update(Long id, User author, String title, String body) {
     Post entity = findByIdAndAuthor(id, author);
     entity.setUpdatedAt(ZonedDateTime.now());
+    entity.setTitle(title);
     entity.setBody(body);
     return repository.save(entity);
   }
