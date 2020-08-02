@@ -26,6 +26,7 @@ public final class TestComparator {
   
   public static Comparator<Post> postComparator() {
     return Comparator.comparing(Post::getId)
+        .thenComparing(Post::getTitle)
         .thenComparing(Post::getBody)
         .thenComparing(Post::getAuthor, userComparator());
   }

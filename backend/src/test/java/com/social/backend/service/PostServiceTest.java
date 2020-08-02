@@ -33,7 +33,7 @@ public class PostServiceTest {
   public void create() {
     User author = entityManager.persist(TestEntity.user());
     
-    postService.create(author, "body");
+    postService.create(author, "title", "body");
     
     Assertions
         .assertThat(entityManager.find(Post.class, 1L))
@@ -41,6 +41,7 @@ public class PostServiceTest {
             .postComparator())
         .isEqualTo(new Post()
             .setId(1L)
+            .setTitle("title")
             .setBody("body")
             .setAuthor(TestEntity
                 .user()
@@ -50,9 +51,9 @@ public class PostServiceTest {
   @Test
   public void update_exception_whenNoPostWithIdAndAuthor() {
     User author = entityManager.persist(TestEntity.user());
-    
+  
     Assertions
-        .assertThatThrownBy(() -> postService.update(0L, author, "body"))
+        .assertThatThrownBy(() -> postService.update(0L, author, "title", "body"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -62,11 +63,12 @@ public class PostServiceTest {
   public void update() {
     User author = entityManager.persist(TestEntity.user());
     entityManager.persist(new Post()
+        .setTitle("title")
         .setBody("body")
         .setAuthor(author));
-    
-    postService.update(1L, author, "new body");
-    
+  
+    postService.update(1L, author, "new title", "new body");
+  
     Assertions
         .assertThat(entityManager.find(Post.class, 1L))
         .usingComparator(TestComparator
@@ -75,6 +77,7 @@ public class PostServiceTest {
             .notNullFirst(), "updated")
         .isEqualTo(new Post()
             .setId(1L)
+            .setTitle("new title")
             .setBody("new body")
             .setAuthor(TestEntity
                 .user()

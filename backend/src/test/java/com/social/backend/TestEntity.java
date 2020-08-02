@@ -24,6 +24,7 @@ public final class TestEntity {
   
   public static Post post() {
     Post post = new Post();
+    post.setTitle("title");
     post.setBody("post body");
     return post;
   }
