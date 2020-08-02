@@ -38,7 +38,7 @@ public class ChatMapper implements EntityMapper<Chat, ChatDto> {
       return dto;
     }
     
-    return null;
+    throw new UnsupportedOperationException("Mapped entity type is not supported");
   }
   
 }

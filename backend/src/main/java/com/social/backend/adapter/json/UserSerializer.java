@@ -19,7 +19,8 @@ import com.social.backend.util.AuthenticationUtil;
 @JsonComponent
 public class UserSerializer extends AbstractSerializer<User> {
   
-  private final Logger logger = LoggerFactory.getLogger(UserSerializer.class);
+  private static final Logger logger = LoggerFactory.getLogger(UserSerializer.class);
+  
   private final EntityMapper<User, UserDto> entityMapper;
   
   @Autowired
