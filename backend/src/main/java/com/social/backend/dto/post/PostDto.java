@@ -14,6 +14,7 @@ public class PostDto {
   private Long id;
   private ZonedDateTime createdAt;
   private ZonedDateTime updatedAt;
+  private String title;
   private String body;
   private Integer comments;
   private User author;

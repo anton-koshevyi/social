@@ -6,10 +6,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import com.social.backend.constraint.PostBody;
+import com.social.backend.constraint.PostTitle;
 
 @Getter
 @Setter
 public class ContentDto {
+  
+  @NotNull
+  @PostTitle
+  private String title;
   
   @NotNull
   @PostBody

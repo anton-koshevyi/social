@@ -310,6 +310,7 @@ public class UserControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "title: 'title',"
         + "body: 'post body',"
         + "comments: 0,"
         + "author: {"

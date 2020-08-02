@@ -80,6 +80,7 @@ public class PostControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "title: 'title',"
         + "body: 'post body',"
         + "comments: 0,"
         + "author: {"
@@ -123,8 +124,9 @@ public class PostControllerTest {
         + "timestamp: (customized),"
         + "status: 400,"
         + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
+        + "message: 'Invalid body: 2 error(s)',"
         + "errors: {"
+        + "  'title': ['must not be null'],"
         + "  'body': ['must not be null']"
         + "},"
         + "path: '/posts'"
@@ -148,7 +150,10 @@ public class PostControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"body\" }")
+        .body("{"
+            + "\"title\": \"title\","
+            + "\"body\": \"body\""
+            + "}")
         .post("/posts")
         .then()
         .statusCode(HttpServletResponse.SC_OK)
@@ -158,6 +163,7 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "title: 'title',"
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
@@ -197,6 +203,7 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "title: 'title',"
         + "body: 'post body',"
         + "author: {"
         + "  id: 1,"
@@ -222,6 +229,7 @@ public class PostControllerTest {
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
     postRepository.save(new Post()
+        .setTitle("title")
         .setBody("body")
         .setAuthor(author));
     
@@ -243,8 +251,9 @@ public class PostControllerTest {
         + "timestamp: (customized),"
         + "status: 400,"
         + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
+        + "message: 'Invalid body: 2 error(s)',"
         + "errors: {"
+        + "  'title': ['must not be null'],"
         + "  'body': ['must not be null']"
         + "},"
         + "path: '/posts/1'"
@@ -262,6 +271,7 @@ public class PostControllerTest {
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
     postRepository.save(new Post()
+        .setTitle("title")
         .setBody("body")
         .setAuthor(author));
     
@@ -271,7 +281,10 @@ public class PostControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"new body\"}")
+        .body("{"
+            + "\"title\": \"new title\","
+            + "\"body\": \"new body\""
+            + "}")
         .when()
         .patch("/posts/{id}", 1)
         .then()
@@ -283,6 +296,7 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
+        + "title: 'new title',"
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"

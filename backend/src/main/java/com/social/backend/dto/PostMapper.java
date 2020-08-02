@@ -18,6 +18,7 @@ public class PostMapper implements EntityMapper<Post, PostDto> {
     dto.setId(source.getId());
     dto.setCreatedAt(source.getCreatedAt());
     dto.setUpdatedAt(source.getUpdatedAt());
+    dto.setTitle(source.getTitle());
     dto.setBody(source.getBody());
     dto.setComments(source.getComments().size());
     dto.setAuthor(source.getAuthor());
