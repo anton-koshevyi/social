@@ -31,9 +31,7 @@ public class MvcConfig implements WebMvcConfigurer {
   @Profile("!prod")
   public CommonsRequestLoggingFilter loggingFilter() {
     CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
-    filter.setIncludeQueryString(true);
     filter.setIncludeClientInfo(true);
-    filter.setIncludeHeaders(true);
     filter.setIncludePayload(true);
     return filter;
   }
