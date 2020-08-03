@@ -3,6 +3,7 @@ spring:
   datasource:
     generate-unique-name: true
   jpa:
+    show-sql: true
     generate-ddl: true
     properties:
       hibernate:
