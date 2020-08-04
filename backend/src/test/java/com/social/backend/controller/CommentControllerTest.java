@@ -16,63 +16,63 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.TestEntity;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.CommentRepository;
-import com.social.backend.repository.PostRepository;
-import com.social.backend.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@Commit
+@Transactional
+@AutoConfigureTestEntityManager
 public class CommentControllerTest {
-  
+
   @LocalServerPort
   private int port;
-  
+
   @Autowired
   private PasswordEncoder passwordEncoder;
-  
+
   @Autowired
-  private UserRepository userRepository;
-  
-  @Autowired
-  private PostRepository postRepository;
-  
-  @Autowired
-  private CommentRepository commentRepository;
-  
+  private TestEntityManager entityManager;
+
   @BeforeAll
   public static void beforeAll() {
     RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
   }
-  
+
   @BeforeEach
   public void setUp() {
     RestAssured.port = port;
   }
-  
+
   @Test
   public void getAll() throws JSONException {
-    User author = userRepository.save(TestEntity.user());
-    Post post = postRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity.user());
+    Post post = entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    commentRepository.save((Comment) TestEntity
+    entityManager.persist((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -85,7 +85,7 @@ public class CommentControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
@@ -121,17 +121,18 @@ public class CommentControllerTest {
             new Customization("**.createdAt", (act, exp) -> true)
         ));
   }
-  
+
   @Test
   public void create_badRequest_whenInvalidBody() throws JSONException {
-    User author = userRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    postRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -145,7 +146,7 @@ public class CommentControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -161,17 +162,18 @@ public class CommentControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void create() throws JSONException {
-    User author = userRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    postRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -185,7 +187,7 @@ public class CommentControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
@@ -223,21 +225,22 @@ public class CommentControllerTest {
             new Customization("**.createdAt", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void update_badRequest_whenInvalidBody() throws JSONException {
-    User author = userRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    Post post = postRepository.save(TestEntity
+    Post post = entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    commentRepository.save((Comment) new Comment()
+    entityManager.persist((Comment) new Comment()
         .setPost(post)
         .setBody("body")
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -251,7 +254,7 @@ public class CommentControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -267,21 +270,22 @@ public class CommentControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void update() throws JSONException {
-    User author = userRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    Post post = postRepository.save(TestEntity
+    Post post = entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    commentRepository.save((Comment) new Comment()
+    entityManager.persist((Comment) new Comment()
         .setPost(post)
         .setBody("body")
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -295,7 +299,7 @@ public class CommentControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
@@ -335,21 +339,22 @@ public class CommentControllerTest {
             new Customization("updatedAt", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void delete() {
-    User author = userRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    Post post = postRepository.save(TestEntity
+    Post post = entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    commentRepository.save((Comment) TestEntity
+    entityManager.persist((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -359,5 +364,5 @@ public class CommentControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
 }

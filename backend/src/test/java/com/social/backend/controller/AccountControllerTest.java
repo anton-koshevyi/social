@@ -15,50 +15,58 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.TestEntity;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@Commit
+@Transactional
+@AutoConfigureTestEntityManager
 public class AccountControllerTest {
-  
+
   @LocalServerPort
   private int port;
-  
+
   @Autowired
   private PasswordEncoder passwordEncoder;
-  
+
   @Autowired
-  private UserRepository userRepository;
-  
+  private TestEntityManager entityManager;
+
   @BeforeAll
   public static void beforeAll() {
     RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
   }
-  
+
   @BeforeEach
   public void setUp() {
     RestAssured.port = port;
   }
-  
+
   @Test
   public void get() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -70,7 +78,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "email: 'email@mail.com',"
@@ -84,7 +92,7 @@ public class AccountControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void create_badRequest_whenInvalidBody() throws JSONException {
     String actual = RestAssured
@@ -98,7 +106,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -118,7 +126,7 @@ public class AccountControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void create_andAutoLogin() throws JSONException {
     String actual = RestAssured
@@ -140,7 +148,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "email: 'email@mail.com',"
@@ -154,17 +162,18 @@ public class AccountControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void update_badRequest_whenInvalidBody() throws JSONException {
-    userRepository.save(new User()
+    entityManager.persist(new User()
         .setEmail("email@mail.com")
         .setUsername("username")
         .setFirstName("first")
         .setLastName("last")
         .setPublicity(Publicity.PRIVATE)
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -178,7 +187,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -198,17 +207,18 @@ public class AccountControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void update() throws JSONException {
-    userRepository.save(new User()
+    entityManager.persist(new User()
         .setEmail("email@mail.com")
         .setUsername("username")
         .setFirstName("first")
         .setLastName("last")
         .setPublicity(Publicity.PRIVATE)
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -228,7 +238,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "email: 'new_email@mail.com',"
@@ -242,14 +252,15 @@ public class AccountControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void delete_badRequest_whenInvalidBody() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -263,7 +274,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -279,14 +290,15 @@ public class AccountControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void delete() {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -298,14 +310,15 @@ public class AccountControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void changePassword_badRequest_whenInvalidBody() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -319,7 +332,7 @@ public class AccountControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -339,14 +352,15 @@ public class AccountControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void changePassword() {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -362,5 +376,5 @@ public class AccountControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
 }

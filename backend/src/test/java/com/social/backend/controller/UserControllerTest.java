@@ -17,51 +17,55 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.TestEntity;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.PostRepository;
-import com.social.backend.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@Commit
+@Transactional
+@AutoConfigureTestEntityManager
 public class UserControllerTest {
-  
+
   @LocalServerPort
   private int port;
-  
+
   @Autowired
   private PasswordEncoder passwordEncoder;
-  
+
   @Autowired
-  private UserRepository userRepository;
-  
-  @Autowired
-  private PostRepository postRepository;
-  
+  private TestEntityManager entityManager;
+
   @BeforeAll
   public static void beforeAll() {
     RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
   }
-  
+
   @BeforeEach
   public void setUp() {
     RestAssured.port = port;
   }
-  
+
   @Test
   public void getAll() throws JSONException {
-    userRepository.save(TestEntity.user());
-    
+    entityManager.persist(TestEntity.user());
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -74,7 +78,7 @@ public class UserControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "username: 'username',"
@@ -87,11 +91,12 @@ public class UserControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void get() throws JSONException {
-    userRepository.save(TestEntity.user());
-    
+    entityManager.persist(TestEntity.user());
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -101,7 +106,7 @@ public class UserControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "username: 'username',"
@@ -114,20 +119,21 @@ public class UserControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void updateRole_badRequest_whenBodyInvalid() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("admin@mail.com")
         .setUsername("admin")
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -141,7 +147,7 @@ public class UserControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -157,20 +163,21 @@ public class UserControllerTest {
             new Customization("timestamp", (act, exp) -> true)
         ));
   }
-  
+
   @Test
   public void updateRole() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("admin@mail.com")
         .setUsername("admin")
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -184,7 +191,7 @@ public class UserControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 2,"
         + "email: 'user@mail.com',"
@@ -198,20 +205,21 @@ public class UserControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void getFriends() throws JSONException {
-    User user = userRepository.save(TestEntity
+    User user = entityManager.persist(TestEntity
         .user()
         .setEmail("email_1@mail.com")
         .setUsername("username_1"));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("email_2@mail.com")
         .setUsername("username_2")
         .setFriends(Sets
             .newHashSet(user)));
-    
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -224,7 +232,7 @@ public class UserControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "username: 'username_1',"
@@ -237,20 +245,21 @@ public class UserControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void addFriend() {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("username_2")
         .setPublicity(Publicity.PUBLIC));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -261,22 +270,22 @@ public class UserControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void removeFriend() {
-    User user = userRepository.save(TestEntity
+    User user = entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user")
         .setPassword(passwordEncoder.encode("password")));
-    User target = userRepository.save(TestEntity
+    User target = entityManager.persist(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target")
         .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
-    userRepository.save(user);
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -286,14 +295,15 @@ public class UserControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void getPosts() throws JSONException {
-    User author = userRepository.save(TestEntity.user());
-    postRepository.save(TestEntity
+    User author = entityManager.persist(TestEntity.user());
+    entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
-    
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -306,7 +316,7 @@ public class UserControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
@@ -328,20 +338,21 @@ public class UserControllerTest {
             new Customization("[*].createdAt", (act, exp) -> true)
         ));
   }
-  
+
   @Test
   public void createPrivateChat() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target")
         .setPublicity(Publicity.PUBLIC));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -353,7 +364,7 @@ public class UserControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'private',"
@@ -381,5 +392,5 @@ public class UserControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
 }
