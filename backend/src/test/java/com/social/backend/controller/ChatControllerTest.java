@@ -17,61 +17,64 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.TestEntity;
-import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepositoryBase;
-import com.social.backend.repository.UserRepository;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@Commit
+@Transactional
+@AutoConfigureTestEntityManager
 public class ChatControllerTest {
-  
+
   @LocalServerPort
   private int port;
-  
+
   @Autowired
   private PasswordEncoder passwordEncoder;
-  
+
   @Autowired
-  private UserRepository userRepository;
-  
-  @Autowired
-  private ChatRepositoryBase<Chat> chatRepository;
-  
+  private TestEntityManager entityManager;
+
   @BeforeAll
   public static void beforeAll() {
     RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
   }
-  
+
   @BeforeEach
   public void setUp() {
     RestAssured.port = port;
   }
-  
+
   @Test
   public void getAll() throws JSONException {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .auth()
@@ -86,7 +89,7 @@ public class ChatControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "type: 'group',"
@@ -106,19 +109,20 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void get() throws JSONException {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -130,7 +134,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
@@ -150,19 +154,20 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void getMembers() throws JSONException {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     String response = RestAssured
         .given()
         .auth()
@@ -177,7 +182,7 @@ public class ChatControllerTest {
     String actual = new JSONObject(response)
         .getJSONArray("content")
         .toString();
-    
+
     String expected = "[{"
         + "id: 1,"
         + "email: 'email@mail.com',"
@@ -191,18 +196,19 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void deletePrivate() {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .privateChat()
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -213,21 +219,22 @@ public class ChatControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void createGroup_badRequest_whenInvalidBody() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("creator@mail.com")
         .setUsername("creator")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("member@mail.com")
         .setUsername("members")
         .setPassword(passwordEncoder.encode("password"))
         .setPublicity(Publicity.PUBLIC));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -241,7 +248,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -258,21 +265,22 @@ public class ChatControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void createGroup() throws JSONException {
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("creator@mail.com")
         .setUsername("creator")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("member@mail.com")
         .setUsername("members")
         .setPassword(passwordEncoder.encode("password"))
         .setPublicity(Publicity.PUBLIC));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -289,7 +297,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
@@ -309,19 +317,20 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void updateGroup_badRequest_whenInvalidBody() throws JSONException {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -335,7 +344,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -351,19 +360,20 @@ public class ChatControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void updateGroup() throws JSONException {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(new GroupChat()
+    entityManager.persist(new GroupChat()
         .setName("name")
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -377,7 +387,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
@@ -397,25 +407,26 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void leaveGroup() {
-    User owner = userRepository.save(TestEntity
+    User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
         .setUsername("owner")
         .setPassword(passwordEncoder.encode("password")));
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setEmail("member@mail.com")
         .setUsername("member")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, member)));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -425,19 +436,20 @@ public class ChatControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void deleteGroup() {
-    User member = userRepository.save(TestEntity
+    User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
         .setMembers(Sets
             .newHashSet(member)));
-    
+    TestTransaction.end();
+
     RestAssured
         .given()
         .auth()
@@ -447,26 +459,27 @@ public class ChatControllerTest {
         .then()
         .statusCode(HttpServletResponse.SC_OK);
   }
-  
+
   @Test
   public void updateGroupMembers_badRequest_whenInvalidBody() throws JSONException {
-    User owner = userRepository.save(TestEntity
+    User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
         .setUsername("owner")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("member@mail.com")
         .setUsername("members")
         .setPassword(passwordEncoder.encode("password"))
         .setPublicity(Publicity.PUBLIC));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -480,7 +493,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "timestamp: (customized),"
         + "status: 400,"
@@ -496,26 +509,27 @@ public class ChatControllerTest {
             new Customization("timestamp", (o1, o2) -> true)
         ));
   }
-  
+
   @Test
   public void updateGroupMembers() throws JSONException {
-    User owner = userRepository.save(TestEntity
+    User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
         .setUsername("owner")
         .setPassword(passwordEncoder.encode("password")));
-    userRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .user()
         .setEmail("member@mail.com")
         .setUsername("members")
         .setPassword(passwordEncoder.encode("password"))
         .setPublicity(Publicity.PUBLIC));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -529,7 +543,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
@@ -549,25 +563,26 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
   @Test
   public void changeOwner() throws JSONException {
-    User owner = userRepository.save(TestEntity
+    User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
         .setUsername("owner")
         .setPassword(passwordEncoder.encode("password")));
-    User newOwner = userRepository.save(TestEntity
+    User newOwner = entityManager.persist(TestEntity
         .user()
         .setEmail("newOwner@mail.com")
         .setUsername("newOwner")
         .setPassword(passwordEncoder.encode("password")));
-    chatRepository.save(TestEntity
+    entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, newOwner)));
-    
+    TestTransaction.end();
+
     String actual = RestAssured
         .given()
         .auth()
@@ -579,7 +594,7 @@ public class ChatControllerTest {
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
-    
+
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
@@ -598,5 +613,5 @@ public class ChatControllerTest {
     JSONAssert
         .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
-  
+
 }
