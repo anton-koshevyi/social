@@ -317,6 +317,7 @@ public class AccountControllerTest {
         .user()
         .setUsername("username")
         .setPassword(passwordEncoder.encode("password")));
+    TestTransaction.end();
 
     String actual = RestAssured
         .given()
