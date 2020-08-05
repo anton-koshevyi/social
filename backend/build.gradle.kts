@@ -46,7 +46,7 @@ tasks {
 
     jacocoTestReport {
         val classDirs = fileTree("$buildDir/classes/java/main/com/social/backend")
-                .exclude("dto/**", "exception/**", "model/**")
+                .exclude("dto/**", "exception/**", "model/**", "Application.class")
         classDirectories.setFrom(classDirs)
     }
 
