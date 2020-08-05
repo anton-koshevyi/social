@@ -1,11 +1,10 @@
 package com.social.backend.controller;
 
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.social.backend.dto.reply.ContentDto;
+import com.social.backend.dto.reply.ContentDto.CreateGroup;
+import com.social.backend.dto.reply.ContentDto.UpdateGroup;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
@@ -50,7 +51,7 @@ public class MessageController {
   @PostMapping("/chats/{chatId}/messages")
   public Message create(@PathVariable Long chatId,
                         @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Valid @RequestBody ContentDto dto) {
+                        @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(userId);
     Chat chat = chatService.find(chatId, author);
     String body = dto.getBody();
@@ -60,7 +61,7 @@ public class MessageController {
   @PatchMapping("/chats/{chatId}/messages/{id}")
   public Message update(@PathVariable Long id,
                         @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Valid @RequestBody ContentDto dto) {
+                        @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(userId);
     String body = dto.getBody();
     return messageService.update(id, author, body);
