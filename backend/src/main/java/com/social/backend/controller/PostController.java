@@ -22,21 +22,21 @@ import com.social.backend.service.UserService;
 
 @RestController
 public class PostController {
-  
+
   private final PostService postService;
   private final UserService userService;
-  
+
   @Autowired
   public PostController(PostService postService, UserService userService) {
     this.postService = postService;
     this.userService = userService;
   }
-  
+
   @GetMapping("/posts")
   public Page<Post> getAll(Pageable pageable) {
     return postService.findAll(pageable);
   }
-  
+
   @PostMapping("/posts")
   public Post create(@AuthenticationPrincipal(expression = "id") Long userId,
                      @Valid @RequestBody ContentDto dto) {
@@ -45,28 +45,27 @@ public class PostController {
     String body = dto.getBody();
     return postService.create(author, title, body);
   }
-  
+
   @GetMapping("/posts/{id}")
   public Post get(@PathVariable Long id) {
     return postService.find(id);
   }
-  
+
   @PatchMapping("/posts/{id}")
   public Post update(@PathVariable Long id,
                      @AuthenticationPrincipal(expression = "id") Long userId,
                      @Valid @RequestBody ContentDto dto) {
-    // TODO: Implement as PATCH-request
     User author = userService.find(userId);
     String title = dto.getTitle();
     String body = dto.getBody();
     return postService.update(id, author, title, body);
   }
-  
+
   @DeleteMapping("/posts/{id}")
   public void delete(@PathVariable Long id,
                      @AuthenticationPrincipal(expression = "id") Long userId) {
     User author = userService.find(userId);
     postService.delete(id, author);
   }
-  
+
 }
