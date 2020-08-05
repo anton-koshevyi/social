@@ -337,7 +337,7 @@ public class ChatControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{}")
+        .body("{ \"name\": \"\" }")
         .when()
         .patch("/chats/group/{id}", 1)
         .then()
@@ -351,7 +351,7 @@ public class ChatControllerTest {
         + "error: 'Bad Request',"
         + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'name': ['must not be null']"
+        + "  'name': ['size must be between 1 and 20']"
         + "},"
         + "path: '/chats/group/1'"
         + "}";

@@ -23,19 +23,19 @@ import com.social.backend.service.UserService;
 
 @RestController
 public class AccountController {
-  
+
   private final UserService userService;
-  
+
   @Autowired
   public AccountController(UserService userService) {
     this.userService = userService;
   }
-  
+
   @GetMapping("/account")
   public User get(@AuthenticationPrincipal(expression = "id") Long id) {
     return userService.find(id);
   }
-  
+
   @PostMapping("/account")
   public User create(@Valid @RequestBody CreateDto dto,
                      HttpServletRequest request) throws ServletException {
@@ -44,16 +44,15 @@ public class AccountController {
     String firstName = dto.getFirstName();
     String lastName = dto.getLastName();
     String password = dto.getPassword();
-    
+
     User account = userService.create(email, username, firstName, lastName, password);
     request.login(username, password);
     return account;
   }
-  
+
   @PatchMapping("/account")
   public User update(@AuthenticationPrincipal(expression = "id") Long id,
                      @Valid @RequestBody UpdateDto dto) {
-    // TODO: Implement as PATCH-request
     String email = dto.getEmail();
     String username = dto.getUsername();
     String firstName = dto.getFirstName();
@@ -61,14 +60,14 @@ public class AccountController {
     Integer publicity = dto.getPublicity();
     return userService.update(id, email, username, firstName, lastName, publicity);
   }
-  
+
   @DeleteMapping("/account")
   public void delete(@AuthenticationPrincipal(expression = "id") Long id,
                      @Valid @RequestBody DeleteDto dto) {
     String password = dto.getPassword();
     userService.delete(id, password);
   }
-  
+
   @PutMapping("/account/password")
   public void changePassword(@AuthenticationPrincipal(expression = "id") Long id,
                              @Valid @RequestBody PasswordDto dto) {
@@ -76,5 +75,5 @@ public class AccountController {
     String change = dto.getChange();
     userService.changePassword(id, actual, change);
   }
-  
+
 }

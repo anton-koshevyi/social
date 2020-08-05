@@ -1,15 +1,15 @@
 package com.social.backend.dto.chat;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import com.social.backend.constraint.GroupChatName;
 
 @Getter
 @Setter
 public class GroupUpdateDto {
-  
-  @NotNull
+
+  @GroupChatName
   private String name;
-  
+
 }

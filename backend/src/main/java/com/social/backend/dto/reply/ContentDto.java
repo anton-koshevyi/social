@@ -10,9 +10,15 @@ import com.social.backend.constraint.ReplyBody;
 @Getter
 @Setter
 public class ContentDto {
-  
-  @NotNull
-  @ReplyBody
+
+  @NotNull(groups = CreateGroup.class)
+  @ReplyBody(groups = {CreateGroup.class, UpdateGroup.class})
   private String body;
-  
+
+  public interface CreateGroup {
+  }
+
+  public interface UpdateGroup {
+  }
+
 }

@@ -180,7 +180,7 @@ public class AccountControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{}")
+        .body("{ \"email\": \"\" }")
         .when()
         .patch("/account")
         .then()
@@ -192,13 +192,9 @@ public class AccountControllerTest {
         + "timestamp: (customized),"
         + "status: 400,"
         + "error: 'Bad Request',"
-        + "message: 'Invalid body: 5 error(s)',"
+        + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'email': ['must not be null'],"
-        + "  'username': ['must not be null'],"
-        + "  'firstName': ['must not be null'],"
-        + "  'lastName': ['must not be null'],"
-        + "  'publicity': ['must not be null']"
+        + "  'email': ['size must be between 1 and 320']"
         + "},"
         + "path: '/account'"
         + "}";
