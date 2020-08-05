@@ -247,7 +247,7 @@ public class PostControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{}")
+        .body("{ \"body\": \"\" }")
         .when()
         .patch("/posts/{id}", 1)
         .then()
@@ -259,10 +259,9 @@ public class PostControllerTest {
         + "timestamp: (customized),"
         + "status: 400,"
         + "error: 'Bad Request',"
-        + "message: 'Invalid body: 2 error(s)',"
+        + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'title': ['must not be null'],"
-        + "  'body': ['must not be null']"
+        + "  'body': ['size must be between 1 and 1000']"
         + "},"
         + "path: '/posts/1'"
         + "}";

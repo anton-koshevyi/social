@@ -247,7 +247,7 @@ public class CommentControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{}")
+        .body("{ \"body\": \"\" }")
         .when()
         .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()
@@ -261,7 +261,7 @@ public class CommentControllerTest {
         + "error: 'Bad Request',"
         + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'body': ['must not be null']"
+        + "  'body': ['size must be between 1 and 250']"
         + "},"
         + "path: '/posts/1/comments/1'"
         + "}";
@@ -292,7 +292,7 @@ public class CommentControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"new body\"}")
+        .body("{ \"body\": \"new body\" }")
         .when()
         .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()

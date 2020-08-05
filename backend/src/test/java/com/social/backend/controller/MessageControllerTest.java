@@ -252,7 +252,7 @@ public class MessageControllerTest {
         .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{}")
+        .body("{ \"body\": \"\" }")
         .when()
         .patch("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
@@ -266,7 +266,7 @@ public class MessageControllerTest {
         + "error: 'Bad Request',"
         + "message: 'Invalid body: 1 error(s)',"
         + "errors: {"
-        + "  'body': ['must not be null']"
+        + "  'body': ['size must be between 1 and 250']"
         + "},"
         + "path: '/chats/1/messages/1'"
         + "}";

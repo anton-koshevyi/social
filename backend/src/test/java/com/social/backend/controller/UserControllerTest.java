@@ -121,7 +121,7 @@ public class UserControllerTest {
   }
 
   @Test
-  public void updateRole_badRequest_whenBodyInvalid() throws JSONException {
+  public void updateRole_unchanged_whenEmptyBody() throws JSONException {
     entityManager.persist(TestEntity
         .user()
         .setEmail("admin@mail.com")
@@ -144,24 +144,22 @@ public class UserControllerTest {
         .when()
         .patch("/users/{id}/roles", 2)
         .then()
-        .statusCode(HttpServletResponse.SC_BAD_REQUEST)
+        .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
 
     String expected = "{"
-        + "timestamp: (customized),"
-        + "status: 400,"
-        + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
-        + "errors: {"
-        + "  'moder': ['must not be null']"
-        + "},"
-        + "path: '/users/2/roles'"
+        + "id: 2,"
+        + "email: 'user@mail.com',"
+        + "username: 'user',"
+        + "firstName: 'first',"
+        + "lastName: 'last',"
+        + "publicity: 10,"
+        + "moder: false,"
+        + "admin: false"
         + "}";
     JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
-        ));
+        .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
   }
 
   @Test
