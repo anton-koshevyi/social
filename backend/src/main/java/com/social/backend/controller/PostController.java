@@ -38,7 +38,6 @@ public class PostController {
     return postService.findAll(pageable);
   }
 
-
   @PostMapping("/posts")
   public Post create(@AuthenticationPrincipal(expression = "id") Long userId,
                      @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
