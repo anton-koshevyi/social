@@ -1,7 +1,5 @@
 package com.social.backend.dto.user;
 
-import javax.validation.constraints.NotNull;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,25 +12,20 @@ import com.social.backend.constraint.Username;
 @Getter
 @Setter
 public class UpdateDto {
-  
-  @NotNull
+
   @Email
   private String email;
-  
-  @NotNull
+
   @Username
   private String username;
-  
-  @NotNull
+
   @FirstName
   private String firstName;
-  
-  @NotNull
+
   @LastName
   private String lastName;
-  
-  @NotNull
+
   @Publicity
   private Integer publicity;
-  
+
 }

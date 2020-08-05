@@ -11,13 +11,19 @@ import com.social.backend.constraint.PostTitle;
 @Getter
 @Setter
 public class ContentDto {
-  
-  @NotNull
-  @PostTitle
+
+  @NotNull(groups = CreateGroup.class)
+  @PostTitle(groups = {CreateGroup.class, UpdateGroup.class})
   private String title;
-  
-  @NotNull
-  @PostBody
+
+  @NotNull(groups = CreateGroup.class)
+  @PostBody(groups = {CreateGroup.class, UpdateGroup.class})
   private String body;
-  
+
+  public interface CreateGroup {
+  }
+
+  public interface UpdateGroup {
+  }
+
 }
