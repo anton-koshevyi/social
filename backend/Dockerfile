@@ -3,6 +3,7 @@ WORKDIR app
 COPY pom-prod.xml pom.xml
 RUN mvn dependency:go-offline
 COPY src/main src/main/
+COPY lombok.config lombok.config
 RUN mvn package --offline
 
 FROM openjdk:8-jre-alpine3.9
