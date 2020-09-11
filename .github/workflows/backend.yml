@@ -3,7 +3,7 @@ name: Backend
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 6'
+    - cron: '0 0 1 1,4,7,10 *'
   push:
     paths:
       - backend/**
@@ -17,6 +17,15 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: 'Cache: gradle'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: cache/backend/gradle/${{hashFiles('backend/*.gradle*')}}
+          restore-keys: cache/backend/gradle
 
       - name: Setup java
         uses: actions/setup-java@v1
@@ -32,9 +41,12 @@ jobs:
           ./gradlew backend:jacocoTestReport
 
       - name: Check
-        run: ./gradlew backend:check
+        run: |
+          ./gradlew backend:checkstyleMain
+          ./gradlew backend:checkstyleTest
 
       - name: Report
+        if: always()
         run: |
           mkdir --parents ${{env.REPORTS_PATH}}
           mv backend/build/reports/* ${{env.REPORTS_PATH}}
