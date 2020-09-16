@@ -20,7 +20,7 @@ class PrivateChatMapper extends AbstractMapper<PrivateChat> {
 
   @Override
   public <R> R toDto(PrivateChat model, Class<R> dtoType) {
-    logger.debug("Mapping model to PrivateDto by default");
+    logger.debug("Mapping PrivateChat to PrivateDto by default");
     PrivateDto dto = new PrivateDto();
     dto.setId(model.getId());
     dto.setType("private");
