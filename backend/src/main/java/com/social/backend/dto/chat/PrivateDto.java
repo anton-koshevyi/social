@@ -5,12 +5,12 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.social.backend.model.user.User;
+import com.social.backend.dto.user.UserDto;
 
 @Getter
 @Setter
 public class PrivateDto extends ChatDto {
-  
-  private List<User> members;
-  
+
+  private List<UserDto> members;
+
 }
