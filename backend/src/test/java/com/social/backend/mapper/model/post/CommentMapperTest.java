@@ -3,9 +3,7 @@ package com.social.backend.mapper.model.post;
 import java.time.ZonedDateTime;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.social.backend.TestComparator;
@@ -19,27 +17,10 @@ import com.social.backend.model.user.User;
 
 public class CommentMapperTest {
 
-  private AbstractMapper<Comment> mapper;
-
-  @BeforeEach
-  public void setUp() {
-    AbstractMapper<User> userMapper = Mockito.mock(AbstractMapper.class);
-    AbstractMapper<Post> postMapper = Mockito.mock(AbstractMapper.class);
-    mapper = new CommentMapper(userMapper, postMapper);
-
-    Mockito
-        .when(userMapper.map(
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()
-        ))
-        .thenReturn(new UserDto());
-    Mockito
-        .when(postMapper.map(
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()
-        ))
-        .thenReturn(new PostDto());
-  }
+  private AbstractMapper<Comment> mapper = new CommentMapper(
+      Mockito.mock(AbstractMapper.class, inv -> new UserDto()),
+      Mockito.mock(AbstractMapper.class, inv -> new PostDto())
+  );
 
   @Test
   public void map() {
@@ -63,4 +44,3 @@ public class CommentMapperTest {
   }
 
 }
-

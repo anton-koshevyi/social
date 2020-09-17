@@ -4,9 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.social.backend.TestComparator;
@@ -18,20 +16,9 @@ import com.social.backend.model.user.User;
 
 public class PostMapperTest {
 
-  private AbstractMapper<Post> mapper;
-
-  @BeforeEach
-  public void setUp() {
-    AbstractMapper<User> userMapper = Mockito.mock(AbstractMapper.class);
-    mapper = new PostMapper(userMapper);
-
-    Mockito
-        .when(userMapper.map(
-            ArgumentMatchers.any(),
-            ArgumentMatchers.any()
-        ))
-        .thenReturn(new UserDto());
-  }
+  private final AbstractMapper<Post> mapper = new PostMapper(
+      Mockito.mock(AbstractMapper.class, inv -> new UserDto())
+  );
 
   @Test
   public void map() {
@@ -57,4 +44,3 @@ public class PostMapperTest {
   }
 
 }
-
