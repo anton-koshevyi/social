@@ -37,7 +37,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.INTERNAL);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -58,7 +58,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PUBLIC);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -81,7 +81,7 @@ public class UserMapperTest {
         .setPublicity(publicity);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -103,7 +103,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PRIVATE);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -130,7 +130,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PRIVATE);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -157,7 +157,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PRIVATE);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -179,7 +179,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PUBLIC);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -201,7 +201,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.INTERNAL);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -223,7 +223,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.INTERNAL);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -245,7 +245,7 @@ public class UserMapperTest {
         .setPublicity(Publicity.PRIVATE);
 
     Assertions
-        .assertThat(userMapper.toDto(user, UserDto.class))
+        .assertThat(userMapper.map(user, UserDto.class))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)

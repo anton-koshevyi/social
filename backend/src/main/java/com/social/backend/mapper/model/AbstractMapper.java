@@ -7,6 +7,6 @@ public abstract class AbstractMapper<T> {
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  public abstract <R> R toDto(T model, Class<R> dtoType);
+  public abstract <R> R map(T model, Class<R> dtoType);
 
 }

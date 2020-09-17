@@ -18,14 +18,14 @@ class GroupChatMapper extends AbstractMapper<GroupChat> {
   }
 
   @Override
-  public <R> R toDto(GroupChat model, Class<R> dtoType) {
+  public <R> R map(GroupChat model, Class<R> dtoType) {
     logger.debug("Mapping GroupChat to GroupDto by default");
     GroupDto dto = new GroupDto();
     dto.setId(model.getId());
     dto.setType("group");
     dto.setName(model.getName());
     dto.setMembers(model.getMembers().size());
-    dto.setOwner(userMapper.toDto(model.getOwner(), UserDto.class));
+    dto.setOwner(userMapper.map(model.getOwner(), UserDto.class));
     return (R) dto;
   }
 

@@ -16,7 +16,7 @@ public class UserMapper extends AbstractMapper<User> {
 
   @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
   @Override
-  public <R> R toDto(User model, Class<R> dtoType) {
+  public <R> R map(User model, Class<R> dtoType) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication == null) {

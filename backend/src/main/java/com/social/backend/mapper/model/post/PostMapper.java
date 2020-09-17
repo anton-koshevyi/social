@@ -18,7 +18,7 @@ public class PostMapper extends AbstractMapper<Post> {
   }
 
   @Override
-  public <R> R toDto(Post model, Class<R> dtoType) {
+  public <R> R map(Post model, Class<R> dtoType) {
     logger.debug("Mapping Post to PostDto by default");
     PostDto dto = new PostDto();
     dto.setId(model.getId());
@@ -27,7 +27,7 @@ public class PostMapper extends AbstractMapper<Post> {
     dto.setTitle(model.getTitle());
     dto.setBody(model.getBody());
     dto.setComments(model.getComments().size());
-    dto.setAuthor(userMapper.toDto(model.getAuthor(), UserDto.class));
+    dto.setAuthor(userMapper.map(model.getAuthor(), UserDto.class));
     return (R) dto;
   }
 

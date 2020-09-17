@@ -25,7 +25,7 @@ public class ChatMapper extends AbstractMapper<Chat> {
   }
 
   @Override
-  public <R> R toDto(Chat model, Class<R> dtoType) {
+  public <R> R map(Chat model, Class<R> dtoType) {
     if (model == null) {
       logger.debug("Mapped to {} model is null", dtoType);
       return null;
@@ -47,7 +47,7 @@ public class ChatMapper extends AbstractMapper<Chat> {
 
     AbstractMapper<Chat> mapper = (AbstractMapper<Chat>) chatMappers.get(key);
     logger.debug("{} ChatMapper for key '{}'", (mapper == null) ? "No" : "Obtained", key);
-    return (mapper == null) ? null : mapper.toDto(model, dtoType);
+    return (mapper == null) ? null : mapper.map(model, dtoType);
   }
 
 }

@@ -19,7 +19,7 @@ class PrivateChatMapper extends AbstractMapper<PrivateChat> {
   }
 
   @Override
-  public <R> R toDto(PrivateChat model, Class<R> dtoType) {
+  public <R> R map(PrivateChat model, Class<R> dtoType) {
     logger.debug("Mapping PrivateChat to PrivateDto by default");
     PrivateDto dto = new PrivateDto();
     dto.setId(model.getId());
@@ -27,7 +27,7 @@ class PrivateChatMapper extends AbstractMapper<PrivateChat> {
     dto.setMembers(model
         .getMembers()
         .stream()
-        .map(user -> userMapper.toDto(user, UserDto.class))
+        .map(user -> userMapper.map(user, UserDto.class))
         .collect(Collectors.toList()));
     return (R) dto;
   }
