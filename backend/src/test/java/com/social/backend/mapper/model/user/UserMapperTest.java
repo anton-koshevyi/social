@@ -1,5 +1,6 @@
 package com.social.backend.mapper.model.user;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 import org.assertj.core.api.Assertions;
@@ -17,7 +18,6 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.social.backend.TestEntity;
 import com.social.backend.config.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
@@ -31,10 +31,14 @@ public class UserMapperTest {
 
   @Test
   public void given_notPublicPublicity_when_nullAuthentication_then_hiddenBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.INTERNAL);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.INTERNAL)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -52,10 +56,14 @@ public class UserMapperTest {
 
   @Test
   public void given_publicPublicity_when_nullAuthentication_then_regularBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PUBLIC);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PUBLIC)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -75,10 +83,14 @@ public class UserMapperTest {
   @ValueSource(ints = {Publicity.PUBLIC, Publicity.INTERNAL, Publicity.PRIVATE})
   @WithMockUser(authorities = Authority.MODER)
   public void given_anyPublicity_when_administrationRequest_then_extendedBody(int publicity) {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(publicity);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(publicity)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -97,10 +109,14 @@ public class UserMapperTest {
   @Test
   @WithMockUser
   public void given_privatePublicity_when_notIdentifiedPrincipal_then_hiddenBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PRIVATE)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -124,10 +140,14 @@ public class UserMapperTest {
         "password",
         Collections.emptySet()
     ));
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PRIVATE)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -151,10 +171,14 @@ public class UserMapperTest {
         "password",
         Collections.emptySet()
     ));
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PRIVATE)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -173,10 +197,14 @@ public class UserMapperTest {
   @Test
   @WithAnonymousUser
   public void given_publicPublicity_when_notOwnerNorAdministrationRequest_then_regularBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PUBLIC);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PUBLIC)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -195,10 +223,14 @@ public class UserMapperTest {
   @Test
   @WithAnonymousUser
   public void given_internalPublicity_when_anonymousRequest_then_hiddenBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.INTERNAL);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.INTERNAL)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -217,10 +249,14 @@ public class UserMapperTest {
   @Test
   @WithMockUser
   public void given_internalPublicity_when_authenticatedRequest_then_regularBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.INTERNAL);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.INTERNAL)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -239,10 +275,14 @@ public class UserMapperTest {
   @Test
   @WithMockUser
   public void given_privatePublicity_when_notOwnerNorAdministrationRequest_hiddenBody() {
-    User user = TestEntity
-        .user()
+    User user = new User()
         .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .setEmail("email@mail.com")
+        .setUsername("username")
+        .setFirstName("first")
+        .setLastName("last")
+        .setPublicity(Publicity.PRIVATE)
+        .setPassword("encoded");
 
     Assertions
         .assertThat(userMapper.map(user, UserDto.class))
@@ -260,7 +300,11 @@ public class UserMapperTest {
 
   private static void authenticate(UserDetails details) {
     AuthenticationProvider provider = new TestingAuthenticationProvider();
-    Authentication token = new TestingAuthenticationToken(details, details.getPassword());
+    Authentication token = new TestingAuthenticationToken(
+        details,
+        details.getPassword(),
+        new ArrayList<>(details.getAuthorities())
+    );
     Authentication authentication = provider.authenticate(token);
     SecurityContextHolder.getContext().setAuthentication(authentication);
   }
