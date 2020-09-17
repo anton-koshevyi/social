@@ -66,6 +66,17 @@ public class UserMapper extends AbstractMapper<User> {
 
   public <R> R regular(User source, Class<R> dtoType) {
     logger.debug("Mapping User to regular UserDto by default");
+    return (R) toDto(source);
+  }
+
+  public <R> R hidden(User source, Class<R> dtoType) {
+    logger.debug("Mapping User to hidden UserDto by default");
+    UserDto dto = toDto(source);
+    dto.setEmail(null);
+    return (R) dto;
+  }
+
+  private UserDto toDto(User source) {
     UserDto dto = new UserDto();
     dto.setId(source.getId());
     dto.setEmail(source.getEmail());
@@ -75,14 +86,7 @@ public class UserMapper extends AbstractMapper<User> {
     dto.setPublicity(source.getPublicity());
     dto.setModer(source.isModer());
     dto.setAdmin(source.isAdmin());
-    return (R) dto;
-  }
-
-  public <R> R hidden(User source, Class<R> dtoType) {
-    logger.debug("Mapping User to hidden UserDto by default");
-    UserDto dto = regular(source, UserDto.class);
-    dto.setEmail(null);
-    return (R) dto;
+    return dto;
   }
 
 }
