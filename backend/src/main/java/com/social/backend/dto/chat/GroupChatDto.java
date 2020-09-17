@@ -1,7 +1,5 @@
 package com.social.backend.dto.chat;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,8 +7,10 @@ import com.social.backend.dto.user.UserDto;
 
 @Getter
 @Setter
-public class PrivateDto extends ChatDto {
+public class GroupChatDto extends ChatDto {
 
-  private List<UserDto> members;
+  private String name;
+  private Integer members;
+  private UserDto owner;
 
 }

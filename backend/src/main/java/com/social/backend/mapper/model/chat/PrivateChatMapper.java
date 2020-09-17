@@ -3,7 +3,7 @@ package com.social.backend.mapper.model.chat;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.social.backend.dto.chat.PrivateDto;
+import com.social.backend.dto.chat.PrivateChatDto;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.mapper.model.AbstractMapper;
 import com.social.backend.model.chat.PrivateChat;
@@ -20,8 +20,8 @@ class PrivateChatMapper extends AbstractMapper<PrivateChat> {
 
   @Override
   public <R> R map(PrivateChat model, Class<R> dtoType) {
-    logger.debug("Mapping PrivateChat to PrivateDto by default");
-    PrivateDto dto = new PrivateDto();
+    logger.debug("Mapping PrivateChat to PrivateChatDto by default");
+    PrivateChatDto dto = new PrivateChatDto();
     dto.setId(model.getId());
     dto.setType("private");
     dto.setMembers(model
