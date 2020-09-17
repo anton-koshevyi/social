@@ -18,6 +18,8 @@ import com.social.backend.dto.user.CreateDto;
 import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
 import com.social.backend.dto.user.UpdateDto;
+import com.social.backend.dto.user.UserDto;
+import com.social.backend.mapper.model.MapperProducer;
 import com.social.backend.model.user.User;
 import com.social.backend.service.UserService;
 
@@ -32,48 +34,66 @@ public class AccountController {
   }
 
   @GetMapping("/account")
-  public User get(@AuthenticationPrincipal(expression = "id") Long id) {
-    return userService.find(id);
+  public UserDto get(@AuthenticationPrincipal(expression = "id") Long id) {
+    User user = userService.find(id);
+    return MapperProducer
+        .getMapper(User.class)
+        .map(user, UserDto.class);
   }
 
   @PostMapping("/account")
-  public User create(@Valid @RequestBody CreateDto dto,
-                     HttpServletRequest request) throws ServletException {
-    String email = dto.getEmail();
-    String username = dto.getUsername();
-    String firstName = dto.getFirstName();
-    String lastName = dto.getLastName();
-    String password = dto.getPassword();
-
-    User account = userService.create(email, username, firstName, lastName, password);
-    request.login(username, password);
-    return account;
+  public UserDto create(@Valid @RequestBody CreateDto dto,
+                        HttpServletRequest request) throws ServletException {
+    User account = userService.create(
+        dto.getEmail(),
+        dto.getUsername(),
+        dto.getFirstName(),
+        dto.getLastName(),
+        dto.getPassword()
+    );
+    request.login(
+        dto.getUsername(),
+        dto.getPassword()
+    );
+    return MapperProducer
+        .getMapper(User.class)
+        .map(account, UserDto.class);
   }
 
   @PatchMapping("/account")
-  public User update(@AuthenticationPrincipal(expression = "id") Long id,
-                     @Valid @RequestBody UpdateDto dto) {
-    String email = dto.getEmail();
-    String username = dto.getUsername();
-    String firstName = dto.getFirstName();
-    String lastName = dto.getLastName();
-    Integer publicity = dto.getPublicity();
-    return userService.update(id, email, username, firstName, lastName, publicity);
+  public UserDto update(@AuthenticationPrincipal(expression = "id") Long id,
+                        @Valid @RequestBody UpdateDto dto) {
+
+    User account = userService.update(
+        id,
+        dto.getEmail(),
+        dto.getUsername(),
+        dto.getFirstName(),
+        dto.getLastName(),
+        dto.getPublicity()
+    );
+    return MapperProducer
+        .getMapper(User.class)
+        .map(account, UserDto.class);
   }
 
   @DeleteMapping("/account")
   public void delete(@AuthenticationPrincipal(expression = "id") Long id,
                      @Valid @RequestBody DeleteDto dto) {
-    String password = dto.getPassword();
-    userService.delete(id, password);
+    userService.delete(
+        id,
+        dto.getPassword()
+    );
   }
 
   @PutMapping("/account/password")
   public void changePassword(@AuthenticationPrincipal(expression = "id") Long id,
                              @Valid @RequestBody PasswordDto dto) {
-    String actual = dto.getActual();
-    String change = dto.getChange();
-    userService.changePassword(id, actual, change);
+    userService.changePassword(
+        id,
+        dto.getActual(),
+        dto.getChange()
+    );
   }
 
 }
