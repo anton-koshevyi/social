@@ -21,6 +21,7 @@ public abstract class UserMapper {
   public static final UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
   private static final Logger logger = LoggerFactory.getLogger(UserMapper.class);
 
+  @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
   public UserDto toDto(User model) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
