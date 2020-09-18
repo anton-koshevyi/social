@@ -18,7 +18,9 @@ import com.social.backend.dto.chat.PrivateChatDto;
 import com.social.backend.dto.post.PostDto;
 import com.social.backend.dto.user.RoleDto;
 import com.social.backend.dto.user.UserDto;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.ChatMapper;
+import com.social.backend.mapper.model.PostMapper;
+import com.social.backend.mapper.model.UserMapper;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -45,17 +47,13 @@ public class UserController {
   @GetMapping("/users")
   public Page<UserDto> getAll(Pageable pageable) {
     Page<User> users = userService.findAll(pageable);
-    return users.map(user -> MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class));
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @GetMapping("/users/{id}")
   public UserDto get(@PathVariable Long id) {
     User user = userService.find(id);
-    return MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class);
+    return UserMapper.INSTANCE.toDto(user);
   }
 
   @PatchMapping("/users/{id}/roles")
@@ -65,18 +63,14 @@ public class UserController {
         id,
         dto.getModer()
     );
-    return MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class);
+    return UserMapper.INSTANCE.toDto(user);
   }
 
   @GetMapping("/users/{id}/friends")
   public Page<UserDto> getFriends(@PathVariable Long id,
                                   Pageable pageable) {
     Page<User> users = userService.getFriends(id, pageable);
-    return users.map(user -> MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class));
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/users/{id}/friends")
@@ -96,9 +90,7 @@ public class UserController {
                                 Pageable pageable) {
     User author = userService.find(id);
     Page<Post> posts = postService.findAll(author, pageable);
-    return posts.map(post -> MapperProducer
-        .getMapper(Post.class)
-        .map(post, PostDto.class));
+    return posts.map(PostMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/users/{id}/chats/private")
@@ -107,9 +99,7 @@ public class UserController {
     User user = userService.find(userId);
     User target = userService.find(targetId);
     PrivateChat chat = (PrivateChat) chatService.createPrivate(user, target);
-    return MapperProducer
-        .getMapper(PrivateChat.class)
-        .map(chat, PrivateChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
 }

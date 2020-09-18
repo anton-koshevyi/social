@@ -24,7 +24,8 @@ import com.social.backend.dto.chat.GroupCreateDto;
 import com.social.backend.dto.chat.GroupMembersDto;
 import com.social.backend.dto.chat.GroupUpdateDto;
 import com.social.backend.dto.user.UserDto;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.ChatMapper;
+import com.social.backend.mapper.model.UserMapper;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.User;
@@ -48,9 +49,7 @@ public class ChatController {
                               Pageable pageable) {
     User member = userService.find(userId);
     Page<Chat> chats = chatService.findAll(member, pageable);
-    return chats.map(chat -> MapperProducer
-        .getMapper(Chat.class)
-        .map(chat, ChatDto.class));
+    return chats.map(ChatMapper.INSTANCE::toDto);
   }
 
   @GetMapping("/chats/{id}")
@@ -58,9 +57,7 @@ public class ChatController {
                      @AuthenticationPrincipal(expression = "id") Long userId) {
     User member = userService.find(userId);
     Chat chat = chatService.find(id, member);
-    return MapperProducer
-        .getMapper(Chat.class)
-        .map(chat, ChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @GetMapping("/chats/{id}/members")
@@ -69,9 +66,7 @@ public class ChatController {
                                   Pageable pageable) {
     User member = userService.find(userId);
     Page<User> users = chatService.getMembers(id, member, pageable);
-    return users.map(user -> MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class));
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @DeleteMapping("/chats/private/{id}")
@@ -91,9 +86,7 @@ public class ChatController {
         dto.getName(),
         members
     );
-    return MapperProducer
-        .getMapper(GroupChat.class)
-        .map(chat, GroupChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PatchMapping("/chats/group/{id}")
@@ -106,9 +99,7 @@ public class ChatController {
         member,
         dto.getName()
     );
-    return MapperProducer
-        .getMapper(GroupChat.class)
-        .map(chat, GroupChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PutMapping("/chats/group/{id}")
@@ -132,9 +123,7 @@ public class ChatController {
     User member = userService.find(userId);
     Set<User> members = findUsersByIds(dto.getMembers());
     GroupChat chat = (GroupChat) chatService.updateGroupMembers(id, member, members);
-    return MapperProducer
-        .getMapper(GroupChat.class)
-        .map(chat, GroupChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PutMapping("/chats/group/{id}/members/{newOwnerId}")
@@ -144,9 +133,7 @@ public class ChatController {
     User owner = userService.find(userId);
     User newOwner = userService.find(newOwnerId);
     GroupChat chat = (GroupChat) chatService.changeOwner(id, owner, newOwner);
-    return MapperProducer
-        .getMapper(GroupChat.class)
-        .map(chat, GroupChatDto.class);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   private Set<User> findUsersByIds(List<Long> ids) {

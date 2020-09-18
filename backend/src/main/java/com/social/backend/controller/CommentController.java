@@ -17,7 +17,7 @@ import com.social.backend.dto.reply.CommentDto;
 import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.CommentMapper;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -46,9 +46,7 @@ public class CommentController {
                                  Pageable pageable) {
     Post post = postService.find(postId);
     Page<Comment> comments = commentService.findAll(post, pageable);
-    return comments.map(comment -> MapperProducer
-        .getMapper(Comment.class)
-        .map(comment, CommentDto.class));
+    return comments.map(CommentMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/posts/{postId}/comments")
@@ -62,9 +60,7 @@ public class CommentController {
         author,
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Comment.class)
-        .map(comment, CommentDto.class);
+    return CommentMapper.INSTANCE.toDto(comment);
   }
 
   @PatchMapping("/posts/{postId}/comments/{id}")
@@ -77,9 +73,7 @@ public class CommentController {
         author,
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Comment.class)
-        .map(comment, CommentDto.class);
+    return CommentMapper.INSTANCE.toDto(comment);
   }
 
   @DeleteMapping("/posts/{postId}/comments/{id}")

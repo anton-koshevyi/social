@@ -17,7 +17,7 @@ import com.social.backend.dto.post.ContentDto;
 import com.social.backend.dto.post.ContentDto.CreateGroup;
 import com.social.backend.dto.post.ContentDto.UpdateGroup;
 import com.social.backend.dto.post.PostDto;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.PostMapper;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.service.PostService;
@@ -38,9 +38,7 @@ public class PostController {
   @GetMapping("/posts")
   public Page<PostDto> getAll(Pageable pageable) {
     Page<Post> posts = postService.findAll(pageable);
-    return posts.map(post -> MapperProducer
-        .getMapper(Post.class)
-        .map(post, PostDto.class));
+    return posts.map(PostMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/posts")
@@ -52,17 +50,13 @@ public class PostController {
         dto.getTitle(),
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Post.class)
-        .map(post, PostDto.class);
+    return PostMapper.INSTANCE.toDto(post);
   }
 
   @GetMapping("/posts/{id}")
   public PostDto get(@PathVariable Long id) {
     Post post = postService.find(id);
-    return MapperProducer
-        .getMapper(Post.class)
-        .map(post, PostDto.class);
+    return PostMapper.INSTANCE.toDto(post);
   }
 
   @PatchMapping("/posts/{id}")
@@ -76,9 +70,7 @@ public class PostController {
         dto.getTitle(),
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Post.class)
-        .map(post, PostDto.class);
+    return PostMapper.INSTANCE.toDto(post);
   }
 
   @DeleteMapping("/posts/{id}")

@@ -1,4 +1,4 @@
-package com.social.backend.mapper.model.user;
+package com.social.backend.mapper.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +27,6 @@ import com.social.backend.model.user.User;
 @ExtendWith(SpringExtension.class)
 public class UserMapperTest {
 
-  private final UserMapper userMapper = new UserMapper();
-
   @Test
   public void given_notPublicPublicity_when_nullAuthentication_then_hiddenBody() {
     User user = new User()
@@ -41,7 +39,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -66,7 +64,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -93,7 +91,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -119,7 +117,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -150,7 +148,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -181,7 +179,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -207,7 +205,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -233,7 +231,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -259,7 +257,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)
@@ -285,7 +283,7 @@ public class UserMapperTest {
         .setPassword("encoded");
 
     Assertions
-        .assertThat(userMapper.map(user, UserDto.class))
+        .assertThat(UserMapper.INSTANCE.toDto(user))
         .usingRecursiveComparison()
         .isEqualTo(new UserDto()
             .setId(1L)

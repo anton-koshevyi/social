@@ -17,7 +17,7 @@ import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
 import com.social.backend.dto.reply.MessageDto;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.MessageMapper;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
@@ -48,9 +48,7 @@ public class MessageController {
     User member = userService.find(userId);
     Chat chat = chatService.find(chatId, member);
     Page<Message> messages = messageService.findAll(chat, pageable);
-    return messages.map(message -> MapperProducer
-        .getMapper(Message.class)
-        .map(message, MessageDto.class));
+    return messages.map(MessageMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/chats/{chatId}/messages")
@@ -64,9 +62,7 @@ public class MessageController {
         author,
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Message.class)
-        .map(message, MessageDto.class);
+    return MessageMapper.INSTANCE.toDto(message);
   }
 
   @PatchMapping("/chats/{chatId}/messages/{id}")
@@ -79,9 +75,7 @@ public class MessageController {
         author,
         dto.getBody()
     );
-    return MapperProducer
-        .getMapper(Message.class)
-        .map(message, MessageDto.class);
+    return MessageMapper.INSTANCE.toDto(message);
   }
 
   @DeleteMapping("/chats/{chatId}/messages/{id}")

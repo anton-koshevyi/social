@@ -19,7 +19,7 @@ import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
 import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.dto.user.UserDto;
-import com.social.backend.mapper.model.MapperProducer;
+import com.social.backend.mapper.model.UserMapper;
 import com.social.backend.model.user.User;
 import com.social.backend.service.UserService;
 
@@ -35,10 +35,8 @@ public class AccountController {
 
   @GetMapping("/account")
   public UserDto get(@AuthenticationPrincipal(expression = "id") Long id) {
-    User user = userService.find(id);
-    return MapperProducer
-        .getMapper(User.class)
-        .map(user, UserDto.class);
+    User account = userService.find(id);
+    return UserMapper.INSTANCE.toDto(account);
   }
 
   @PostMapping("/account")
@@ -55,9 +53,7 @@ public class AccountController {
         dto.getUsername(),
         dto.getPassword()
     );
-    return MapperProducer
-        .getMapper(User.class)
-        .map(account, UserDto.class);
+    return UserMapper.INSTANCE.toDto(account);
   }
 
   @PatchMapping("/account")
@@ -72,9 +68,7 @@ public class AccountController {
         dto.getLastName(),
         dto.getPublicity()
     );
-    return MapperProducer
-        .getMapper(User.class)
-        .map(account, UserDto.class);
+    return UserMapper.INSTANCE.toDto(account);
   }
 
   @DeleteMapping("/account")
