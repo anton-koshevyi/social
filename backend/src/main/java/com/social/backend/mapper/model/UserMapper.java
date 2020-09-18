@@ -23,10 +23,10 @@ public abstract class UserMapper {
   public static final UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
   private static final Logger logger = LoggerFactory.getLogger(UserMapper.class);
 
-  @Named("private.toDtoRegular")
+  @Named("UserMapper.private.toDtoRegular")
   protected abstract UserDto toDtoRegular(User model);
 
-  @Named("private.toDtoHidden")
+  @Named("UserMapper.private.toDtoHidden")
   @Mapping(target = "email", ignore = true)
   protected abstract UserDto toDtoHidden(User model);
 
