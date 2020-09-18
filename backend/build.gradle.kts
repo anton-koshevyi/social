@@ -15,6 +15,8 @@ dependencies {
   implementation("com.h2database:h2:1.4.198")
   implementation("org.apache.commons:commons-lang3:3.9")
   implementation("org.flywaydb:flyway-core:6.0.8")
+  implementation("org.mapstruct:mapstruct:1.3.1.Final")
+  annotationProcessor("org.mapstruct:mapstruct-processor:1.3.1.Final")
   implementation("org.postgresql:postgresql:42.2.5")
   implementation("org.projectlombok:lombok:1.18.12")
   annotationProcessor("org.projectlombok:lombok:1.18.12")
