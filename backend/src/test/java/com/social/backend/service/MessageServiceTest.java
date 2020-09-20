@@ -16,21 +16,22 @@ import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
+import com.social.backend.repository.MessageRepositoryImpl;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import(MessageServiceImpl.class)
+@Import({MessageServiceImpl.class, MessageRepositoryImpl.class})
 public class MessageServiceTest {
-  
+
   @Autowired
   private MessageService messageService;
-  
+
   @Autowired
   private TestEntityManager entityManager;
-  
+
   @Test
   public void create() {
     User author = entityManager.persist(TestEntity
@@ -41,9 +42,9 @@ public class MessageServiceTest {
         .privateChat()
         .setMembers(Sets
             .newHashSet(author)));
-    
+
     messageService.create(chat, author, "body");
-    
+
     Assertions
         .assertThat(entityManager.find(Message.class, 1L))
         .usingComparator(TestComparator
@@ -60,18 +61,18 @@ public class MessageServiceTest {
                 .setEmail("author@mail.com")
                 .setUsername("author")));
   }
-  
+
   @Test
   public void update_exception_whenNoEntityWithIdAndAuthor() {
     User author = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> messageService.update(0L, author, "body"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void update() {
     User author = entityManager.persist(TestEntity
@@ -86,9 +87,9 @@ public class MessageServiceTest {
         .setChat(chat)
         .setBody("message body")
         .setAuthor(author));
-    
+
     messageService.update(1L, author, "new body");
-    
+
     Assertions
         .assertThat(entityManager.find(Message.class, 1L))
         .usingComparator(TestComparator
@@ -107,18 +108,18 @@ public class MessageServiceTest {
                 .setEmail("author@mail.com")
                 .setUsername("author")));
   }
-  
+
   @Test
   public void delete_exception_whenNoEntityWithIdAndAuthor() {
     User author = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> messageService.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void delete() {
     User author = entityManager.persist(TestEntity
@@ -133,14 +134,14 @@ public class MessageServiceTest {
         .message()
         .setChat(chat)
         .setAuthor(author));
-    
+
     messageService.delete(1L, author);
-    
+
     Assertions
         .assertThat(entityManager.find(Message.class, 1L))
         .isNull();
   }
-  
+
   @Test
   public void findAll_byChat() {
     User author = entityManager.persist(TestEntity
@@ -155,7 +156,7 @@ public class MessageServiceTest {
         .message()
         .setChat(chat)
         .setAuthor(author));
-    
+
     Assertions
         .assertThat(messageService.findAll(chat, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
@@ -172,5 +173,5 @@ public class MessageServiceTest {
                 .setEmail("author@mail.com")
                 .setUsername("author")));
   }
-  
+
 }

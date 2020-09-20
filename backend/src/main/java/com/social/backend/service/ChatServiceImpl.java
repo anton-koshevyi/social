@@ -1,7 +1,6 @@
 package com.social.backend.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,31 +18,23 @@ import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepositoryBase;
-import com.social.backend.repository.ChatRepositoryGroup;
-import com.social.backend.repository.ChatRepositoryPrivate;
+import com.social.backend.repository.ChatRepository;
 import com.social.backend.util.NullableUtil;
 
 @Service
 @Transactional
 public class ChatServiceImpl implements ChatService {
 
-  private final ChatRepositoryBase<Chat> baseRepository;
-  private final ChatRepositoryPrivate privateRepository;
-  private final ChatRepositoryGroup groupRepository;
+  private final ChatRepository repository;
 
   @Autowired
-  public ChatServiceImpl(ChatRepositoryBase<Chat> baseRepository,
-                         ChatRepositoryPrivate privateRepository,
-                         ChatRepositoryGroup groupRepository) {
-    this.baseRepository = baseRepository;
-    this.privateRepository = privateRepository;
-    this.groupRepository = groupRepository;
+  public ChatServiceImpl(ChatRepository repository) {
+    this.repository = repository;
   }
 
   @Override
   public Chat createPrivate(User user, User target) {
-    if (privateRepository.existsByMembersIn(Arrays.asList(user, target))) {
+    if (repository.existsPrivateByMembers(user, target)) {
       throw new IllegalActionException(
           "illegalAction.chat.private.alreadyExist", target.getId());
     }
@@ -55,13 +46,13 @@ public class ChatServiceImpl implements ChatService {
 
     PrivateChat entity = new PrivateChat();
     entity.setMembers(Sets.newHashSet(user, target));
-    return baseRepository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
   public void deletePrivate(Long id, User member) {
     Chat entity = findPrivateByIdAndMember(id, member);
-    baseRepository.delete(entity);
+    repository.delete(entity);
   }
 
   @Override
@@ -80,14 +71,14 @@ public class ChatServiceImpl implements ChatService {
     entity.setName(name);
     entity.setOwner(creator);
     entity.setMembers(finalMembers);
-    return baseRepository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
   public Chat updateGroup(Long id, User member, String name) {
     GroupChat entity = findGroupByIdAndMember(id, member);
     NullableUtil.set(entity::setName, name);
-    return baseRepository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -116,7 +107,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setMembers(finalMembers);
-    return baseRepository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -129,7 +120,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setOwner(newOwner);
-    return baseRepository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -144,13 +135,13 @@ public class ChatServiceImpl implements ChatService {
     Set<User> finalMembers = new HashSet<>(entity.getMembers());
     finalMembers.remove(member);
     entity.setMembers(finalMembers);
-    baseRepository.save(entity);
+    repository.save(entity);
   }
 
   @Override
   public void deleteGroup(Long id, User owner) {
     GroupChat entity = findGroupByIdAndOwner(id, owner);
-    baseRepository.delete(entity);
+    repository.delete(entity);
   }
 
   @Override
@@ -161,30 +152,30 @@ public class ChatServiceImpl implements ChatService {
 
   @Override
   public Chat find(Long id, User member) {
-    return baseRepository.findByIdAndMembersContaining(id, member)
+    return repository.findByIdAndMember(id, member)
         .orElseThrow(() -> new NotFoundException(
             "notFound.chat.byIdAndMember", id, member.getId()));
   }
 
   @Override
   public Page<Chat> findAll(User member, Pageable pageable) {
-    return baseRepository.findAllByMembersContaining(member, pageable);
+    return repository.findAllByMember(member, pageable);
   }
 
   private PrivateChat findPrivateByIdAndMember(Long id, User member) {
-    return privateRepository.findByIdAndMembersContaining(id, member)
+    return repository.findPrivateByIdAndMember(id, member)
         .orElseThrow(() -> new NotFoundException(
             "notFound.chat.private.byIdAndMember", id, member.getId()));
   }
 
   private GroupChat findGroupByIdAndMember(Long id, User member) {
-    return groupRepository.findByIdAndMembersContaining(id, member)
+    return repository.findGroupByIdAndMember(id, member)
         .orElseThrow(() -> new NotFoundException(
             "notFound.chat.group.byIdAndMember", id, member.getId()));
   }
 
   private GroupChat findGroupByIdAndOwner(Long id, User owner) {
-    return groupRepository.findByIdAndOwner(id, owner)
+    return repository.findGroupByIdAndOwner(id, owner)
         .orElseThrow(() -> new NotFoundException(
             "notFound.chat.group.byIdAndOwner", id, owner.getId()));
   }

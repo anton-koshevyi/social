@@ -2,18 +2,27 @@ package com.social.backend.repository;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.social.backend.model.user.User;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-  
+public interface UserRepository {
+
+  User save(User entity);
+
+  Optional<User> findById(Long id);
+
   Optional<User> findByEmail(String email);
-  
-  boolean existsByEmail(String email);
-  
+
   Optional<User> findByUsername(String username);
-  
+
+  Page<User> findAll(Pageable pageable);
+
+  boolean existsByEmail(String email);
+
   boolean existsByUsername(String username);
-  
+
+  void delete(User entity);
+
 }

@@ -20,21 +20,22 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
+import com.social.backend.repository.ChatRepositoryImpl;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import(ChatServiceImpl.class)
+@Import({ChatServiceImpl.class, ChatRepositoryImpl.class})
 public class ChatServiceTest {
-  
+
   @Autowired
   private ChatService chatService;
-  
+
   @Autowired
   private TestEntityManager entityManager;
-  
+
   @Test
   public void createPrivate_exception_whenEntityAlreadyExists() {
     User user = entityManager.persist(TestEntity
@@ -48,7 +49,7 @@ public class ChatServiceTest {
     entityManager.persist(new PrivateChat()
         .setMembers(Sets
             .newHashSet(user, target)));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.createPrivate(user, target))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -56,7 +57,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.private.alreadyExist"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
-  
+
   @Test
   public void createPrivate_exception_whenTargetIsNotPublicNorFriend() {
     User user = entityManager.persist(TestEntity
@@ -68,7 +69,7 @@ public class ChatServiceTest {
         .setEmail("target@mail.com")
         .setUsername("target")
         .setPublicity(Publicity.INTERNAL));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.createPrivate(user, target))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -76,7 +77,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.private.createNotFriend"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
-  
+
   @Test
   public void createPrivate_whenTargetIsFriend() {
     User user = entityManager.persist(TestEntity
@@ -90,7 +91,7 @@ public class ChatServiceTest {
         .setPublicity(Publicity.INTERNAL));
     user.setFriends(Sets.newHashSet(target));
     target.setFriends(Sets.newHashSet(user));
-    
+
     Assertions
         .assertThat(chatService.createPrivate(user, target))
         .usingRecursiveComparison()
@@ -113,7 +114,7 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void createPrivate_whenTargetIsPublic() {
     User user = entityManager.persist(TestEntity
@@ -125,7 +126,7 @@ public class ChatServiceTest {
         .setEmail("target@mail.com")
         .setUsername("target")
         .setPublicity(Publicity.PUBLIC));
-    
+
     Assertions
         .assertThat(chatService.createPrivate(user, target))
         .usingRecursiveComparison()
@@ -148,11 +149,11 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void deletePrivate_exception_whenNoEntityWithIdAndMember() {
     User user = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.deletePrivate(1L, user))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -160,7 +161,7 @@ public class ChatServiceTest {
             new Object[]{"notFound.chat.private.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
   }
-  
+
   @Test
   public void deletePrivate() {
     User first = entityManager.persist(TestEntity
@@ -175,14 +176,14 @@ public class ChatServiceTest {
         .privateChat()
         .setMembers(Sets
             .newHashSet(first, second)));
-    
+
     chatService.deletePrivate(1L, first);
-    
+
     Assertions
         .assertThat(entityManager.find(Chat.class, 1L))
         .isNull();
   }
-  
+
   @Test
   public void createGroup_exception_whenAnyMemberIsNotPublicNorFriend() {
     User owner = entityManager.persist(TestEntity
@@ -194,7 +195,7 @@ public class ChatServiceTest {
         .setEmail("member@mail.com")
         .setUsername("member")
         .setPublicity(Publicity.INTERNAL));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.createGroup(owner, "name", ImmutableSet.of(member)))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -202,7 +203,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.group.addNotFriend"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
-  
+
   @Test
   public void createGroup_whenMembersAreFriends() {
     User owner = entityManager.persist(TestEntity
@@ -216,7 +217,7 @@ public class ChatServiceTest {
         .setPublicity(Publicity.INTERNAL));
     owner.setFriends(Sets.newHashSet(member));
     member.setFriends(Sets.newHashSet(owner));
-    
+
     Assertions
         .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
         .usingRecursiveComparison()
@@ -246,7 +247,7 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void createGroup_whenMembersArePublic() {
     User owner = entityManager.persist(TestEntity
@@ -258,7 +259,7 @@ public class ChatServiceTest {
         .setEmail("member@mail.com")
         .setUsername("member")
         .setPublicity(Publicity.PUBLIC));
-    
+
     Assertions
         .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
         .usingRecursiveComparison()
@@ -288,18 +289,18 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void updateGroup_exception_whenNoEntityWithIdAndMember() {
     User user = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.updateGroup(0L, user, "new name"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void updateGroup() {
     User member = entityManager.persist(TestEntity
@@ -310,7 +311,7 @@ public class ChatServiceTest {
         .setOwner(member))
         .setMembers(Sets
             .newHashSet(member));
-    
+
     Assertions
         .assertThat(chatService.updateGroup(1L, member, "new name"))
         .usingComparator(TestComparator
@@ -324,19 +325,19 @@ public class ChatServiceTest {
                 .setUsername("member"))
             .setId(1L));
   }
-  
+
   @Test
   public void updateGroupMembers_exception_whenNoEntityWithIdAndOwner() {
     User owner = entityManager.persist(TestEntity
         .user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.updateGroupMembers(0L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void updateGroupMembers_exception_whenNoOwnerInMemberList() {
     User owner = entityManager.persist(TestEntity.user());
@@ -344,7 +345,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.updateGroupMembers(1L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -352,7 +353,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.group.removeOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
   }
-  
+
   @Test
   public void updateGroupMembers_exception_whenAnyNewMemberIsNotPublicNorFriend() {
     User owner = entityManager.persist(TestEntity
@@ -369,7 +370,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThatThrownBy(() ->
             chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
@@ -378,7 +379,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.group.addNotFriend"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
-  
+
   @Test
   public void updateGroupMembers_addNewMember_whenMemberIsFriend() {
     User owner = entityManager.persist(TestEntity
@@ -397,7 +398,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingRecursiveComparison()
@@ -428,7 +429,7 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void updateGroupMembers_addNewMember_whenMemberIsPublic() {
     User owner = entityManager.persist(TestEntity
@@ -445,7 +446,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingRecursiveComparison()
@@ -475,7 +476,7 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void updateGroupMembers_removeMember_whenAbsent() {
     User owner = entityManager.persist(TestEntity
@@ -491,7 +492,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, member)));
-    
+
     Assertions
         .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
         .usingRecursiveComparison()
@@ -512,7 +513,7 @@ public class ChatServiceTest {
                     .setEmail("owner@mail.com")
                     .setUsername("owner"))));
   }
-  
+
   @Test
   public void changeOwner_exception_whenNoEntityWithIdAndOwner() {
     User owner = entityManager.persist(TestEntity
@@ -523,14 +524,14 @@ public class ChatServiceTest {
         .user()
         .setEmail("newOwner@mail.com")
         .setUsername("newOwner"));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.changeOwner(0L, owner, newOwner))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void changeOwner_exception_whenNewOwnerIsNotMember() {
     User owner = entityManager.persist(TestEntity
@@ -544,7 +545,7 @@ public class ChatServiceTest {
     entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.changeOwner(1L, owner, newOwner))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -552,7 +553,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.group.setOwnerNotMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 2L});
   }
-  
+
   @Test
   public void changeOwner() {
     User owner = entityManager.persist(TestEntity
@@ -568,7 +569,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, newOwner)));
-    
+
     Assertions
         .assertThat(chatService.changeOwner(1L, owner, newOwner))
         .usingRecursiveComparison()
@@ -597,18 +598,18 @@ public class ChatServiceTest {
                 )
             ));
   }
-  
+
   @Test
   public void leaveGroup_exception_whenNoEntityWithIdAndMember() {
     User user = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.leaveGroup(0L, user))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void leaveGroup_exception_whenLeavingMemberIsOwner() {
     User owner = entityManager.persist(TestEntity
@@ -620,7 +621,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.leaveGroup(1L, owner))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -628,7 +629,7 @@ public class ChatServiceTest {
             new Object[]{"illegalAction.chat.group.leaveOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L, 1L});
   }
-  
+
   @Test
   public void leaveGroup() {
     User owner = entityManager.persist(TestEntity
@@ -644,9 +645,9 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, member)));
-    
+
     chatService.leaveGroup(1L, member);
-    
+
     Assertions
         .assertThat(entityManager.find(Chat.class, 1L))
         .usingRecursiveComparison()
@@ -667,18 +668,18 @@ public class ChatServiceTest {
                     .setUsername("owner"))
             ));
   }
-  
+
   @Test
   public void deleteGroup_exception_whenNoEntityWithIdAndOwner() {
     User owner = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.deleteGroup(0L, owner))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void deleteGroup() {
     User owner = entityManager.persist(TestEntity
@@ -690,25 +691,25 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     chatService.deleteGroup(1L, owner);
-    
+
     Assertions
         .assertThat(entityManager.find(Chat.class, 1L))
         .isNull();
   }
-  
+
   @Test
   public void getMembers_exception_whenNoEntityWithIdAndMember() {
     User user = entityManager.persist(TestEntity.user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.getMembers(0L, user, Pageable.unpaged()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void getMembers() {
     User owner = entityManager.persist(TestEntity
@@ -724,7 +725,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner, member)));
-    
+
     Assertions
         .assertThat(chatService.getMembers(1L, owner, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
@@ -742,19 +743,19 @@ public class ChatServiceTest {
                 .setUsername("member")
         );
   }
-  
+
   @Test
   public void find_byIdAndMember_exception_whenNoEntityWithIdAndMember() {
     User user = entityManager.persist(TestEntity
         .user());
-    
+
     Assertions
         .assertThatThrownBy(() -> chatService.find(0L, user))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
-  
+
   @Test
   public void find_byIdAndMember() {
     User owner = entityManager.persist(TestEntity
@@ -766,7 +767,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThat(chatService.find(1L, owner))
         .usingComparator(TestComparator
@@ -780,7 +781,7 @@ public class ChatServiceTest {
                 .setUsername("owner"))
             .setId(1L));
   }
-  
+
   @Test
   public void findAll_byOwner() {
     User owner = entityManager.persist(TestEntity
@@ -792,7 +793,7 @@ public class ChatServiceTest {
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
-    
+
     Assertions
         .assertThat(chatService.findAll(owner, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
@@ -806,5 +807,5 @@ public class ChatServiceTest {
                 .setUsername("owner"))
             .setId(1L));
   }
-  
+
 }
