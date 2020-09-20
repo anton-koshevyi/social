@@ -9,21 +9,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public class AuthenticationUtilTest {
-  
+public class PrincipalHolderTest {
+
   @Test
   public void getPrincipal_exception_onNullAuthentication() {
     Assertions
-        .assertThatThrownBy(() -> AuthenticationUtil.getPrincipal(null))
+        .assertThatThrownBy(() -> PrincipalHolder.getPrincipal(null))
         .isExactlyInstanceOf(IllegalArgumentException.class);
   }
-  
+
   @Test
   public void getPrincipal_null_onNullPrincipal() {
     Authentication authentication = new TestingAuthenticationToken(null, null);
-    
+
     Assertions
-        .assertThat(AuthenticationUtil.getPrincipal(authentication))
+        .assertThat(PrincipalHolder.getPrincipal(authentication))
         .isNull();
   }
   
@@ -35,9 +35,9 @@ public class AuthenticationUtilTest {
         Collections.emptySet()
     );
     Authentication authentication = new TestingAuthenticationToken(principal, null);
-    
+
     Assertions
-        .assertThat(AuthenticationUtil.getPrincipal(authentication))
+        .assertThat(PrincipalHolder.getPrincipal(authentication))
         .isNull();
   }
   
@@ -50,9 +50,9 @@ public class AuthenticationUtilTest {
         Collections.emptySet()
     );
     Authentication authentication = new TestingAuthenticationToken(principal, null);
-    
+
     Assertions
-        .assertThat(AuthenticationUtil.getPrincipal(authentication))
+        .assertThat(PrincipalHolder.getPrincipal(authentication))
         .isExactlyInstanceOf(IdentifiedUserDetails.class)
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,

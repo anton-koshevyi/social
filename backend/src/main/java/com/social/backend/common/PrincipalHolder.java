@@ -5,13 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
 
-public final class AuthenticationUtil {
-  
-  private static final Logger logger = LoggerFactory.getLogger(AuthenticationUtil.class);
-  
-  private AuthenticationUtil() {
+public final class PrincipalHolder {
+
+  private static final Logger logger = LoggerFactory.getLogger(PrincipalHolder.class);
+
+  private PrincipalHolder() {
   }
-  
+
   public static IdentifiedUserDetails getPrincipal(Authentication authentication) {
     Assert.notNull(authentication, "Authentication must not be null");
     Object principal = authentication.getPrincipal();
