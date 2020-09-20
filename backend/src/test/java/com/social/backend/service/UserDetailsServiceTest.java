@@ -15,7 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.social.backend.config.IdentifiedUserDetails;
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;

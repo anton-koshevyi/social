@@ -1,11 +1,9 @@
-package com.social.backend.util;
+package com.social.backend.common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
-
-import com.social.backend.config.IdentifiedUserDetails;
 
 public final class AuthenticationUtil {
   

@@ -1,4 +1,4 @@
-package com.social.backend.util;
+package com.social.backend.common;
 
 import java.util.Collections;
 
@@ -8,8 +8,6 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import com.social.backend.config.IdentifiedUserDetails;
 
 public class AuthenticationUtilTest {
   

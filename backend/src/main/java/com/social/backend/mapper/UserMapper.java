@@ -11,11 +11,11 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.social.backend.config.IdentifiedUserDetails;
+import com.social.backend.common.AuthenticationUtil;
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.User;
-import com.social.backend.util.AuthenticationUtil;
 
 @Mapper
 public abstract class UserMapper {

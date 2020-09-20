@@ -18,7 +18,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.social.backend.config.IdentifiedUserDetails;
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.Publicity;
