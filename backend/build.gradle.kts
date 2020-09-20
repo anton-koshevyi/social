@@ -19,14 +19,30 @@ dependencies {
   implementation("org.postgresql:postgresql:42.2.5")
   implementation("org.projectlombok:lombok:1.18.12")
   annotationProcessor("org.projectlombok:lombok:1.18.12")
-  testImplementation("io.rest-assured:rest-assured:4.2.0")
-  testImplementation("io.rest-assured:spring-mock-mvc:4.2.0")
 
   implementation("org.springframework.boot:spring-boot-starter-actuator:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-security:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-web:2.2.0.RELEASE")
-  testImplementation("org.springframework.boot:spring-boot-starter-test:2.2.0.RELEASE")
+
+
+  // Test: Asserting
+  testImplementation("org.assertj:assertj-core:3.16.1")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
+  testImplementation("org.skyscreamer:jsonassert:1.5.0")
+
+  // Test: CDI
+  testImplementation("org.springframework:spring-test:5.2.0.RELEASE")
+  testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:2.2.0.RELEASE")
+
+  // Test: Mocking
+  testImplementation("org.mockito:mockito-inline:3.4.0")
+  testImplementation("org.mockito:mockito-junit-jupiter:3.4.0")
+
+  // Test: Web
+  testImplementation("io.rest-assured:rest-assured:4.3.0")
+  testImplementation("io.rest-assured:spring-mock-mvc:4.3.0")
+
 }
 
 java {
