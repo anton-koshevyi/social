@@ -1,4 +1,4 @@
-package com.social.backend.controller.advice;
+package com.social.backend.resolver.exception;
 
 import java.util.Locale;
 import javax.servlet.http.HttpServletResponse;
@@ -45,10 +45,10 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @ExtendWith(MockitoExtension.class)
 public class LocalizedHandlerExceptionResolverTest {
-  
+
   @Mock
   private MessageSource messageSource;
-  
+
   @BeforeEach
   public void setUp() {
     RestAssuredMockMvc.mockMvc(MockMvcBuilders
@@ -60,7 +60,7 @@ public class LocalizedHandlerExceptionResolverTest {
         .alwaysDo(MockMvcResultHandlers.log())
         .build());
   }
-  
+
   @Test
   public void handleHttpRequestMethodNotSupported() {
     Mockito
@@ -70,7 +70,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -91,7 +91,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleHttpMediaTypeNotSupported() {
     Mockito
@@ -101,7 +101,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -125,7 +125,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleHttpMediaTypeNotAcceptable() {
     Mockito
@@ -135,7 +135,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept", "text/plain")
@@ -155,7 +155,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleMissingPathVariable() {
     Mockito
@@ -165,7 +165,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -183,7 +183,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleMissingServletRequestParameter() {
     Mockito
@@ -193,7 +193,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -211,7 +211,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleServletRequestBindingException() {
     Mockito
@@ -221,7 +221,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -238,7 +238,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleHttpMessageNotReadable() {
     Mockito
@@ -248,7 +248,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -265,7 +265,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleTypeMismatch() {
     Mockito
@@ -275,7 +275,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -293,7 +293,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleMethodArgumentNotValid() {
     Mockito
@@ -303,7 +303,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -323,7 +323,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleMissingServletRequestPart() {
     Mockito
@@ -333,7 +333,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -352,7 +352,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleBindException() {
     Mockito
@@ -362,7 +362,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -381,7 +381,7 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void handleNoHandlerFound() {
     Mockito
@@ -391,7 +391,7 @@ public class LocalizedHandlerExceptionResolverTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -410,81 +410,81 @@ public class LocalizedHandlerExceptionResolverTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Controller
   private static class TestController {
-    
+
     @GetMapping("/httpRequestMethodNotSupported")
     private ResponseEntity<Object> httpRequestMethodNotSupported() {
       return ResponseEntity.ok("Get request passed");
     }
-    
+
     @PostMapping(value = "/httpMediaTypeNotSupported", consumes = "application/json")
     private ResponseEntity<Object> httpMediaTypeNotSupported(@RequestBody Target target) {
       return ResponseEntity.ok("Request body passed: " + target);
     }
-    
+
     @GetMapping(value = "/httpMediaTypeNotAcceptable", produces = "application/json")
     private ResponseEntity<Object> httpMediaTypeNotAcceptable() {
       return ResponseEntity.ok("Request passed");
     }
-    
+
     @SuppressWarnings("MVCPathVariableInspection")
     @GetMapping("/missingPathVariable")
     private ResponseEntity<Object> httpMissingPathVariable(@PathVariable String var) {
       return ResponseEntity.ok("Path variable passed: " + var);
     }
-    
+
     @GetMapping("/missingServletRequestParameter")
     private ResponseEntity<Object> missingServletRequestParameter(@RequestParam String param) {
       return ResponseEntity.ok("Request param passed: " + param);
     }
-    
+
     @GetMapping("/servletRequestBindingException")
     private ResponseEntity<Object> servletRequestBindingException(@CookieValue String cookie) {
       return ResponseEntity.ok("Cookie value passed: " + cookie);
     }
-    
+
     @PostMapping("/httpMessageNotReadable")
     private ResponseEntity<Object> httpMessageNotReadable(@RequestBody Target target) {
       return ResponseEntity.ok("Target passed " + target);
     }
-    
+
     @GetMapping("/typeMismatch")
     private ResponseEntity<Object> typeMismatch(@RequestParam Integer intParam) {
       return ResponseEntity.ok("Param passed:" + intParam);
     }
-    
+
     @PostMapping("/methodArgumentNotValid")
     private ResponseEntity<Object> methodArgumentNotValid(@Valid @RequestBody Target target) {
       return ResponseEntity.ok("Target valid: " + target);
     }
-    
+
     @PostMapping("/missingServletRequestPart")
     private ResponseEntity<Object> missingServletRequestPart(@RequestPart String part) {
       return ResponseEntity.ok("Part passed: " + part);
     }
-    
+
     @PostMapping("/bindException")
     private ResponseEntity<Object> bindException(@Valid @ModelAttribute Target target) {
       return ResponseEntity.ok("Target valid: " + target);
     }
-    
+
   }
-  
+
   private static class Target {
-    
+
     @NotBlank
     private String notBlank;
-    
+
     private String getNotBlank() {
       return notBlank;
     }
-    
+
     private void setNotBlank(String notBlank) {
       this.notBlank = notBlank;
     }
-    
+
   }
-  
+
 }

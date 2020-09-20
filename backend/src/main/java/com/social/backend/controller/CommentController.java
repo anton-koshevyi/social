@@ -3,7 +3,6 @@ package com.social.backend.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.common.PrincipalHolder;
 import com.social.backend.dto.reply.CommentDto;
 import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
@@ -51,10 +51,9 @@ public class CommentController {
 
   @PostMapping("/posts/{postId}/comments")
   public CommentDto create(@PathVariable Long postId,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
                            @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
     Post post = postService.find(postId);
-    User author = userService.find(userId);
+    User author = userService.find(PrincipalHolder.getUserId());
     Comment comment = commentService.create(
         post,
         author,
@@ -65,9 +64,8 @@ public class CommentController {
 
   @PatchMapping("/posts/{postId}/comments/{id}")
   public CommentDto update(@PathVariable Long id,
-                           @AuthenticationPrincipal(expression = "id") Long userId,
                            @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
-    User author = userService.find(userId);
+    User author = userService.find(PrincipalHolder.getUserId());
     Comment comment = commentService.update(
         id,
         author,
@@ -77,9 +75,8 @@ public class CommentController {
   }
 
   @DeleteMapping("/posts/{postId}/comments/{id}")
-  public void delete(@PathVariable Long id,
-                     @AuthenticationPrincipal(expression = "id") Long userId) {
-    User author = userService.find(userId);
+  public void delete(@PathVariable Long id) {
+    User author = userService.find(PrincipalHolder.getUserId());
     commentService.delete(id, author);
   }
 

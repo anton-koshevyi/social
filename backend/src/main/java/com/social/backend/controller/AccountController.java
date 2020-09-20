@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.common.PrincipalHolder;
 import com.social.backend.dto.user.CreateDto;
 import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
@@ -34,8 +34,8 @@ public class AccountController {
   }
 
   @GetMapping("/account")
-  public UserDto get(@AuthenticationPrincipal(expression = "id") Long id) {
-    User account = userService.find(id);
+  public UserDto get() {
+    User account = userService.find(PrincipalHolder.getUserId());
     return UserMapper.INSTANCE.toDto(account);
   }
 
@@ -57,11 +57,9 @@ public class AccountController {
   }
 
   @PatchMapping("/account")
-  public UserDto update(@AuthenticationPrincipal(expression = "id") Long id,
-                        @Valid @RequestBody UpdateDto dto) {
-
+  public UserDto update(@Valid @RequestBody UpdateDto dto) {
     User account = userService.update(
-        id,
+        PrincipalHolder.getUserId(),
         dto.getEmail(),
         dto.getUsername(),
         dto.getFirstName(),
@@ -72,19 +70,17 @@ public class AccountController {
   }
 
   @DeleteMapping("/account")
-  public void delete(@AuthenticationPrincipal(expression = "id") Long id,
-                     @Valid @RequestBody DeleteDto dto) {
+  public void delete(@Valid @RequestBody DeleteDto dto) {
     userService.delete(
-        id,
+        PrincipalHolder.getUserId(),
         dto.getPassword()
     );
   }
 
   @PutMapping("/account/password")
-  public void changePassword(@AuthenticationPrincipal(expression = "id") Long id,
-                             @Valid @RequestBody PasswordDto dto) {
+  public void changePassword(@Valid @RequestBody PasswordDto dto) {
     userService.changePassword(
-        id,
+        PrincipalHolder.getUserId(),
         dto.getActual(),
         dto.getChange()
     );

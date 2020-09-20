@@ -1,4 +1,4 @@
-package com.social.backend.controller.advice;
+package com.social.backend.resolver.exception;
 
 import java.util.Locale;
 import javax.servlet.http.HttpServletResponse;
@@ -23,10 +23,10 @@ import com.social.backend.exception.LocalizedException;
 
 @ExtendWith(MockitoExtension.class)
 public class GlobalExceptionHandlerTest {
-  
+
   @Mock
   private MessageSource messageSource;
-  
+
   @BeforeEach
   public void setUp() {
     RestAssuredMockMvc.mockMvc(MockMvcBuilders
@@ -35,7 +35,7 @@ public class GlobalExceptionHandlerTest {
         .alwaysDo(MockMvcResultHandlers.log())
         .build());
   }
-  
+
   @Test
   public void given_exception_when_localizedExceptionType_then_exceptionBasedResponse() {
     Mockito
@@ -44,7 +44,7 @@ public class GlobalExceptionHandlerTest {
             ArgumentMatchers.eq(new Locale("en"))
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -64,7 +64,7 @@ public class GlobalExceptionHandlerTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void given_exception_when_notHandledType_then_internalErrorResponse() {
     Mockito
@@ -74,7 +74,7 @@ public class GlobalExceptionHandlerTest {
             new Locale("en")
         ))
         .thenReturn("Mocked");
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -92,7 +92,7 @@ public class GlobalExceptionHandlerTest {
                 .hasFieldOrPropertyWithValue("getErrorMessage", "Mocked")
         ));
   }
-  
+
   @Test
   public void given_exception_when_failureToHandle_then_internalErrorResponseWithStatusOnly() {
     Mockito
@@ -102,7 +102,7 @@ public class GlobalExceptionHandlerTest {
             new Locale("en")
         ))
         .thenThrow(new RuntimeException("Exception during handling"));
-    
+
     RestAssuredMockMvc
         .given()
         .header("Accept-Language", "en")
@@ -114,10 +114,10 @@ public class GlobalExceptionHandlerTest {
             .assertThat(result.getResponse())
             .hasFieldOrPropertyWithValue("getErrorMessage", null));
   }
-  
+
   @Controller
   private static class TestController {
-    
+
     @GetMapping("/localized")
     private void localized() {
       throw new LocalizedException("error.localized") {
@@ -127,12 +127,12 @@ public class GlobalExceptionHandlerTest {
         }
       };
     }
-    
+
     @GetMapping("/global")
     private void global() {
       throw new RuntimeException("Global error");
     }
-    
+
   }
-  
+
 }

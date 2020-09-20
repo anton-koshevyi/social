@@ -1,4 +1,4 @@
-package com.social.backend;
+package com.social.backend.test;
 
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.Message;

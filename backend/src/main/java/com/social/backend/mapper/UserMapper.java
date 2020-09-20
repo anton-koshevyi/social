@@ -11,11 +11,11 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.social.backend.config.IdentifiedUserDetails;
+import com.social.backend.common.IdentifiedUserDetails;
+import com.social.backend.common.PrincipalHolder;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.User;
-import com.social.backend.util.AuthenticationUtil;
 
 @Mapper
 public abstract class UserMapper {
@@ -55,7 +55,7 @@ public abstract class UserMapper {
       return this.toDtoRegular(model);
     }
 
-    IdentifiedUserDetails principal = AuthenticationUtil.getPrincipal(authentication);
+    IdentifiedUserDetails principal = PrincipalHolder.getPrincipal();
 
     if (principal != null && principal.getId().equals(model.getId())) {
       logger.debug("Owner principal - regular body");

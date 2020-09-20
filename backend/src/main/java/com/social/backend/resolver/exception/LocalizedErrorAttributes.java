@@ -1,4 +1,4 @@
-package com.social.backend.config;
+package com.social.backend.resolver.exception;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -18,7 +18,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.util.WebUtils;
 
 /**
  * Based on {@link DefaultErrorAttributes}, but with processing
@@ -26,39 +25,39 @@ import org.springframework.web.util.WebUtils;
  * Private methods were made protected for ability to extension.
  */
 public class LocalizedErrorAttributes extends DefaultErrorAttributes {
-  
+
   private final MessageSource messageSource;
   private final boolean includeException;
-  
+
   public LocalizedErrorAttributes(MessageSource messageSource, boolean includeException) {
     this.messageSource = messageSource;
     this.includeException = includeException;
   }
-  
+
   @Override
   public final Map<String, Object> getErrorAttributes(WebRequest request,
                                                       boolean includeStackTrace) {
     Map<String, Object> errorAttributes = new LinkedHashMap<>();
-    
+
     errorAttributes.put("timestamp", new Date());
     errorAttributes.put("status", this.getStatus(request));
     errorAttributes.put("error", this.getReasonPhrase(request));
-    
+
     if (includeException) {
       errorAttributes.put("exception", this.getErrorName(request));
     }
-    
+
     errorAttributes.put("message", this.getMessage(request));
     errorAttributes.put("errors", this.getBindingErrors(request));
     errorAttributes.put("path", this.getPath(request));
-    
+
     if (includeStackTrace) {
       errorAttributes.put("trace", this.getStackTrace(request));
     }
-    
+
     return errorAttributes;
   }
-  
+
   /**
    * Parent implementation of method processes error before any handler
    * (because has {@link org.springframework.core.Ordered#HIGHEST_PRECEDENCE}
@@ -73,35 +72,35 @@ public class LocalizedErrorAttributes extends DefaultErrorAttributes {
   public final Throwable getError(WebRequest request) {
     return super.getError(request);
   }
-  
+
   protected Integer getStatus(WebRequest request) {
-    return this.getAttribute(request, WebUtils.ERROR_STATUS_CODE_ATTRIBUTE);
+    return this.getAttribute(request, "javax.servlet.error.status_code");
   }
-  
+
   protected String getReasonPhrase(WebRequest request) {
-    Integer status = this.getAttribute(request, WebUtils.ERROR_STATUS_CODE_ATTRIBUTE);
-    
+    Integer status = this.getAttribute(request, "javax.servlet.error.status_code");
+
     try {
       return HttpStatus.valueOf(status).getReasonPhrase();
     } catch (Exception ex) {
       return null;
     }
   }
-  
+
   protected String getErrorName(WebRequest request) {
-    Throwable error = super.getError(request);
-    
+    Throwable error = this.getError(request);
+
     if (error == null) {
       return null;
     }
-    
+
     return error.getClass().getName();
   }
-  
+
   protected Map<String, List<String>> getBindingErrors(WebRequest request) {
-    Throwable error = super.getError(request);
+    Throwable error = this.getError(request);
     BindingResult bindingResult;
-    
+
     if (error instanceof BindingResult) {
       bindingResult = (BindingResult) error;
     } else if (error instanceof MethodArgumentNotValidException) {
@@ -109,51 +108,48 @@ public class LocalizedErrorAttributes extends DefaultErrorAttributes {
     } else {
       return null;
     }
-    
+
     if (!bindingResult.hasFieldErrors()) {
       return null;
     }
-    
+
     Locale locale = request.getLocale();
     return bindingResult.getFieldErrors()
         .stream()
         .map(FieldError::getField)
         .distinct()
-        .collect(Collectors
-            .toMap(
-                Function.identity(),
-                field -> bindingResult.getFieldErrors(field)
-                    .stream()
-                    .map(e -> messageSource.getMessage(e, locale))
-                    .collect(Collectors
-                        .toList())
-            ));
+        .collect(Collectors.toMap(
+            Function.identity(),
+            field -> bindingResult.getFieldErrors(field).stream()
+                .map(e -> messageSource.getMessage(e, locale))
+                .collect(Collectors.toList())
+        ));
   }
-  
+
   protected String getMessage(WebRequest request) {
-    return this.getAttribute(request, WebUtils.ERROR_MESSAGE_ATTRIBUTE);
+    return this.getAttribute(request, "javax.servlet.error.message");
   }
-  
+
   protected String getStackTrace(WebRequest request) {
-    Throwable error = super.getError(request);
-    
+    Throwable error = this.getError(request);
+
     if (error == null) {
       return null;
     }
-    
+
     StringWriter stackTrace = new StringWriter();
     error.printStackTrace(new PrintWriter(stackTrace));
     stackTrace.flush();
     return stackTrace.toString();
   }
-  
+
   protected String getPath(WebRequest request) {
-    return this.getAttribute(request, WebUtils.ERROR_REQUEST_URI_ATTRIBUTE);
+    return this.getAttribute(request, "javax.servlet.error.request_uri");
   }
-  
+
   @SuppressWarnings("unchecked")
   protected final <T> T getAttribute(WebRequest request, String name) {
     return (T) request.getAttribute(name, RequestAttributes.SCOPE_REQUEST);
   }
-  
+
 }

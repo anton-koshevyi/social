@@ -3,7 +3,6 @@ package com.social.backend.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.common.PrincipalHolder;
 import com.social.backend.dto.post.ContentDto;
 import com.social.backend.dto.post.ContentDto.CreateGroup;
 import com.social.backend.dto.post.ContentDto.UpdateGroup;
@@ -42,9 +42,8 @@ public class PostController {
   }
 
   @PostMapping("/posts")
-  public PostDto create(@AuthenticationPrincipal(expression = "id") Long userId,
-                        @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
-    User author = userService.find(userId);
+  public PostDto create(@Validated(CreateGroup.class) @RequestBody ContentDto dto) {
+    User author = userService.find(PrincipalHolder.getUserId());
     Post post = postService.create(
         author,
         dto.getTitle(),
@@ -61,9 +60,8 @@ public class PostController {
 
   @PatchMapping("/posts/{id}")
   public PostDto update(@PathVariable Long id,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
                         @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
-    User author = userService.find(userId);
+    User author = userService.find(PrincipalHolder.getUserId());
     Post post = postService.update(
         id,
         author,
@@ -74,9 +72,8 @@ public class PostController {
   }
 
   @DeleteMapping("/posts/{id}")
-  public void delete(@PathVariable Long id,
-                     @AuthenticationPrincipal(expression = "id") Long userId) {
-    User author = userService.find(userId);
+  public void delete(@PathVariable Long id) {
+    User author = userService.find(PrincipalHolder.getUserId());
     postService.delete(id, author);
   }
 

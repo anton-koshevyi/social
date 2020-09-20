@@ -2,23 +2,26 @@ package com.social.backend.mapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.social.backend.config.IdentifiedUserDetails;
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.Publicity;
@@ -28,7 +31,7 @@ import com.social.backend.model.user.User;
 public class UserMapperTest {
 
   @Test
-  public void given_notPublicPublicity_when_nullAuthentication_then_hiddenBody() {
+  public void givenNotPublicPublicity_whenNullAuthentication_thenHiddenBody() {
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -53,7 +56,7 @@ public class UserMapperTest {
   }
 
   @Test
-  public void given_publicPublicity_when_nullAuthentication_then_regularBody() {
+  public void givenPublicPublicity_whenNullAuthentication_thenRegularBody() {
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -79,8 +82,13 @@ public class UserMapperTest {
 
   @ParameterizedTest
   @ValueSource(ints = {Publicity.PUBLIC, Publicity.INTERNAL, Publicity.PRIVATE})
-  @WithMockUser(authorities = Authority.MODER)
-  public void given_anyPublicity_when_administrationRequest_then_extendedBody(int publicity) {
+  public void givenAnyPublicity_whenAdministrationRequest_thenRegularBody(int publicity) {
+    authenticate(new IdentifiedUserDetails(
+        2L,
+        "administration",
+        "password",
+        Collections.singleton(new SimpleGrantedAuthority(Authority.MODER))
+    ));
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -105,36 +113,10 @@ public class UserMapperTest {
   }
 
   @Test
-  @WithMockUser
-  public void given_privatePublicity_when_notIdentifiedPrincipal_then_hiddenBody() {
-    User user = new User()
-        .setId(1L)
-        .setEmail("email@mail.com")
-        .setUsername("username")
-        .setFirstName("first")
-        .setLastName("last")
-        .setPublicity(Publicity.PRIVATE)
-        .setPassword("encoded");
-
-    Assertions
-        .assertThat(UserMapper.INSTANCE.toDto(user))
-        .usingRecursiveComparison()
-        .isEqualTo(new UserDto()
-            .setId(1L)
-            .setEmail(null)
-            .setUsername("username")
-            .setFirstName("first")
-            .setLastName("last")
-            .setPublicity(Publicity.PRIVATE)
-            .setModer(false)
-            .setAdmin(false));
-  }
-
-  @Test
-  public void given_privatePublicity_when_notOwnerRequest_then_hiddenBody() {
+  public void givenPrivatePublicity_whenNotOwnerRequest_thenHiddenBody() {
     authenticate(new IdentifiedUserDetails(
         2L,
-        "username",
+        "notOwner",
         "password",
         Collections.emptySet()
     ));
@@ -162,7 +144,7 @@ public class UserMapperTest {
   }
 
   @Test
-  public void given_anyPublicity_when_ownerRequest_then_regularBody() {
+  public void givenAnyPublicity_whenOwnerRequest_thenRegularBody() {
     authenticate(new IdentifiedUserDetails(
         1L,
         "username",
@@ -193,8 +175,13 @@ public class UserMapperTest {
   }
 
   @Test
-  @WithAnonymousUser
-  public void given_publicPublicity_when_notOwnerNorAdministrationRequest_then_regularBody() {
+  public void givenPublicPublicity_whenNotOwnerNorAdministrationRequest_thenRegularBody() {
+    authenticate(new IdentifiedUserDetails(
+        2L,
+        "notOwnerNorAdministration",
+        "password",
+        Collections.emptySet()
+    ));
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -219,8 +206,13 @@ public class UserMapperTest {
   }
 
   @Test
-  @WithAnonymousUser
-  public void given_internalPublicity_when_anonymousRequest_then_hiddenBody() {
+  public void givenInternalPublicity_whenAnonymousRequest_thenHiddenBody() {
+    anonymous(new IdentifiedUserDetails(
+        2L,
+        "anonymous",
+        "password",
+        Collections.emptySet()
+    ));
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -245,8 +237,13 @@ public class UserMapperTest {
   }
 
   @Test
-  @WithMockUser
-  public void given_internalPublicity_when_authenticatedRequest_then_regularBody() {
+  public void givenInternalPublicity_whenAuthenticatedRequest_thenRegularBody() {
+    authenticate(new IdentifiedUserDetails(
+        2L,
+        "authenticated",
+        "password",
+        Collections.emptySet()
+    ));
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -271,8 +268,13 @@ public class UserMapperTest {
   }
 
   @Test
-  @WithMockUser
-  public void given_privatePublicity_when_notOwnerNorAdministrationRequest_hiddenBody() {
+  public void givenPrivatePublicity_whenNotOwnerNorAdministrationRequest_thenHiddenBody() {
+    authenticate(new IdentifiedUserDetails(
+        2L,
+        "notOwnerNorAdministration",
+        "password",
+        Collections.emptySet()
+    ));
     User user = new User()
         .setId(1L)
         .setEmail("email@mail.com")
@@ -294,6 +296,15 @@ public class UserMapperTest {
             .setPublicity(Publicity.PRIVATE)
             .setModer(false)
             .setAdmin(false));
+  }
+
+  public static void anonymous(UserDetails userDetails) {
+    List<GrantedAuthority> authorities =
+        AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS");
+    authorities.addAll(userDetails.getAuthorities());
+    Authentication token = new AnonymousAuthenticationToken(
+        "key", userDetails, authorities);
+    SecurityContextHolder.getContext().setAuthentication(token);
   }
 
   private static void authenticate(UserDetails details) {
