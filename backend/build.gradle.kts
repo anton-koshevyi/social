@@ -20,17 +20,14 @@ dependencies {
   implementation("org.postgresql:postgresql:42.2.5")
   implementation("org.projectlombok:lombok:1.18.12")
   annotationProcessor("org.projectlombok:lombok:1.18.12")
-  testImplementation("io.rest-assured:json-path:4.2.0")
   testImplementation("io.rest-assured:rest-assured:4.2.0")
   testImplementation("io.rest-assured:spring-mock-mvc:4.2.0")
-  testImplementation("io.rest-assured:xml-path:4.2.0")
 
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.springframework.security:spring-security-test")
 }
 
 java {
