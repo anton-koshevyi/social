@@ -15,13 +15,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.social.backend.TestComparator;
-import com.social.backend.TestEntity;
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
+import com.social.backend.test.TestComparator;
+import com.social.backend.test.TestEntity;
 
 @DataJpaTest
 @ActiveProfiles("test")

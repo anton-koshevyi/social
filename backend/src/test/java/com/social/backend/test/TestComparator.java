@@ -1,4 +1,4 @@
-package com.social.backend;
+package com.social.backend.test;
 
 import java.util.Comparator;
 
