@@ -62,7 +62,6 @@ public abstract class UserMapper {
       return this.toDtoRegular(model);
     }
 
-
     if (model.isPublic()) {
       // Request is not from administration
       logger.debug("Regular 'public' body");

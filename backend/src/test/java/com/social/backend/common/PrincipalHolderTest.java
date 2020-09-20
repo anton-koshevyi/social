@@ -63,7 +63,6 @@ public class PrincipalHolderTest {
 
     Assertions
         .assertThat(PrincipalHolder.getPrincipal())
-        .isExactlyInstanceOf(IdentifiedUserDetails.class)
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,
             "johnsmith",
