@@ -1,4 +1,4 @@
-package com.social.backend.mapper.model;
+package com.social.backend.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

@@ -17,7 +17,7 @@ import com.social.backend.dto.post.ContentDto;
 import com.social.backend.dto.post.ContentDto.CreateGroup;
 import com.social.backend.dto.post.ContentDto.UpdateGroup;
 import com.social.backend.dto.post.PostDto;
-import com.social.backend.mapper.model.PostMapper;
+import com.social.backend.mapper.PostMapper;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.service.PostService;

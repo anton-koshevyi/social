@@ -17,7 +17,7 @@ import com.social.backend.dto.reply.CommentDto;
 import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
-import com.social.backend.mapper.model.CommentMapper;
+import com.social.backend.mapper.CommentMapper;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;

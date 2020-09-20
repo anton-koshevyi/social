@@ -19,7 +19,7 @@ import com.social.backend.dto.user.DeleteDto;
 import com.social.backend.dto.user.PasswordDto;
 import com.social.backend.dto.user.UpdateDto;
 import com.social.backend.dto.user.UserDto;
-import com.social.backend.mapper.model.UserMapper;
+import com.social.backend.mapper.UserMapper;
 import com.social.backend.model.user.User;
 import com.social.backend.service.UserService;
 

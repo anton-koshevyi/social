@@ -17,7 +17,7 @@ import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
 import com.social.backend.dto.reply.MessageDto;
-import com.social.backend.mapper.model.MessageMapper;
+import com.social.backend.mapper.MessageMapper;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;

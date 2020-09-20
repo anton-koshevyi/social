@@ -1,4 +1,4 @@
-package com.social.backend.mapper.model;
+package com.social.backend.mapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
