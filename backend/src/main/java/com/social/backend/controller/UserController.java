@@ -95,7 +95,7 @@ public class UserController {
   public PrivateChatDto createPrivateChat(@PathVariable("id") Long targetId) {
     User user = userService.find(PrincipalHolder.getUserId());
     User target = userService.find(targetId);
-    PrivateChat chat = (PrivateChat) chatService.createPrivate(user, target);
+    PrivateChat chat = chatService.createPrivate(user, target);
     return ChatMapper.INSTANCE.toDto(chat);
   }
 

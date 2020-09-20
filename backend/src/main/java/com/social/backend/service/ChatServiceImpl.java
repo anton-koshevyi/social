@@ -33,7 +33,7 @@ public class ChatServiceImpl implements ChatService {
   }
 
   @Override
-  public Chat createPrivate(User user, User target) {
+  public PrivateChat createPrivate(User user, User target) {
     if (repository.existsPrivateByMembers(user, target)) {
       throw new IllegalActionException(
           "illegalAction.chat.private.alreadyExist", target.getId());
@@ -46,7 +46,7 @@ public class ChatServiceImpl implements ChatService {
 
     PrivateChat entity = new PrivateChat();
     entity.setMembers(Sets.newHashSet(user, target));
-    return repository.save(entity);
+    return (PrivateChat) repository.save(entity);
   }
 
   @Override
@@ -56,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
   }
 
   @Override
-  public Chat createGroup(User creator, String name, Set<User> members) {
+  public GroupChat createGroup(User creator, String name, Set<User> members) {
     for (User member : members) {
       if (!member.isPublic() && !member.hasFriendship(creator)) {
         throw new IllegalActionException(
@@ -71,18 +71,18 @@ public class ChatServiceImpl implements ChatService {
     entity.setName(name);
     entity.setOwner(creator);
     entity.setMembers(finalMembers);
-    return repository.save(entity);
+    return (GroupChat) repository.save(entity);
   }
 
   @Override
-  public Chat updateGroup(Long id, User member, String name) {
+  public GroupChat updateGroup(Long id, User member, String name) {
     GroupChat entity = findGroupByIdAndMember(id, member);
     NullableUtil.set(entity::setName, name);
-    return repository.save(entity);
+    return (GroupChat) repository.save(entity);
   }
 
   @Override
-  public Chat updateGroupMembers(Long id, User owner, Set<User> members) {
+  public GroupChat updateGroupMembers(Long id, User owner, Set<User> members) {
     GroupChat entity = findGroupByIdAndOwner(id, owner);
 
     if (!members.contains(owner)) {
@@ -107,11 +107,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setMembers(finalMembers);
-    return repository.save(entity);
+    return (GroupChat) repository.save(entity);
   }
 
   @Override
-  public Chat changeOwner(Long id, User owner, User newOwner) {
+  public GroupChat changeOwner(Long id, User owner, User newOwner) {
     GroupChat entity = findGroupByIdAndOwner(id, owner);
 
     if (!entity.hasMember(newOwner)) {
@@ -120,7 +120,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setOwner(newOwner);
-    return repository.save(entity);
+    return (GroupChat) repository.save(entity);
   }
 
   @Override

@@ -76,7 +76,7 @@ public class ChatController {
   public GroupChatDto createGroup(@Valid @RequestBody GroupCreateDto dto) {
     User creator = userService.find(PrincipalHolder.getUserId());
     Set<User> members = findUsersByIds(dto.getMembers());
-    GroupChat chat = (GroupChat) chatService.createGroup(
+    GroupChat chat = chatService.createGroup(
         creator,
         dto.getName(),
         members
@@ -88,7 +88,7 @@ public class ChatController {
   public GroupChatDto updateGroup(@PathVariable Long id,
                                   @Valid @RequestBody GroupUpdateDto dto) {
     User member = userService.find(PrincipalHolder.getUserId());
-    GroupChat chat = (GroupChat) chatService.updateGroup(
+    GroupChat chat = chatService.updateGroup(
         id,
         member,
         dto.getName()
@@ -113,7 +113,7 @@ public class ChatController {
                                     @Valid @RequestBody GroupMembersDto dto) {
     User member = userService.find(PrincipalHolder.getUserId());
     Set<User> members = findUsersByIds(dto.getMembers());
-    GroupChat chat = (GroupChat) chatService.updateGroupMembers(id, member, members);
+    GroupChat chat = chatService.updateGroupMembers(id, member, members);
     return ChatMapper.INSTANCE.toDto(chat);
   }
 
@@ -122,7 +122,7 @@ public class ChatController {
                                   @PathVariable Long newOwnerId) {
     User owner = userService.find(PrincipalHolder.getUserId());
     User newOwner = userService.find(newOwnerId);
-    GroupChat chat = (GroupChat) chatService.changeOwner(id, owner, newOwner);
+    GroupChat chat = chatService.changeOwner(id, owner, newOwner);
     return ChatMapper.INSTANCE.toDto(chat);
   }
 
