@@ -28,11 +28,6 @@ public class CommentRepositoryImpl implements CommentRepository {
   }
 
   @Override
-  public Optional<Comment> findById(Long id) {
-    return delegate.findById(id);
-  }
-
-  @Override
   public Optional<Comment> findByIdAndAuthor(Long id, User author) {
     return delegate.findByIdAndAuthor(id, author);
   }

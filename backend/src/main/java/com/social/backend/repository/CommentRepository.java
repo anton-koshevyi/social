@@ -13,8 +13,6 @@ public interface CommentRepository {
 
   Comment save(Comment entity);
 
-  Optional<Comment> findById(Long id);
-
   Optional<Comment> findByIdAndAuthor(Long id, User author);
 
   Page<Comment> findAllByPost(Post post, Pageable pageable);
