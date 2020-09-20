@@ -20,7 +20,21 @@ public final class PrincipalHolder {
       return null;
     }
 
-    return (IdentifiedUserDetails) authentication.getPrincipal();
+    Object principal = authentication.getPrincipal();
+
+    if (principal == null) {
+      logger.debug("Principal is null");
+      return null;
+    }
+
+    Class<?> principalType = principal.getClass();
+
+    if (!IdentifiedUserDetails.class.isAssignableFrom(principalType)) {
+      logger.debug("Wrong principal type: {}", principalType);
+      return null;
+    }
+
+    return (IdentifiedUserDetails) principal;
   }
 
   public static Long getUserId() {

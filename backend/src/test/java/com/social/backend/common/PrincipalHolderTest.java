@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class PrincipalHolderTest {
@@ -27,6 +28,21 @@ public class PrincipalHolderTest {
   @Test
   public void getPrincipal_whenNullPrincipal_expectNull() {
     Authentication authentication = new TestingAuthenticationToken(null, null);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    Assertions
+        .assertThat(PrincipalHolder.getPrincipal())
+        .isNull();
+  }
+
+  @Test
+  public void getPrincipal_whenNotExpectedPrincipalType_expectNull() {
+    UserDetails principal = new User(
+        "johnsmith",
+        "password",
+        Collections.emptySet()
+    );
+    Authentication authentication = new TestingAuthenticationToken(principal, null);
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
     Assertions
