@@ -20,7 +20,6 @@ dependencies {
   implementation("org.projectlombok:lombok:1.18.12")
   annotationProcessor("org.projectlombok:lombok:1.18.12")
 
-  implementation("org.springframework.boot:spring-boot-starter-actuator:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-security:2.2.0.RELEASE")
   implementation("org.springframework.boot:spring-boot-starter-web:2.2.0.RELEASE")
