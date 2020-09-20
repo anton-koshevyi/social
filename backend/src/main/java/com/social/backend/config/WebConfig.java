@@ -9,6 +9,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.social.backend.resolver.exception.LocalizedErrorAttributes;
+
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
