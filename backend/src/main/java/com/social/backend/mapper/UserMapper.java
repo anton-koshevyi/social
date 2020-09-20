@@ -1,5 +1,7 @@
 package com.social.backend.mapper;
 
+import java.util.Objects;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -11,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationTrustResolverIm
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.common.PrincipalHolder;
 import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
@@ -55,9 +56,7 @@ public abstract class UserMapper {
       return this.toDtoRegular(model);
     }
 
-    IdentifiedUserDetails principal = PrincipalHolder.getPrincipal(authentication);
-
-    if (principal != null && principal.getId().equals(model.getId())) {
+    if (Objects.equals(PrincipalHolder.getUserId(), model.getId())) {
       logger.debug("Owner principal - regular body");
       return this.toDtoRegular(model);
     }

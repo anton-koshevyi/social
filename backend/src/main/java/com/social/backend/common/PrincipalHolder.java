@@ -3,7 +3,7 @@ package com.social.backend.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.Assert;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class PrincipalHolder {
 
@@ -12,23 +12,25 @@ public final class PrincipalHolder {
   private PrincipalHolder() {
   }
 
-  public static IdentifiedUserDetails getPrincipal(Authentication authentication) {
-    Assert.notNull(authentication, "Authentication must not be null");
-    Object principal = authentication.getPrincipal();
-    
-    if (principal == null) {
-      logger.debug("Principal is null");
+  public static IdentifiedUserDetails getPrincipal() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authentication == null) {
+      logger.debug("Authentication is null");
       return null;
     }
-    
-    Class<?> principalType = principal.getClass();
-    
-    if (!IdentifiedUserDetails.class.isAssignableFrom(principalType)) {
-      logger.debug("Wrong principal type: {}", principalType);
-      return null;
-    }
-    
-    return (IdentifiedUserDetails) principal;
+
+    return (IdentifiedUserDetails) authentication.getPrincipal();
   }
-  
+
+  public static Long getUserId() {
+    IdentifiedUserDetails principal = PrincipalHolder.getPrincipal();
+
+    if (principal == null) {
+      throw new NullPointerException("Principal is null");
+    }
+
+    return principal.getId();
+  }
+
 }
