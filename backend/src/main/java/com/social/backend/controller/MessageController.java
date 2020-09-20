@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
+import com.social.backend.dto.reply.MessageDto;
+import com.social.backend.mapper.MessageMapper;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
@@ -40,31 +42,40 @@ public class MessageController {
   }
 
   @GetMapping("/chats/{chatId}/messages")
-  public Page<Message> getAll(@PathVariable Long chatId,
-                              @AuthenticationPrincipal(expression = "id") Long userId,
-                              Pageable pageable) {
+  public Page<MessageDto> getAll(@PathVariable Long chatId,
+                                 @AuthenticationPrincipal(expression = "id") Long userId,
+                                 Pageable pageable) {
     User member = userService.find(userId);
     Chat chat = chatService.find(chatId, member);
-    return messageService.findAll(chat, pageable);
+    Page<Message> messages = messageService.findAll(chat, pageable);
+    return messages.map(MessageMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/chats/{chatId}/messages")
-  public Message create(@PathVariable Long chatId,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
+  public MessageDto create(@PathVariable Long chatId,
+                           @AuthenticationPrincipal(expression = "id") Long userId,
+                           @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(userId);
     Chat chat = chatService.find(chatId, author);
-    String body = dto.getBody();
-    return messageService.create(chat, author, body);
+    Message message = messageService.create(
+        chat,
+        author,
+        dto.getBody()
+    );
+    return MessageMapper.INSTANCE.toDto(message);
   }
 
   @PatchMapping("/chats/{chatId}/messages/{id}")
-  public Message update(@PathVariable Long id,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
+  public MessageDto update(@PathVariable Long id,
+                           @AuthenticationPrincipal(expression = "id") Long userId,
+                           @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(userId);
-    String body = dto.getBody();
-    return messageService.update(id, author, body);
+    Message message = messageService.update(
+        id,
+        author,
+        dto.getBody()
+    );
+    return MessageMapper.INSTANCE.toDto(message);
   }
 
   @DeleteMapping("/chats/{chatId}/messages/{id}")

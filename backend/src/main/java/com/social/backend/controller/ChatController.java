@@ -18,10 +18,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.dto.chat.ChatDto;
+import com.social.backend.dto.chat.GroupChatDto;
 import com.social.backend.dto.chat.GroupCreateDto;
 import com.social.backend.dto.chat.GroupMembersDto;
 import com.social.backend.dto.chat.GroupUpdateDto;
+import com.social.backend.dto.user.UserDto;
+import com.social.backend.mapper.ChatMapper;
+import com.social.backend.mapper.UserMapper;
 import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
 import com.social.backend.service.UserService;
@@ -39,50 +45,61 @@ public class ChatController {
   }
 
   @GetMapping("/chats")
-  public Page<Chat> getAll(@AuthenticationPrincipal(expression = "id") Long userId,
-                           Pageable pageable) {
+  public Page<ChatDto> getAll(@AuthenticationPrincipal(expression = "id") Long userId,
+                              Pageable pageable) {
     User member = userService.find(userId);
-    return chatService.findAll(member, pageable);
+    Page<Chat> chats = chatService.findAll(member, pageable);
+    return chats.map(ChatMapper.INSTANCE::toDto);
   }
 
   @GetMapping("/chats/{id}")
-  public Chat get(@PathVariable Long id,
-                  @AuthenticationPrincipal(expression = "id") Long userId) {
+  public ChatDto get(@PathVariable Long id,
+                     @AuthenticationPrincipal(expression = "id") Long userId) {
     User member = userService.find(userId);
-    return chatService.find(id, member);
+    Chat chat = chatService.find(id, member);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @GetMapping("/chats/{id}/members")
-  public Page<User> getMembers(@PathVariable("id") Long id,
-                               @AuthenticationPrincipal(expression = "id") Long userId,
-                               Pageable pageable) {
+  public Page<UserDto> getMembers(@PathVariable("id") Long id,
+                                  @AuthenticationPrincipal(expression = "id") Long userId,
+                                  Pageable pageable) {
     User member = userService.find(userId);
-    return chatService.getMembers(id, member, pageable);
+    Page<User> users = chatService.getMembers(id, member, pageable);
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @DeleteMapping("/chats/private/{id}")
   public void deletePrivate(@PathVariable("id") Long id,
                             @AuthenticationPrincipal(expression = "id") Long userId) {
-    User user = userService.find(userId);
-    chatService.deletePrivate(id, user);
+    User member = userService.find(userId);
+    chatService.deletePrivate(id, member);
   }
 
   @PostMapping("/chats/group")
-  public Chat createGroup(@AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody GroupCreateDto dto) {
+  public GroupChatDto createGroup(@AuthenticationPrincipal(expression = "id") Long userId,
+                                  @Valid @RequestBody GroupCreateDto dto) {
     User creator = userService.find(userId);
-    String name = dto.getName();
     Set<User> members = findUsersByIds(dto.getMembers());
-    return chatService.createGroup(creator, name, members);
+    GroupChat chat = (GroupChat) chatService.createGroup(
+        creator,
+        dto.getName(),
+        members
+    );
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PatchMapping("/chats/group/{id}")
-  public Chat updateGroup(@PathVariable Long id,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @Valid @RequestBody GroupUpdateDto dto) {
+  public GroupChatDto updateGroup(@PathVariable Long id,
+                                  @AuthenticationPrincipal(expression = "id") Long userId,
+                                  @Valid @RequestBody GroupUpdateDto dto) {
     User member = userService.find(userId);
-    String name = dto.getName();
-    return chatService.updateGroup(id, member, name);
+    GroupChat chat = (GroupChat) chatService.updateGroup(
+        id,
+        member,
+        dto.getName()
+    );
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PutMapping("/chats/group/{id}")
@@ -100,21 +117,23 @@ public class ChatController {
   }
 
   @PutMapping("/chats/group/{id}/members")
-  public Chat updateGroupMembers(@PathVariable Long id,
-                                 @AuthenticationPrincipal(expression = "id") Long userId,
-                                 @Valid @RequestBody GroupMembersDto dto) {
+  public ChatDto updateGroupMembers(@PathVariable Long id,
+                                    @AuthenticationPrincipal(expression = "id") Long userId,
+                                    @Valid @RequestBody GroupMembersDto dto) {
     User member = userService.find(userId);
     Set<User> members = findUsersByIds(dto.getMembers());
-    return chatService.updateGroupMembers(id, member, members);
+    GroupChat chat = (GroupChat) chatService.updateGroupMembers(id, member, members);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   @PutMapping("/chats/group/{id}/members/{newOwnerId}")
-  public Chat changeOwner(@PathVariable Long id,
-                          @AuthenticationPrincipal(expression = "id") Long userId,
-                          @PathVariable Long newOwnerId) {
+  public GroupChatDto changeOwner(@PathVariable Long id,
+                                  @AuthenticationPrincipal(expression = "id") Long userId,
+                                  @PathVariable Long newOwnerId) {
     User owner = userService.find(userId);
     User newOwner = userService.find(newOwnerId);
-    return chatService.changeOwner(id, owner, newOwner);
+    GroupChat chat = (GroupChat) chatService.changeOwner(id, owner, newOwner);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
   private Set<User> findUsersByIds(List<Long> ids) {

@@ -3,12 +3,12 @@ package com.social.backend.dto.reply;
 import lombok.Getter;
 import lombok.Setter;
 
-import com.social.backend.model.chat.Chat;
+import com.social.backend.dto.chat.ChatDto;
 
 @Getter
 @Setter
 public class MessageDto extends ReplyDto {
-  
-  private Chat chat;
-  
+
+  private ChatDto chat;
+
 }

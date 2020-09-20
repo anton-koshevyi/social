@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.dto.reply.CommentDto;
 import com.social.backend.dto.reply.ContentDto;
 import com.social.backend.dto.reply.ContentDto.CreateGroup;
 import com.social.backend.dto.reply.ContentDto.UpdateGroup;
+import com.social.backend.mapper.CommentMapper;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -40,29 +42,38 @@ public class CommentController {
   }
 
   @GetMapping("/posts/{postId}/comments")
-  public Page<Comment> getAll(@PathVariable Long postId,
-                              Pageable pageable) {
+  public Page<CommentDto> getAll(@PathVariable Long postId,
+                                 Pageable pageable) {
     Post post = postService.find(postId);
-    return commentService.findAll(post, pageable);
+    Page<Comment> comments = commentService.findAll(post, pageable);
+    return comments.map(CommentMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/posts/{postId}/comments")
-  public Comment create(@PathVariable Long postId,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
+  public CommentDto create(@PathVariable Long postId,
+                           @AuthenticationPrincipal(expression = "id") Long userId,
+                           @Validated(CreateGroup.class) @RequestBody ContentDto dto) {
     Post post = postService.find(postId);
     User author = userService.find(userId);
-    String body = dto.getBody();
-    return commentService.create(post, author, body);
+    Comment comment = commentService.create(
+        post,
+        author,
+        dto.getBody()
+    );
+    return CommentMapper.INSTANCE.toDto(comment);
   }
 
   @PatchMapping("/posts/{postId}/comments/{id}")
-  public Comment update(@PathVariable Long id,
-                        @AuthenticationPrincipal(expression = "id") Long userId,
-                        @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
+  public CommentDto update(@PathVariable Long id,
+                           @AuthenticationPrincipal(expression = "id") Long userId,
+                           @Validated(UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(userId);
-    String body = dto.getBody();
-    return commentService.update(id, author, body);
+    Comment comment = commentService.update(
+        id,
+        author,
+        dto.getBody()
+    );
+    return CommentMapper.INSTANCE.toDto(comment);
   }
 
   @DeleteMapping("/posts/{postId}/comments/{id}")

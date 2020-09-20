@@ -14,8 +14,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.dto.chat.PrivateChatDto;
+import com.social.backend.dto.post.PostDto;
 import com.social.backend.dto.user.RoleDto;
-import com.social.backend.model.chat.Chat;
+import com.social.backend.dto.user.UserDto;
+import com.social.backend.mapper.ChatMapper;
+import com.social.backend.mapper.PostMapper;
+import com.social.backend.mapper.UserMapper;
+import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
@@ -39,26 +45,32 @@ public class UserController {
   }
 
   @GetMapping("/users")
-  public Page<User> getAll(Pageable pageable) {
-    return userService.findAll(pageable);
+  public Page<UserDto> getAll(Pageable pageable) {
+    Page<User> users = userService.findAll(pageable);
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @GetMapping("/users/{id}")
-  public User get(@PathVariable Long id) {
-    return userService.find(id);
+  public UserDto get(@PathVariable Long id) {
+    User user = userService.find(id);
+    return UserMapper.INSTANCE.toDto(user);
   }
 
   @PatchMapping("/users/{id}/roles")
-  public User updateRole(@PathVariable Long id,
-                         @Valid @RequestBody RoleDto dto) {
-    Boolean moder = dto.getModer();
-    return userService.updateRole(id, moder);
+  public UserDto updateRole(@PathVariable Long id,
+                            @Valid @RequestBody RoleDto dto) {
+    User user = userService.updateRole(
+        id,
+        dto.getModer()
+    );
+    return UserMapper.INSTANCE.toDto(user);
   }
 
   @GetMapping("/users/{id}/friends")
-  public Page<User> getFriends(@PathVariable Long id,
-                               Pageable pageable) {
-    return userService.getFriends(id, pageable);
+  public Page<UserDto> getFriends(@PathVariable Long id,
+                                  Pageable pageable) {
+    Page<User> users = userService.getFriends(id, pageable);
+    return users.map(UserMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/users/{id}/friends")
@@ -74,18 +86,20 @@ public class UserController {
   }
 
   @GetMapping("/users/{id}/posts")
-  public Page<Post> getPosts(@PathVariable Long id,
-                             Pageable pageable) {
+  public Page<PostDto> getPosts(@PathVariable Long id,
+                                Pageable pageable) {
     User author = userService.find(id);
-    return postService.findAll(author, pageable);
+    Page<Post> posts = postService.findAll(author, pageable);
+    return posts.map(PostMapper.INSTANCE::toDto);
   }
 
   @PostMapping("/users/{id}/chats/private")
-  public Chat createPrivateChat(@AuthenticationPrincipal(expression = "id") Long userId,
-                                @PathVariable("id") Long targetId) {
+  public PrivateChatDto createPrivateChat(@AuthenticationPrincipal(expression = "id") Long userId,
+                                          @PathVariable("id") Long targetId) {
     User user = userService.find(userId);
     User target = userService.find(targetId);
-    return chatService.createPrivate(user, target);
+    PrivateChat chat = (PrivateChat) chatService.createPrivate(user, target);
+    return ChatMapper.INSTANCE.toDto(chat);
   }
 
 }
