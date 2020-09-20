@@ -5,7 +5,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.social.backend.common.PrincipalHolder;
 import com.social.backend.dto.chat.PrivateChatDto;
 import com.social.backend.dto.post.PostDto;
 import com.social.backend.dto.user.RoleDto;
@@ -74,15 +74,13 @@ public class UserController {
   }
 
   @PostMapping("/users/{id}/friends")
-  public void addFriend(@AuthenticationPrincipal(expression = "id") Long id,
-                        @PathVariable("id") Long targetId) {
-    userService.addFriend(id, targetId);
+  public void addFriend(@PathVariable("id") Long targetId) {
+    userService.addFriend(PrincipalHolder.getUserId(), targetId);
   }
 
   @DeleteMapping("/users/{id}/friends")
-  public void removeFriend(@AuthenticationPrincipal(expression = "id") Long id,
-                           @PathVariable("id") Long targetId) {
-    userService.removeFriend(id, targetId);
+  public void removeFriend(@PathVariable("id") Long targetId) {
+    userService.removeFriend(PrincipalHolder.getUserId(), targetId);
   }
 
   @GetMapping("/users/{id}/posts")
@@ -94,9 +92,8 @@ public class UserController {
   }
 
   @PostMapping("/users/{id}/chats/private")
-  public PrivateChatDto createPrivateChat(@AuthenticationPrincipal(expression = "id") Long userId,
-                                          @PathVariable("id") Long targetId) {
-    User user = userService.find(userId);
+  public PrivateChatDto createPrivateChat(@PathVariable("id") Long targetId) {
+    User user = userService.find(PrincipalHolder.getUserId());
     User target = userService.find(targetId);
     PrivateChat chat = (PrivateChat) chatService.createPrivate(user, target);
     return ChatMapper.INSTANCE.toDto(chat);
