@@ -2,40 +2,39 @@ package com.social.backend.service;
 
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.UserRepositoryImpl;
+import com.social.backend.repository.UserRepository;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.stub.PasswordEncoderStub;
+import com.social.backend.test.stub.repository.UserRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({UserServiceImpl.class, UserRepositoryImpl.class, PasswordEncoderStub.class})
 public class UserServiceTest {
 
-  @Autowired
+  private IdentificationContext<User> userIdentification;
+  private UserRepository userRepository;
   private UserService userService;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    userIdentification = new IdentificationContext<>();
+    userRepository = new UserRepositoryStub(userIdentification);
+    userService = new UserServiceImpl(userRepository, PasswordEncoderStub.getInstance());
+  }
 
   @Test
   public void create() {
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+
     userService.create(
         "email@mail.com",
         "username",
@@ -45,7 +44,8 @@ public class UserServiceTest {
     );
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .userComparator())
         .isEqualTo(new User()
@@ -58,7 +58,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void update_whenEntityUserWithId_expectException() {
+  public void update_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.update(
             1L,
@@ -75,7 +75,8 @@ public class UserServiceTest {
 
   @Test
   public void update() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setPassword("{encoded}password"));
 
@@ -89,7 +90,8 @@ public class UserServiceTest {
     );
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .userComparator())
         .isEqualTo(new User()
@@ -113,14 +115,16 @@ public class UserServiceTest {
 
   @Test
   public void updateRole() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setModer(false));
 
     userService.updateRole(1L, true);
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .userComparator())
         .isEqualTo(TestEntity
@@ -140,7 +144,8 @@ public class UserServiceTest {
 
   @Test
   public void changePassword_whenWrongActualPassword_expectException() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setPassword("{encoded}actual"));
 
@@ -152,14 +157,16 @@ public class UserServiceTest {
 
   @Test
   public void changePassword() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setPassword("{encoded}actual"));
 
     userService.changePassword(1L, "actual", "change");
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .userComparator())
         .isEqualTo(TestEntity
@@ -179,7 +186,8 @@ public class UserServiceTest {
 
   @Test
   public void delete_whenWrongActualPassword_expectException() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setPassword("{encoded}password"));
 
@@ -191,15 +199,16 @@ public class UserServiceTest {
 
   @Test
   public void delete() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setPassword("{encoded}password"));
 
     userService.delete(1L, "password");
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
-        .isNull();
+        .assertThat(userRepository.findById(1L))
+        .isEmpty();
   }
 
   @Test
@@ -221,7 +230,8 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenNoTargetEntityWithId_expectException() {
-    entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
@@ -232,11 +242,13 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenPrivateTargetEntity_expectException() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target")
@@ -251,11 +263,13 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenFriendAlreadyPresent_expectException() {
-    User user = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User user = userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User target = userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target")
@@ -272,11 +286,13 @@ public class UserServiceTest {
 
   @Test
   public void addFriend() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target")
@@ -285,7 +301,8 @@ public class UserServiceTest {
     userService.addFriend(1L, 2L);
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .describedAs("Should add target to entity friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
@@ -305,7 +322,8 @@ public class UserServiceTest {
                     .setPublicity(Publicity.PUBLIC))
             ));
     Assertions
-        .assertThat(entityManager.find(User.class, 2L))
+        .assertThat(userRepository.findById(2L))
+        .get()
         .describedAs("Should add entity to target friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
@@ -345,7 +363,8 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend_whenNoTargetWithId_expectException() {
-    entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
@@ -356,11 +375,13 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend_whenNoTargetInFriends_expectException() {
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target"));
@@ -374,11 +395,13 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend() {
-    User user = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User user = userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User target = userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target"));
@@ -388,7 +411,8 @@ public class UserServiceTest {
     userService.removeFriend(1L, 2L);
 
     Assertions
-        .assertThat(entityManager.find(User.class, 1L))
+        .assertThat(userRepository.findById(1L))
+        .get()
         .describedAs("Should remove target from entity friends")
         .usingComparator(TestComparator
             .userComparator())
@@ -398,7 +422,8 @@ public class UserServiceTest {
             .setEmail("user@mail.com")
             .setUsername("user"));
     Assertions
-        .assertThat(entityManager.find(User.class, 2L))
+        .assertThat(userRepository.findById(2L))
+        .get()
         .describedAs("Should remove entity from target friends")
         .usingComparator(TestComparator
             .userComparator())
@@ -411,11 +436,13 @@ public class UserServiceTest {
 
   @Test
   public void getFriends() {
-    User user = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User user = userRepository.save(TestEntity
         .user()
         .setEmail("user@mail.com")
         .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User target = userRepository.save(TestEntity
         .user()
         .setEmail("target@mail.com")
         .setUsername("target"));
@@ -444,7 +471,8 @@ public class UserServiceTest {
 
   @Test
   public void find_byId() {
-    entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity.user());
 
     Assertions
         .assertThat(userService.find(1L))
@@ -457,7 +485,8 @@ public class UserServiceTest {
 
   @Test
   public void findAll() {
-    entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    userRepository.save(TestEntity.user());
 
     Assertions
         .assertThat(userService.findAll(Pageable.unpaged()))
