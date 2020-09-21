@@ -3,14 +3,11 @@ package com.social.backend.service;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,15 +20,13 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepositoryImpl;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.stub.PasswordEncoderStub;
 
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({UserServiceImpl.class, UserRepositoryImpl.class})
+@Import({UserServiceImpl.class, UserRepositoryImpl.class, PasswordEncoderStub.class})
 public class UserServiceTest {
-
-  @MockBean
-  private PasswordEncoder passwordEncoder;
 
   @Autowired
   private UserService userService;
@@ -41,10 +36,6 @@ public class UserServiceTest {
 
   @Test
   public void create() {
-    Mockito
-        .when(passwordEncoder.encode("password"))
-        .thenReturn("encoded");
-
     userService.create(
         "email@mail.com",
         "username",
@@ -63,7 +54,7 @@ public class UserServiceTest {
             .setUsername("username")
             .setFirstName("first")
             .setLastName("last")
-            .setPassword("encoded"));
+            .setPassword("{encoded}password"));
   }
 
   @Test
@@ -84,7 +75,9 @@ public class UserServiceTest {
 
   @Test
   public void update() {
-    entityManager.persist(TestEntity.user());
+    entityManager.persist(TestEntity
+        .user()
+        .setPassword("{encoded}password"));
 
     userService.update(
         1L,
@@ -106,7 +99,7 @@ public class UserServiceTest {
             .setFirstName("new first")
             .setLastName("new last")
             .setPublicity(Publicity.INTERNAL)
-            .setPassword("encoded"));
+            .setPassword("{encoded}password"));
   }
 
   @Test
@@ -139,7 +132,7 @@ public class UserServiceTest {
   @Test
   public void changePassword_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
+        .assertThatThrownBy(() -> userService.changePassword(1L, "actual", "change"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -149,10 +142,10 @@ public class UserServiceTest {
   public void changePassword_whenWrongActualPassword_expectException() {
     entityManager.persist(TestEntity
         .user()
-        .setPassword("wrongActual"));
+        .setPassword("{encoded}actual"));
 
     Assertions
-        .assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
+        .assertThatThrownBy(() -> userService.changePassword(1L, "wrong", "change"))
         .isExactlyInstanceOf(WrongCredentialsException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
   }
@@ -161,15 +154,9 @@ public class UserServiceTest {
   public void changePassword() {
     entityManager.persist(TestEntity
         .user()
-        .setPassword("encodedOld"));
-    Mockito
-        .when(passwordEncoder.matches("password", "encodedOld"))
-        .thenReturn(true);
-    Mockito
-        .when(passwordEncoder.encode("change"))
-        .thenReturn("encodedNew");
+        .setPassword("{encoded}actual"));
 
-    userService.changePassword(1L, "password", "change");
+    userService.changePassword(1L, "actual", "change");
 
     Assertions
         .assertThat(entityManager.find(User.class, 1L))
@@ -178,7 +165,7 @@ public class UserServiceTest {
         .isEqualTo(TestEntity
             .user()
             .setId(1L)
-            .setPassword("encodedNew"));
+            .setPassword("{encoded}change"));
   }
 
   @Test
@@ -194,20 +181,19 @@ public class UserServiceTest {
   public void delete_whenWrongActualPassword_expectException() {
     entityManager.persist(TestEntity
         .user()
-        .setPassword("wrongActual"));
+        .setPassword("{encoded}password"));
 
     Assertions
-        .assertThatThrownBy(() -> userService.delete(1L, "password"))
+        .assertThatThrownBy(() -> userService.delete(1L, "wrong"))
         .isExactlyInstanceOf(WrongCredentialsException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
   }
 
   @Test
   public void delete() {
-    entityManager.persist(TestEntity.user());
-    Mockito
-        .when(passwordEncoder.matches("password", "encoded"))
-        .thenReturn(true);
+    entityManager.persist(TestEntity
+        .user()
+        .setPassword("{encoded}password"));
 
     userService.delete(1L, "password");
 
