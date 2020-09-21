@@ -1,43 +1,50 @@
 package com.social.backend.service;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.PostRepositoryImpl;
+import com.social.backend.repository.PostRepository;
+import com.social.backend.repository.UserRepository;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.stub.repository.PostRepositoryStub;
+import com.social.backend.test.stub.repository.UserRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({PostServiceImpl.class, PostRepositoryImpl.class})
 public class PostServiceTest {
 
-  @Autowired
+  private IdentificationContext<Post> postIdentification;
+  private IdentificationContext<User> userIdentification;
+  private PostRepository postRepository;
+  private UserRepository userRepository;
   private PostService postService;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    postIdentification = new IdentificationContext<>();
+    userIdentification = new IdentificationContext<>();
+    postRepository = new PostRepositoryStub(postIdentification);
+    userRepository = new UserRepositoryStub(userIdentification);
+
+    postService = new PostServiceImpl(postRepository);
+  }
 
   @Test
   public void create() {
-    User author = entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
 
     postService.create(author, "title", "body");
 
     Assertions
-        .assertThat(entityManager.find(Post.class, 1L))
+        .assertThat(postRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .postComparator())
         .isEqualTo(new Post()
@@ -51,7 +58,8 @@ public class PostServiceTest {
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> postService.update(0L, author, "title", "body"))
@@ -62,8 +70,10 @@ public class PostServiceTest {
 
   @Test
   public void update() {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(new Post()
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    postRepository.save(new Post()
         .setTitle("title")
         .setBody("body")
         .setAuthor(author));
@@ -71,7 +81,8 @@ public class PostServiceTest {
     postService.update(1L, author, "new title", "new body");
 
     Assertions
-        .assertThat(entityManager.find(Post.class, 1L))
+        .assertThat(postRepository.findById(1L))
+        .get()
         .usingComparator(TestComparator
             .postComparator())
         .usingComparatorForFields(TestComparator
@@ -87,7 +98,8 @@ public class PostServiceTest {
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> postService.delete(0L, author))
@@ -98,16 +110,18 @@ public class PostServiceTest {
 
   @Test
   public void delete() {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    postRepository.save(TestEntity
         .post()
         .setAuthor(author));
 
     postService.delete(1L, author);
 
     Assertions
-        .assertThat(entityManager.find(Post.class, 1L))
-        .isNull();
+        .assertThat(postRepository.findById(1L))
+        .isEmpty();
   }
 
   @Test
@@ -121,8 +135,10 @@ public class PostServiceTest {
 
   @Test
   public void find_byId() {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    postRepository.save(TestEntity
         .post()
         .setAuthor(author));
 
@@ -140,8 +156,10 @@ public class PostServiceTest {
 
   @Test
   public void findAll() {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    postRepository.save(TestEntity
         .post()
         .setAuthor(author));
 
@@ -159,8 +177,10 @@ public class PostServiceTest {
 
   @Test
   public void findAll_byAuthor() {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    postRepository.save(TestEntity
         .post()
         .setAuthor(author));
 
