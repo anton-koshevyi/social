@@ -2,15 +2,9 @@ package com.social.backend.service;
 
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -18,34 +12,53 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.CommentRepositoryImpl;
+import com.social.backend.repository.PostRepository;
+import com.social.backend.repository.UserRepository;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.stub.repository.CommentRepositoryStub;
+import com.social.backend.test.stub.repository.PostRepositoryStub;
+import com.social.backend.test.stub.repository.UserRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({CommentServiceImpl.class, CommentRepositoryImpl.class})
 public class CommentServiceTest {
 
-  @Autowired
+  private IdentificationContext<Comment> commentIdentification;
+  private IdentificationContext<Post> postIdentification;
+  private IdentificationContext<User> userIdentification;
+  private CommentRepositoryStub commentRepository;
+  private PostRepository postRepository;
+  private UserRepository userRepository;
   private CommentService commentService;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    commentIdentification = new IdentificationContext<>();
+    postIdentification = new IdentificationContext<>();
+    userIdentification = new IdentificationContext<>();
+    commentRepository = new CommentRepositoryStub(commentIdentification);
+    postRepository = new PostRepositoryStub(postIdentification);
+    userRepository = new UserRepositoryStub(userIdentification);
+
+    commentService = new CommentServiceImpl(commentRepository);
+  }
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
-    User postAuthor = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity
         .user()
         .setPublicity(Publicity.PRIVATE));
-    Post post = entityManager.persist(TestEntity
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
-    User author = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User author = userRepository.save(TestEntity
         .user()
         .setEmail("commentAuthor@mail.com")
         .setUsername("commentAuthor"));
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> commentService.create(post, author, "body"))
@@ -55,16 +68,20 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
-    User postAuthor = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity
         .user()
         .setPublicity(Publicity.INTERNAL));
-    Post post = entityManager.persist(TestEntity
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
-    User author = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User author = userRepository.save(TestEntity
         .user()
-        .setEmail("author@mail.com")
-        .setUsername("author"));
+        .setEmail("commentAuthor@mail.com")
+        .setUsername("commentAuthor"));
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> commentService.create(post, author, "body"))
@@ -75,17 +92,20 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
-    User postAuthor = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity
         .user()
         .setPublicity(Publicity.PRIVATE));
-    Post post = entityManager.persist(TestEntity
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, postAuthor, "body");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(commentRepository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -104,25 +124,29 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
-    User postAuthor = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity
         .user()
         .setEmail("postAuthor@mail.com")
         .setUsername("postAuthor")
         .setPublicity(Publicity.INTERNAL));
-    User author = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User author = userRepository.save(TestEntity
         .user()
         .setEmail("author@mail.com")
         .setUsername("author"));
     postAuthor.setFriends(Sets.newHashSet(author));
     author.setFriends(Sets.newHashSet(postAuthor));
-    Post post = entityManager.persist(TestEntity
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, author, "body");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(commentRepository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -146,23 +170,27 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPublicAuthor() {
-    User postAuthor = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity
         .user()
         .setEmail("postAuthor@mail.com")
         .setUsername("postAuthor")
         .setPublicity(Publicity.PUBLIC));
-    User author = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(2L));
+    User author = userRepository.save(TestEntity
         .user()
         .setEmail("author@mail.com")
         .setUsername("author"));
-    Post post = entityManager.persist(TestEntity
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, author, "body");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(commentRepository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -186,7 +214,8 @@ public class CommentServiceTest {
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> commentService.update(0L, author, "body"))
@@ -197,11 +226,14 @@ public class CommentServiceTest {
 
   @Test
   public void update() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
-    entityManager.persist(new Comment()
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    commentRepository.save((Comment) new Comment()
         .setPost(post)
         .setBody("comment body")
         .setAuthor(postAuthor));
@@ -209,7 +241,7 @@ public class CommentServiceTest {
     commentService.update(1L, postAuthor, "new body");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(commentRepository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .usingComparatorForFields(TestComparator
@@ -230,7 +262,8 @@ public class CommentServiceTest {
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User author = userRepository.save(TestEntity.user());
 
     Assertions
         .assertThatThrownBy(() -> commentService.delete(0L, author))
@@ -241,11 +274,14 @@ public class CommentServiceTest {
 
   @Test
   public void delete() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
-    entityManager.persist(TestEntity
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    commentRepository.save((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(postAuthor));
@@ -253,17 +289,20 @@ public class CommentServiceTest {
     commentService.delete(1L, postAuthor);
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(commentRepository.find(1L))
         .isNull();
   }
 
   @Test
   public void findAll_byPost() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
+    userIdentification.setStrategy(entity -> entity.setId(1L));
+    User postAuthor = userRepository.save(TestEntity.user());
+    postIdentification.setStrategy(entity -> entity.setId(1L));
+    Post post = postRepository.save(TestEntity
         .post()
         .setAuthor(postAuthor));
-    entityManager.persist(TestEntity
+    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    commentRepository.save((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(postAuthor));
