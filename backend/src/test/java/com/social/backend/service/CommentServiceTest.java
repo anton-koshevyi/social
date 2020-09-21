@@ -35,7 +35,7 @@ public class CommentServiceTest {
   private TestEntityManager entityManager;
 
   @Test
-  public void create_exception_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor() {
+  public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
     User postAuthor = entityManager.persist(TestEntity
         .user()
         .setPublicity(Publicity.PRIVATE));
@@ -54,7 +54,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  public void create_exception_whenPostOfInternalAuthor_andCommentNotOfFriend() {
+  public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
     User postAuthor = entityManager.persist(TestEntity
         .user()
         .setPublicity(Publicity.INTERNAL));
@@ -185,7 +185,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  public void update_exception_whenNoEntityWithIdAndAuthor() {
+  public void update_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -229,7 +229,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  public void delete_exception_whenNoEntityWithIdAndAuthor() {
+  public void delete_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions

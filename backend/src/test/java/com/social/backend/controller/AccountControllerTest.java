@@ -94,7 +94,7 @@ public class AccountControllerTest {
   }
 
   @Test
-  public void create_badRequest_whenInvalidBody() throws JSONException {
+  public void create_whenInvalidBody_expectBadRequest() throws JSONException {
     String actual = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -128,7 +128,7 @@ public class AccountControllerTest {
   }
 
   @Test
-  public void create_andAutoLogin() throws JSONException {
+  public void create() throws JSONException {
     String actual = RestAssured
         .given()
         .header("Accept", "application/json")
@@ -164,7 +164,7 @@ public class AccountControllerTest {
   }
 
   @Test
-  public void update_badRequest_whenInvalidBody() throws JSONException {
+  public void update_whenInvalidBody_expectBadRequest() throws JSONException {
     entityManager.persist(new User()
         .setEmail("email@mail.com")
         .setUsername("username")
@@ -250,7 +250,7 @@ public class AccountControllerTest {
   }
 
   @Test
-  public void delete_badRequest_whenInvalidBody() throws JSONException {
+  public void delete_whenInvalidBody_expectBadRequest() throws JSONException {
     entityManager.persist(TestEntity
         .user()
         .setUsername("username")
@@ -308,7 +308,7 @@ public class AccountControllerTest {
   }
 
   @Test
-  public void changePassword_badRequest_whenInvalidBody() throws JSONException {
+  public void changePassword_whenInvalidBody_expectBadRequest() throws JSONException {
     entityManager.persist(TestEntity
         .user()
         .setUsername("username")

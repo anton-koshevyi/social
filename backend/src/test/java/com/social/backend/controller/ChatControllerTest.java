@@ -221,7 +221,7 @@ public class ChatControllerTest {
   }
 
   @Test
-  public void createGroup_badRequest_whenInvalidBody() throws JSONException {
+  public void createGroup_whenInvalidBody_expectBadRequest() throws JSONException {
     entityManager.persist(TestEntity
         .user()
         .setEmail("creator@mail.com")
@@ -319,7 +319,7 @@ public class ChatControllerTest {
   }
 
   @Test
-  public void updateGroup_badRequest_whenInvalidBody() throws JSONException {
+  public void updateGroup_whenInvalidBody_expectBadRequest() throws JSONException {
     User member = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
@@ -461,7 +461,7 @@ public class ChatControllerTest {
   }
 
   @Test
-  public void updateGroupMembers_badRequest_whenInvalidBody() throws JSONException {
+  public void updateGroupMembers_whenInvalidBody_expectBadRequest() throws JSONException {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")

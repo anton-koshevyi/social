@@ -40,7 +40,7 @@ public class UserServiceTest {
   private TestEntityManager entityManager;
 
   @Test
-  public void create_encodePassword() {
+  public void create() {
     Mockito
         .when(passwordEncoder.encode("password"))
         .thenReturn("encoded");
@@ -67,7 +67,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void update_exception_whenNoUserWithId() {
+  public void update_whenEntityUserWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.update(
             1L,
@@ -110,7 +110,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void updateRole_exception_whenNoUserWithId() {
+  public void updateRole_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.updateRole(1L, false))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -137,7 +137,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void changePassword_exception_whenNoUserWithId() {
+  public void changePassword_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.changePassword(1L, "password", "change"))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -146,7 +146,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void changePassword_exception_whenWrongActualPassword() {
+  public void changePassword_whenWrongActualPassword_expectException() {
     entityManager.persist(TestEntity
         .user()
         .setPassword("wrongActual"));
@@ -158,7 +158,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void changePassword_encodeAndSetNew() {
+  public void changePassword() {
     entityManager.persist(TestEntity
         .user()
         .setPassword("encodedOld"));
@@ -182,7 +182,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void delete_exception_whenNoEntityWithId() {
+  public void delete_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.delete(1L, "password"))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -191,7 +191,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void delete_exception_whenWrongActualPassword() {
+  public void delete_whenWrongActualPassword_expectException() {
     entityManager.persist(TestEntity
         .user()
         .setPassword("wrongActual"));
@@ -217,7 +217,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void addFriend_exception_whenEqualUserIdAndTargetId() {
+  public void addFriend_whenEqualUserIdAndTargetId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.addFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -225,7 +225,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void addFriend_exception_whenNoEntityWithId() {
+  public void addFriend_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -234,7 +234,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void addFriend_exception_whenNoTargetEntityWithId() {
+  public void addFriend_whenNoTargetEntityWithId_expectException() {
     entityManager.persist(TestEntity.user());
 
     Assertions
@@ -245,7 +245,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void addFriend_exception_whenPrivateTargetEntity() {
+  public void addFriend_whenPrivateTargetEntity_expectException() {
     entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
@@ -264,7 +264,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void addFriend_exception_whenFriendAlreadyPresent() {
+  public void addFriend_whenFriendAlreadyPresent_expectException() {
     User user = entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
@@ -341,7 +341,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void removeFriend_exception_whenEqualUserIdAndTargetId() {
+  public void removeFriend_whenEqualUserIdAndTargetId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.removeFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
@@ -349,7 +349,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void removeFriend_exception_whenNoEntityWithId() {
+  public void removeFriend_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -358,7 +358,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void removeFriend_exception_whenNoTargetWithId() {
+  public void removeFriend_whenNoTargetWithId_expectException() {
     entityManager.persist(TestEntity.user());
 
     Assertions
@@ -369,7 +369,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void removeFriend_exception_whenNoTargetInFriends() {
+  public void removeFriend_whenNoTargetInFriends_expectException() {
     entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
@@ -448,7 +448,7 @@ public class UserServiceTest {
   }
 
   @Test
-  public void find_byId_exception_whenNoEntityWithId() {
+  public void find_byId_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> userService.find(1L))
         .isExactlyInstanceOf(NotFoundException.class)

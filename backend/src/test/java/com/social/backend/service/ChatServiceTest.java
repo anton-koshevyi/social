@@ -37,7 +37,7 @@ public class ChatServiceTest {
   private TestEntityManager entityManager;
 
   @Test
-  public void createPrivate_exception_whenEntityAlreadyExists() {
+  public void createPrivate_whenEntityAlreadyExists_expectException() {
     User user = entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
@@ -59,7 +59,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void createPrivate_exception_whenTargetIsNotPublicNorFriend() {
+  public void createPrivate_whenTargetIsNotPublicNorFriend_expectException() {
     User user = entityManager.persist(TestEntity
         .user()
         .setEmail("user@mail.com")
@@ -151,7 +151,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void deletePrivate_exception_whenNoEntityWithIdAndMember() {
+  public void deletePrivate_whenNoEntityWithIdAndMember_expectException() {
     User user = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -185,7 +185,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void createGroup_exception_whenAnyMemberIsNotPublicNorFriend() {
+  public void createGroup_whenAnyMemberIsNotPublicNorFriend_expectException() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -291,7 +291,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroup_exception_whenNoEntityWithIdAndMember() {
+  public void updateGroup_whenNoEntityWithIdAndMember_expectException() {
     User user = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -327,7 +327,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_exception_whenNoEntityWithIdAndOwner() {
+  public void updateGroupMembers_whenNoEntityWithIdAndOwner_expectException() {
     User owner = entityManager.persist(TestEntity
         .user());
 
@@ -339,7 +339,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_exception_whenNoOwnerInMemberList() {
+  public void updateGroupMembers_whenNoOwnerInMemberList_expectException() {
     User owner = entityManager.persist(TestEntity.user());
     entityManager.persist(TestEntity.groupChat()
         .setOwner(owner)
@@ -355,7 +355,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_exception_whenAnyNewMemberIsNotPublicNorFriend() {
+  public void updateGroupMembers_whenAnyNewMemberIsNotPublicNorFriend_expectException() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -381,7 +381,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_addNewMember_whenMemberIsFriend() {
+  public void updateGroupMembers_whenMemberIsFriend_expectAddNewMember() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -431,7 +431,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_addNewMember_whenMemberIsPublic() {
+  public void updateGroupMembers_whenMemberIsPublic_expectAddNewMember() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -478,7 +478,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_removeMember_whenAbsent() {
+  public void updateGroupMembers_whenAbsent_expectRemoveMember() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -515,7 +515,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void changeOwner_exception_whenNoEntityWithIdAndOwner() {
+  public void changeOwner_whenNoEntityWithIdAndOwner_expectException() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -533,7 +533,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void changeOwner_exception_whenNewOwnerIsNotMember() {
+  public void changeOwner_whenNewOwnerIsNotMember_expectException() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -600,7 +600,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void leaveGroup_exception_whenNoEntityWithIdAndMember() {
+  public void leaveGroup_whenNoEntityWithIdAndMember_expectException() {
     User user = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -611,7 +611,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void leaveGroup_exception_whenLeavingMemberIsOwner() {
+  public void leaveGroup_whenLeavingMemberIsOwner_expectException() {
     User owner = entityManager.persist(TestEntity
         .user()
         .setEmail("owner@mail.com")
@@ -670,7 +670,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void deleteGroup_exception_whenNoEntityWithIdAndOwner() {
+  public void deleteGroup_whenNoEntityWithIdAndOwner_expectException() {
     User owner = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -700,7 +700,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void getMembers_exception_whenNoEntityWithIdAndMember() {
+  public void getMembers_whenNoEntityWithIdAndMember_expectException() {
     User user = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -745,7 +745,7 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void find_byIdAndMember_exception_whenNoEntityWithIdAndMember() {
+  public void find_byIdAndMember_whenNoEntityWithIdAndMember_expectException() {
     User user = entityManager.persist(TestEntity
         .user());
 

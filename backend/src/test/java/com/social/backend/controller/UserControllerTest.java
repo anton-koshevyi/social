@@ -121,7 +121,7 @@ public class UserControllerTest {
   }
 
   @Test
-  public void updateRole_unchanged_whenEmptyBody() throws JSONException {
+  public void updateRole_whenEmptyBody_expectNoChanges() throws JSONException {
     entityManager.persist(TestEntity
         .user()
         .setEmail("admin@mail.com")

@@ -31,13 +31,13 @@ public class GlobalExceptionHandlerTest {
   public void setUp() {
     RestAssuredMockMvc.mockMvc(MockMvcBuilders
         .standaloneSetup(new TestController())
-        .setControllerAdvice(new GlobalExceptionHandler(messageSource))
+        .setHandlerExceptionResolvers(new GlobalExceptionHandler(messageSource))
         .alwaysDo(MockMvcResultHandlers.log())
         .build());
   }
 
   @Test
-  public void given_exception_when_localizedExceptionType_then_exceptionBasedResponse() {
+  public void whenLocalizedExceptionType_thenExceptionBasedResponse() {
     Mockito
         .when(messageSource.getMessage(
             ArgumentMatchers.any(LocalizedException.class),
@@ -66,7 +66,7 @@ public class GlobalExceptionHandlerTest {
   }
 
   @Test
-  public void given_exception_when_notHandledType_then_internalErrorResponse() {
+  public void whenNotHandledType_thenInternalErrorResponse() {
     Mockito
         .when(messageSource.getMessage(
             "resolver.serverError",
@@ -94,7 +94,7 @@ public class GlobalExceptionHandlerTest {
   }
 
   @Test
-  public void given_exception_when_failureToHandle_then_internalErrorResponseWithStatusOnly() {
+  public void whenFailureToHandle_thenInternalErrorResponseWithStatusOnly() {
     Mockito
         .when(messageSource.getMessage(
             "resolver.serverError",
@@ -114,6 +114,7 @@ public class GlobalExceptionHandlerTest {
             .assertThat(result.getResponse())
             .hasFieldOrPropertyWithValue("getErrorMessage", null));
   }
+
 
   @Controller
   private static class TestController {

@@ -128,7 +128,7 @@ public class MessageControllerTest {
   }
 
   @Test
-  public void create_badRequest_whenInvalidBody() throws JSONException {
+  public void create_whenInvalidBody_expectBadRequest() throws JSONException {
     User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")
@@ -231,7 +231,7 @@ public class MessageControllerTest {
   }
 
   @Test
-  public void update_badRequest_whenInvalidBody() throws JSONException {
+  public void update_whenInvalidBody_expectBadRequest() throws JSONException {
     User author = entityManager.persist(TestEntity
         .user()
         .setUsername("username")

@@ -63,7 +63,7 @@ public class MessageServiceTest {
   }
 
   @Test
-  public void update_exception_whenNoEntityWithIdAndAuthor() {
+  public void update_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -110,7 +110,7 @@ public class MessageServiceTest {
   }
 
   @Test
-  public void delete_exception_whenNoEntityWithIdAndAuthor() {
+  public void delete_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions

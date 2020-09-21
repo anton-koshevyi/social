@@ -50,7 +50,7 @@ public class PostServiceTest {
   }
 
   @Test
-  public void update_exception_whenNoPostWithIdAndAuthor() {
+  public void update_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -86,7 +86,7 @@ public class PostServiceTest {
   }
 
   @Test
-  public void delete_exception_whenNoPostWithIdAndAuthor() {
+  public void delete_whenNoEntityWithIdAndAuthor_expectException() {
     User author = entityManager.persist(TestEntity.user());
 
     Assertions
@@ -111,7 +111,7 @@ public class PostServiceTest {
   }
 
   @Test
-  public void find_byId_exception_whenNoPostWithId() {
+  public void find_byId_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> postService.find(1L))
         .isExactlyInstanceOf(NotFoundException.class)
