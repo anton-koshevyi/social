@@ -12,9 +12,6 @@ spring:
     enabled: false
   jackson:
     default-property-inclusion: non_null
-management:
-  endpoints:
-    enabled-by-default: false
 logging:
   level:
     com.social.backend: debug
