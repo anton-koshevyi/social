@@ -15,7 +15,7 @@ abstract class IdentifyingRepositoryStub<ID, T> extends AbstractRepositoryStub<I
   protected abstract ID getId(T entity);
 
   @Override
-  protected T save(ID id, T entity) {
+  public T save(ID id, T entity) {
     Objects.requireNonNull(entity, "Entity must not be null");
 
     if (id == null || !super.exists(id)) {
@@ -28,12 +28,12 @@ abstract class IdentifyingRepositoryStub<ID, T> extends AbstractRepositoryStub<I
     return super.save(id, entity);
   }
 
-  protected T save(T entity) {
+  public T save(T entity) {
     ID id = this.getId(entity);
     return this.save(id, entity);
   }
 
-  protected void delete(T entity) {
+  public void delete(T entity) {
     Objects.requireNonNull(entity, "Entity must not be null");
     ID id = this.getId(entity);
     super.delete(id, entity);
