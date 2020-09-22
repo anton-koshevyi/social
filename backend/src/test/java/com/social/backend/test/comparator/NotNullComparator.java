@@ -2,7 +2,7 @@ package com.social.backend.test.comparator;
 
 import java.util.Comparator;
 
-public class NotNullComparator<T> implements Comparator<T> {
+public final class NotNullComparator<T> implements Comparator<T> {
 
   private static final NotNullComparator<?> LEFT = new NotNullComparator<>(true, false);
   private static final NotNullComparator<?> RIGHT = new NotNullComparator<>(false, true);
@@ -30,13 +30,19 @@ public class NotNullComparator<T> implements Comparator<T> {
 
   @Override
   public int compare(T left, T right) {
+    boolean result;
+
     if (leftNotNull && rightNotNull) {
-      return ((left != null) && (right != null)) ? 0 : 1;
+      result = (left != null) && (right != null);
+    } else {
+      if (leftNotNull) {
+        result = (left != null);
+      } else {
+        result = (right != null);
+      }
     }
 
-    return leftNotNull
-        ? (left != null) ? 0 : 1
-        : (right != null) ? 0 : 1;
+    return result ? 0 : 1;
   }
 
 }
