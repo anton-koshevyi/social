@@ -2,51 +2,50 @@ package com.social.backend.service;
 
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.MessageRepositoryImpl;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.stub.repository.MessageRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({MessageServiceImpl.class, MessageRepositoryImpl.class})
 public class MessageServiceTest {
 
-  @Autowired
+  private IdentificationContext<Message> messageIdentification;
+  private MessageRepositoryStub messageRepository;
   private MessageService messageService;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    messageIdentification = new IdentificationContext<>();
+    messageRepository = new MessageRepositoryStub(messageIdentification);
+    messageService = new MessageServiceImpl(messageRepository);
+  }
 
   @Test
   public void create() {
-    User author = entityManager.persist(TestEntity
+    User author = TestEntity
         .user()
+        .setId(1L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
-    Chat chat = entityManager.persist(TestEntity
+        .setUsername("author");
+    messageIdentification.setStrategy(entity -> entity.setId(1L));
+    Chat chat = TestEntity
         .privateChat()
+        .setId(1L)
         .setMembers(Sets
-            .newHashSet(author)));
+            .newHashSet(author));
 
     messageService.create(chat, author, "body");
 
     Assertions
-        .assertThat(entityManager.find(Message.class, 1L))
+        .assertThat(messageRepository.find(1L))
         .usingComparator(TestComparator
             .messageComparator())
         .isEqualTo(new Message()
@@ -64,7 +63,9 @@ public class MessageServiceTest {
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> messageService.update(0L, author, "body"))
@@ -75,15 +76,18 @@ public class MessageServiceTest {
 
   @Test
   public void update() {
-    User author = entityManager.persist(TestEntity
+    User author = TestEntity
         .user()
+        .setId(1L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
-    Chat chat = entityManager.persist(TestEntity
+        .setUsername("author");
+    Chat chat = TestEntity
         .privateChat()
+        .setId(1L)
         .setMembers(Sets
-            .newHashSet(author)));
-    entityManager.persist(new Message()
+            .newHashSet(author));
+    messageIdentification.setStrategy(entity -> entity.setId(1L));
+    messageRepository.save((Message) new Message()
         .setChat(chat)
         .setBody("message body")
         .setAuthor(author));
@@ -91,7 +95,7 @@ public class MessageServiceTest {
     messageService.update(1L, author, "new body");
 
     Assertions
-        .assertThat(entityManager.find(Message.class, 1L))
+        .assertThat(messageRepository.find(1L))
         .usingComparator(TestComparator
             .messageComparator())
         .usingComparatorForFields(TestComparator
@@ -111,7 +115,9 @@ public class MessageServiceTest {
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = entityManager.persist(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> messageService.delete(0L, author))
@@ -122,15 +128,18 @@ public class MessageServiceTest {
 
   @Test
   public void delete() {
-    User author = entityManager.persist(TestEntity
+    User author = TestEntity
         .user()
+        .setId(1L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
-    Chat chat = entityManager.persist(TestEntity
+        .setUsername("author");
+    Chat chat = TestEntity
         .privateChat()
+        .setId(1L)
         .setMembers(Sets
-            .newHashSet(author)));
-    entityManager.persist(TestEntity
+            .newHashSet(author));
+    messageIdentification.setStrategy(entity -> entity.setId(1L));
+    messageRepository.save((Message) TestEntity
         .message()
         .setChat(chat)
         .setAuthor(author));
@@ -138,21 +147,24 @@ public class MessageServiceTest {
     messageService.delete(1L, author);
 
     Assertions
-        .assertThat(entityManager.find(Message.class, 1L))
+        .assertThat(messageRepository.find(1L))
         .isNull();
   }
 
   @Test
   public void findAll_byChat() {
-    User author = entityManager.persist(TestEntity
+    User author = TestEntity
         .user()
+        .setId(1L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
-    Chat chat = entityManager.persist(TestEntity
+        .setUsername("author");
+    Chat chat = TestEntity
         .privateChat()
+        .setId(1L)
         .setMembers(Sets
-            .newHashSet(author)));
-    entityManager.persist(TestEntity
+            .newHashSet(author));
+    messageIdentification.setStrategy(entity -> entity.setId(1L));
+    messageRepository.save((Message) TestEntity
         .message()
         .setChat(chat)
         .setAuthor(author));
