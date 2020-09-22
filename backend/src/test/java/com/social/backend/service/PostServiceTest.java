@@ -9,35 +9,30 @@ import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.PostRepository;
-import com.social.backend.repository.UserRepository;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.stub.repository.PostRepositoryStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
 public class PostServiceTest {
 
   private IdentificationContext<Post> postIdentification;
-  private IdentificationContext<User> userIdentification;
   private PostRepository postRepository;
-  private UserRepository userRepository;
   private PostService postService;
 
   @BeforeEach
   public void setUp() {
     postIdentification = new IdentificationContext<>();
-    userIdentification = new IdentificationContext<>();
     postRepository = new PostRepositoryStub(postIdentification);
-    userRepository = new UserRepositoryStub(userIdentification);
 
     postService = new PostServiceImpl(postRepository);
   }
 
   @Test
   public void create() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
 
     postService.create(author, "title", "body");
@@ -58,8 +53,9 @@ public class PostServiceTest {
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> postService.update(0L, author, "title", "body"))
@@ -70,8 +66,9 @@ public class PostServiceTest {
 
   @Test
   public void update() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
     postRepository.save(new Post()
         .setTitle("title")
@@ -98,8 +95,9 @@ public class PostServiceTest {
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> postService.delete(0L, author))
@@ -110,8 +108,9 @@ public class PostServiceTest {
 
   @Test
   public void delete() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
     postRepository.save(TestEntity
         .post()
@@ -135,8 +134,9 @@ public class PostServiceTest {
 
   @Test
   public void find_byId() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
     postRepository.save(TestEntity
         .post()
@@ -156,8 +156,9 @@ public class PostServiceTest {
 
   @Test
   public void findAll() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
     postRepository.save(TestEntity
         .post()
@@ -177,8 +178,9 @@ public class PostServiceTest {
 
   @Test
   public void findAll_byAuthor() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
     postIdentification.setStrategy(entity -> entity.setId(1L));
     postRepository.save(TestEntity
         .post()

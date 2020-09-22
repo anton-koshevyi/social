@@ -12,52 +12,40 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.PostRepository;
-import com.social.backend.repository.UserRepository;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.stub.repository.CommentRepositoryStub;
-import com.social.backend.test.stub.repository.PostRepositoryStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
 public class CommentServiceTest {
 
   private IdentificationContext<Comment> commentIdentification;
-  private IdentificationContext<Post> postIdentification;
-  private IdentificationContext<User> userIdentification;
   private CommentRepositoryStub commentRepository;
-  private PostRepository postRepository;
-  private UserRepository userRepository;
   private CommentService commentService;
 
   @BeforeEach
   public void setUp() {
     commentIdentification = new IdentificationContext<>();
-    postIdentification = new IdentificationContext<>();
-    userIdentification = new IdentificationContext<>();
     commentRepository = new CommentRepositoryStub(commentIdentification);
-    postRepository = new PostRepositoryStub(postIdentification);
-    userRepository = new UserRepositoryStub(userIdentification);
 
     commentService = new CommentServiceImpl(commentRepository);
   }
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity
+    User postAuthor = TestEntity
         .user()
-        .setPublicity(Publicity.PRIVATE));
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
-    userIdentification.setStrategy(entity -> entity.setId(2L));
-    User author = userRepository.save(TestEntity
+        .setId(1L)
+        .setAuthor(postAuthor);
+    User author = TestEntity
         .user()
+        .setId(2L)
         .setEmail("commentAuthor@mail.com")
-        .setUsername("commentAuthor"));
+        .setUsername("commentAuthor");
     commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
@@ -68,19 +56,19 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity
+    User postAuthor = TestEntity
         .user()
-        .setPublicity(Publicity.INTERNAL));
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+        .setId(1L)
+        .setPublicity(Publicity.INTERNAL);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
-    userIdentification.setStrategy(entity -> entity.setId(2L));
-    User author = userRepository.save(TestEntity
+        .setId(1L)
+        .setAuthor(postAuthor);
+    User author = TestEntity
         .user()
+        .setId(1L)
         .setEmail("commentAuthor@mail.com")
-        .setUsername("commentAuthor"));
+        .setUsername("commentAuthor");
     commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
@@ -92,14 +80,14 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity
+    User postAuthor = TestEntity
         .user()
-        .setPublicity(Publicity.PRIVATE));
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, postAuthor, "body");
@@ -124,23 +112,23 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity
+    User postAuthor = TestEntity
         .user()
+        .setId(1L)
         .setEmail("postAuthor@mail.com")
         .setUsername("postAuthor")
-        .setPublicity(Publicity.INTERNAL));
-    userIdentification.setStrategy(entity -> entity.setId(2L));
-    User author = userRepository.save(TestEntity
+        .setPublicity(Publicity.INTERNAL);
+    User author = TestEntity
         .user()
+        .setId(2L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
+        .setUsername("author");
     postAuthor.setFriends(Sets.newHashSet(author));
     author.setFriends(Sets.newHashSet(postAuthor));
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, author, "body");
@@ -170,21 +158,21 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPublicAuthor() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity
+    User postAuthor = TestEntity
         .user()
+        .setId(1L)
         .setEmail("postAuthor@mail.com")
         .setUsername("postAuthor")
-        .setPublicity(Publicity.PUBLIC));
-    userIdentification.setStrategy(entity -> entity.setId(2L));
-    User author = userRepository.save(TestEntity
+        .setPublicity(Publicity.PUBLIC);
+    User author = TestEntity
         .user()
+        .setId(2L)
         .setEmail("author@mail.com")
-        .setUsername("author"));
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+        .setUsername("author");
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
 
     commentService.create(post, author, "body");
@@ -214,8 +202,9 @@ public class CommentServiceTest {
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> commentService.update(0L, author, "body"))
@@ -226,12 +215,13 @@ public class CommentServiceTest {
 
   @Test
   public void update() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity.user());
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+    User postAuthor = TestEntity
+        .user()
+        .setId(1L);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
     commentRepository.save((Comment) new Comment()
         .setPost(post)
@@ -262,8 +252,9 @@ public class CommentServiceTest {
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User author = userRepository.save(TestEntity.user());
+    User author = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> commentService.delete(0L, author))
@@ -274,12 +265,13 @@ public class CommentServiceTest {
 
   @Test
   public void delete() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity.user());
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+    User postAuthor = TestEntity
+        .user()
+        .setId(1L);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
     commentRepository.save((Comment) TestEntity
         .comment()
@@ -295,12 +287,13 @@ public class CommentServiceTest {
 
   @Test
   public void findAll_byPost() {
-    userIdentification.setStrategy(entity -> entity.setId(1L));
-    User postAuthor = userRepository.save(TestEntity.user());
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    Post post = postRepository.save(TestEntity
+    User postAuthor = TestEntity
+        .user()
+        .setId(1L);
+    Post post = TestEntity
         .post()
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
     commentIdentification.setStrategy(entity -> entity.setId(1L));
     commentRepository.save((Comment) TestEntity
         .comment()
