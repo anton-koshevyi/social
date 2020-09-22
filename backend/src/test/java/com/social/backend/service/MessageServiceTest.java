@@ -17,15 +17,15 @@ import com.social.backend.test.stub.repository.identification.IdentificationCont
 
 public class MessageServiceTest {
 
-  private IdentificationContext<Message> messageIdentification;
-  private MessageRepositoryStub messageRepository;
-  private MessageService messageService;
+  private IdentificationContext<Message> identification;
+  private MessageRepositoryStub repository;
+  private MessageService service;
 
   @BeforeEach
   public void setUp() {
-    messageIdentification = new IdentificationContext<>();
-    messageRepository = new MessageRepositoryStub(messageIdentification);
-    messageService = new MessageServiceImpl(messageRepository);
+    identification = new IdentificationContext<>();
+    repository = new MessageRepositoryStub(identification);
+    service = new MessageServiceImpl(repository);
   }
 
   @Test
@@ -35,17 +35,17 @@ public class MessageServiceTest {
         .setId(1L)
         .setEmail("author@mail.com")
         .setUsername("author");
-    messageIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
     Chat chat = TestEntity
         .privateChat()
         .setId(1L)
         .setMembers(Sets
             .newHashSet(author));
 
-    messageService.create(chat, author, "body");
+    service.create(chat, author, "body");
 
     Assertions
-        .assertThat(messageRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .messageComparator())
         .isEqualTo(new Message()
@@ -68,7 +68,7 @@ public class MessageServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> messageService.update(0L, author, "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "body"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -86,16 +86,16 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets
             .newHashSet(author));
-    messageIdentification.setStrategy(entity -> entity.setId(1L));
-    messageRepository.save((Message) new Message()
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Message) new Message()
         .setChat(chat)
         .setBody("message body")
         .setAuthor(author));
 
-    messageService.update(1L, author, "new body");
+    service.update(1L, author, "new body");
 
     Assertions
-        .assertThat(messageRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .messageComparator())
         .usingComparatorForFields(TestComparator
@@ -120,7 +120,7 @@ public class MessageServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> messageService.delete(0L, author))
+        .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -138,16 +138,16 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets
             .newHashSet(author));
-    messageIdentification.setStrategy(entity -> entity.setId(1L));
-    messageRepository.save((Message) TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Message) TestEntity
         .message()
         .setChat(chat)
         .setAuthor(author));
 
-    messageService.delete(1L, author);
+    service.delete(1L, author);
 
     Assertions
-        .assertThat(messageRepository.find(1L))
+        .assertThat(repository.find(1L))
         .isNull();
   }
 
@@ -163,14 +163,14 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets
             .newHashSet(author));
-    messageIdentification.setStrategy(entity -> entity.setId(1L));
-    messageRepository.save((Message) TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Message) TestEntity
         .message()
         .setChat(chat)
         .setAuthor(author));
 
     Assertions
-        .assertThat(messageService.findAll(chat, Pageable.unpaged()))
+        .assertThat(service.findAll(chat, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
             .messageComparator(), Message.class)
         .containsExactly((Message) TestEntity

@@ -19,16 +19,15 @@ import com.social.backend.test.stub.repository.identification.IdentificationCont
 
 public class CommentServiceTest {
 
-  private IdentificationContext<Comment> commentIdentification;
-  private CommentRepositoryStub commentRepository;
-  private CommentService commentService;
+  private IdentificationContext<Comment> identification;
+  private CommentRepositoryStub repository;
+  private CommentService service;
 
   @BeforeEach
   public void setUp() {
-    commentIdentification = new IdentificationContext<>();
-    commentRepository = new CommentRepositoryStub(commentIdentification);
-
-    commentService = new CommentServiceImpl(commentRepository);
+    identification = new IdentificationContext<>();
+    repository = new CommentRepositoryStub(identification);
+    service = new CommentServiceImpl(repository);
   }
 
   @Test
@@ -46,10 +45,10 @@ public class CommentServiceTest {
         .setId(2L)
         .setEmail("commentAuthor@mail.com")
         .setUsername("commentAuthor");
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> commentService.create(post, author, "body"))
+        .assertThatThrownBy(() -> service.create(post, author, "body"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
   }
@@ -69,10 +68,10 @@ public class CommentServiceTest {
         .setId(1L)
         .setEmail("commentAuthor@mail.com")
         .setUsername("commentAuthor");
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> commentService.create(post, author, "body"))
+        .assertThatThrownBy(() -> service.create(post, author, "body"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.comment.internalPost"});
@@ -88,12 +87,12 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, postAuthor, "body");
+    service.create(post, postAuthor, "body");
 
     Assertions
-        .assertThat(commentRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -129,12 +128,12 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, author, "body");
+    service.create(post, author, "body");
 
     Assertions
-        .assertThat(commentRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -173,12 +172,12 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, author, "body");
+    service.create(post, author, "body");
 
     Assertions
-        .assertThat(commentRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .isEqualTo(new Comment()
@@ -207,7 +206,7 @@ public class CommentServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> commentService.update(0L, author, "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "body"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -222,16 +221,16 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
-    commentRepository.save((Comment) new Comment()
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) new Comment()
         .setPost(post)
         .setBody("comment body")
         .setAuthor(postAuthor));
 
-    commentService.update(1L, postAuthor, "new body");
+    service.update(1L, postAuthor, "new body");
 
     Assertions
-        .assertThat(commentRepository.find(1L))
+        .assertThat(repository.find(1L))
         .usingComparator(TestComparator
             .commentComparator())
         .usingComparatorForFields(TestComparator
@@ -257,7 +256,7 @@ public class CommentServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> commentService.delete(0L, author))
+        .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -272,16 +271,16 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
-    commentRepository.save((Comment) TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(postAuthor));
 
-    commentService.delete(1L, postAuthor);
+    service.delete(1L, postAuthor);
 
     Assertions
-        .assertThat(commentRepository.find(1L))
+        .assertThat(repository.find(1L))
         .isNull();
   }
 
@@ -294,14 +293,14 @@ public class CommentServiceTest {
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    commentIdentification.setStrategy(entity -> entity.setId(1L));
-    commentRepository.save((Comment) TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) TestEntity
         .comment()
         .setPost(post)
         .setAuthor(postAuthor));
 
     Assertions
-        .assertThat(commentService.findAll(post, Pageable.unpaged()))
+        .assertThat(service.findAll(post, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
             .commentComparator(), Comment.class)
         .containsExactly((Comment) TestEntity

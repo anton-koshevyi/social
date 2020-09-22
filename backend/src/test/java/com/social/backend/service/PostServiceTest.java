@@ -16,16 +16,15 @@ import com.social.backend.test.stub.repository.identification.IdentificationCont
 
 public class PostServiceTest {
 
-  private IdentificationContext<Post> postIdentification;
-  private PostRepository postRepository;
-  private PostService postService;
+  private IdentificationContext<Post> identification;
+  private PostRepository repository;
+  private PostService service;
 
   @BeforeEach
   public void setUp() {
-    postIdentification = new IdentificationContext<>();
-    postRepository = new PostRepositoryStub(postIdentification);
-
-    postService = new PostServiceImpl(postRepository);
+    identification = new IdentificationContext<>();
+    repository = new PostRepositoryStub(identification);
+    service = new PostServiceImpl(repository);
   }
 
   @Test
@@ -33,12 +32,12 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
+    identification.setStrategy(e -> e.setId(1L));
 
-    postService.create(author, "title", "body");
+    service.create(author, "title", "body");
 
     Assertions
-        .assertThat(postRepository.findById(1L))
+        .assertThat(repository.findById(1L))
         .get()
         .usingComparator(TestComparator
             .postComparator())
@@ -58,7 +57,7 @@ public class PostServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> postService.update(0L, author, "title", "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "title", "body"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -69,16 +68,16 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    postRepository.save(new Post()
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(new Post()
         .setTitle("title")
         .setBody("body")
         .setAuthor(author));
 
-    postService.update(1L, author, "new title", "new body");
+    service.update(1L, author, "new title", "new body");
 
     Assertions
-        .assertThat(postRepository.findById(1L))
+        .assertThat(repository.findById(1L))
         .get()
         .usingComparator(TestComparator
             .postComparator())
@@ -100,7 +99,7 @@ public class PostServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> postService.delete(0L, author))
+        .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -111,22 +110,22 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    postRepository.save(TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(TestEntity
         .post()
         .setAuthor(author));
 
-    postService.delete(1L, author);
+    service.delete(1L, author);
 
     Assertions
-        .assertThat(postRepository.findById(1L))
+        .assertThat(repository.findById(1L))
         .isEmpty();
   }
 
   @Test
   public void find_byId_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> postService.find(1L))
+        .assertThatThrownBy(() -> service.find(1L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -137,13 +136,13 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    postRepository.save(TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(TestEntity
         .post()
         .setAuthor(author));
 
     Assertions
-        .assertThat(postService.find(1L))
+        .assertThat(service.find(1L))
         .usingComparator(TestComparator
             .postComparator())
         .isEqualTo(TestEntity
@@ -159,13 +158,13 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    postRepository.save(TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(TestEntity
         .post()
         .setAuthor(author));
 
     Assertions
-        .assertThat(postService.findAll(Pageable.unpaged()))
+        .assertThat(service.findAll(Pageable.unpaged()))
         .usingComparatorForType(TestComparator
             .postComparator(), Post.class)
         .containsExactly(TestEntity
@@ -181,13 +180,13 @@ public class PostServiceTest {
     User author = TestEntity
         .user()
         .setId(1L);
-    postIdentification.setStrategy(entity -> entity.setId(1L));
-    postRepository.save(TestEntity
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(TestEntity
         .post()
         .setAuthor(author));
 
     Assertions
-        .assertThat(postService.findAll(author, Pageable.unpaged()))
+        .assertThat(service.findAll(author, Pageable.unpaged()))
         .usingComparatorForType(TestComparator
             .postComparator(), Post.class)
         .containsExactly(TestEntity
