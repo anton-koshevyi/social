@@ -35,9 +35,9 @@ public final class NotNullComparator<T> implements Comparator<T> {
     if (leftNotNull && rightNotNull) {
       result = (left != null) && (right != null);
     } else if (leftNotNull) {
-      result = (left != null);
+      result = left != null;
     } else {
-      result = (right != null);
+      result = right != null;
     }
 
     return result ? 0 : 1;
