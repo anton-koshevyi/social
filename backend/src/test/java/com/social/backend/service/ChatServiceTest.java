@@ -3,15 +3,9 @@ package com.social.backend.service;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -20,33 +14,39 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepositoryImpl;
 import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.stub.repository.ChatRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({ChatServiceImpl.class, ChatRepositoryImpl.class})
 public class ChatServiceTest {
 
-  @Autowired
+  private IdentificationContext<Chat> chatIdentification;
+  private ChatRepositoryStub chatRepository;
   private ChatService chatService;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    chatIdentification = new IdentificationContext<>();
+    chatRepository = new ChatRepositoryStub(chatIdentification);
+
+    chatService = new ChatServiceImpl(chatRepository);
+  }
 
   @Test
   public void createPrivate_whenEntityAlreadyExists_expectException() {
-    User user = entityManager.persist(TestEntity
+    User user = TestEntity
         .user()
+        .setId(1L)
         .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+        .setUsername("user");
+    User target = TestEntity
         .user()
+        .setId(2L)
         .setEmail("target@mail.com")
-        .setUsername("target"));
-    entityManager.persist(new PrivateChat()
+        .setUsername("target");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(new PrivateChat()
         .setMembers(Sets
             .newHashSet(user, target)));
 
@@ -60,15 +60,18 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsNotPublicNorFriend_expectException() {
-    User user = entityManager.persist(TestEntity
+    User user = TestEntity
         .user()
+        .setId(1L)
         .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+        .setUsername("user");
+    User target = TestEntity
         .user()
+        .setId(2L)
         .setEmail("target@mail.com")
         .setUsername("target")
-        .setPublicity(Publicity.INTERNAL));
+        .setPublicity(Publicity.INTERNAL);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> chatService.createPrivate(user, target))
@@ -80,17 +83,20 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsFriend() {
-    User user = entityManager.persist(TestEntity
+    User user = TestEntity
         .user()
+        .setId(1L)
         .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+        .setUsername("user");
+    User target = TestEntity
         .user()
+        .setId(2L)
         .setEmail("target@mail.com")
         .setUsername("target")
-        .setPublicity(Publicity.INTERNAL));
+        .setPublicity(Publicity.INTERNAL);
     user.setFriends(Sets.newHashSet(target));
     target.setFriends(Sets.newHashSet(user));
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThat(chatService.createPrivate(user, target))
@@ -117,15 +123,18 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsPublic() {
-    User user = entityManager.persist(TestEntity
+    User user = TestEntity
         .user()
+        .setId(1L)
         .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
+        .setUsername("user");
+    User target = TestEntity
         .user()
+        .setId(2L)
         .setEmail("target@mail.com")
         .setUsername("target")
-        .setPublicity(Publicity.PUBLIC));
+        .setPublicity(Publicity.PUBLIC);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThat(chatService.createPrivate(user, target))
@@ -152,7 +161,9 @@ public class ChatServiceTest {
 
   @Test
   public void deletePrivate_whenNoEntityWithIdAndMember_expectException() {
-    User user = entityManager.persist(TestEntity.user());
+    User user = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.deletePrivate(1L, user))
@@ -164,15 +175,18 @@ public class ChatServiceTest {
 
   @Test
   public void deletePrivate() {
-    User first = entityManager.persist(TestEntity
+    User first = TestEntity
         .user()
+        .setId(1L)
         .setEmail("first@mail.com")
-        .setUsername("first"));
-    User second = entityManager.persist(TestEntity
+        .setUsername("first");
+    User second = TestEntity
         .user()
+        .setId(1L)
         .setEmail("second@mail.com")
-        .setUsername("second"));
-    entityManager.persist(TestEntity
+        .setUsername("second");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .privateChat()
         .setMembers(Sets
             .newHashSet(first, second)));
@@ -180,21 +194,24 @@ public class ChatServiceTest {
     chatService.deletePrivate(1L, first);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
+        .assertThat(chatRepository.find(1L))
         .isNull();
   }
 
   @Test
   public void createGroup_whenAnyMemberIsNotPublicNorFriend_expectException() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(2L)
         .setEmail("member@mail.com")
         .setUsername("member")
-        .setPublicity(Publicity.INTERNAL));
+        .setPublicity(Publicity.INTERNAL);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> chatService.createGroup(owner, "name", ImmutableSet.of(member)))
@@ -206,17 +223,20 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenMembersAreFriends() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(1L)
         .setEmail("member@mail.com")
         .setUsername("member")
-        .setPublicity(Publicity.INTERNAL));
+        .setPublicity(Publicity.INTERNAL);
     owner.setFriends(Sets.newHashSet(member));
     member.setFriends(Sets.newHashSet(owner));
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
@@ -250,15 +270,18 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenMembersArePublic() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(2L)
         .setEmail("member@mail.com")
         .setUsername("member")
-        .setPublicity(Publicity.PUBLIC));
+        .setPublicity(Publicity.PUBLIC);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
 
     Assertions
         .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
@@ -292,7 +315,9 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroup_whenNoEntityWithIdAndMember_expectException() {
-    User user = entityManager.persist(TestEntity.user());
+    User user = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.updateGroup(0L, user, "new name"))
@@ -303,11 +328,13 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroup() {
-    User member = entityManager.persist(TestEntity
+    User member = TestEntity
         .user()
+        .setId(1L)
         .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity.groupChat()
+        .setUsername("member");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity.groupChat()
         .setOwner(member))
         .setMembers(Sets
             .newHashSet(member));
@@ -328,8 +355,9 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = entityManager.persist(TestEntity
-        .user());
+    User owner = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.updateGroupMembers(0L, owner, ImmutableSet.of()))
@@ -340,8 +368,11 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenNoOwnerInMemberList_expectException() {
-    User owner = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity.groupChat()
+    User owner = TestEntity
+        .user()
+        .setId(1L);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity.groupChat()
         .setOwner(owner)
         .setMembers(Sets
             .newHashSet(owner)));
@@ -356,16 +387,19 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenAnyNewMemberIsNotPublicNorFriend_expectException() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newMember = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newMember@mail.com")
         .setUsername("newMember")
-        .setPublicity(Publicity.INTERNAL));
-    entityManager.persist(TestEntity
+        .setPublicity(Publicity.INTERNAL);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -382,18 +416,21 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenMemberIsFriend_expectAddNewMember() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newMember = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newMember@mail.com")
         .setUsername("newMember")
-        .setPublicity(Publicity.INTERNAL));
+        .setPublicity(Publicity.INTERNAL);
     owner.setFriends(Sets.newHashSet(newMember));
     newMember.setFriends(Sets.newHashSet(owner));
-    entityManager.persist(TestEntity
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -432,16 +469,19 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenMemberIsPublic_expectAddNewMember() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newMember = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newMember@mail.com")
         .setUsername("newMember")
-        .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(TestEntity
+        .setPublicity(Publicity.PUBLIC);
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -479,15 +519,18 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenAbsent_expectRemoveMember() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(2L)
         .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
+        .setUsername("member");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -516,14 +559,16 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newOwner = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
+        .setUsername("newOwner");
 
     Assertions
         .assertThatThrownBy(() -> chatService.changeOwner(0L, owner, newOwner))
@@ -534,15 +579,18 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner_whenNewOwnerIsNotMember_expectException() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newOwner = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
-    entityManager.persist(TestEntity
+        .setUsername("newOwner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner));
 
@@ -556,15 +604,18 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User newOwner = TestEntity
         .user()
+        .setId(2L)
         .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
-    entityManager.persist(TestEntity
+        .setUsername("newOwner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -601,7 +652,9 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup_whenNoEntityWithIdAndMember_expectException() {
-    User user = entityManager.persist(TestEntity.user());
+    User user = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.leaveGroup(0L, user))
@@ -612,11 +665,13 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup_whenLeavingMemberIsOwner_expectException() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
+        .setUsername("owner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -632,15 +687,18 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(2L)
         .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
+        .setUsername("member");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -649,7 +707,7 @@ public class ChatServiceTest {
     chatService.leaveGroup(1L, member);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
+        .assertThat(chatRepository.find(1L))
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .isEqualTo(TestEntity
@@ -671,7 +729,9 @@ public class ChatServiceTest {
 
   @Test
   public void deleteGroup_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = entityManager.persist(TestEntity.user());
+    User owner = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.deleteGroup(0L, owner))
@@ -682,11 +742,13 @@ public class ChatServiceTest {
 
   @Test
   public void deleteGroup() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
+        .setUsername("owner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -695,13 +757,15 @@ public class ChatServiceTest {
     chatService.deleteGroup(1L, owner);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
+        .assertThat(chatRepository.find(1L))
         .isNull();
   }
 
   @Test
   public void getMembers_whenNoEntityWithIdAndMember_expectException() {
-    User user = entityManager.persist(TestEntity.user());
+    User user = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.getMembers(0L, user, Pageable.unpaged()))
@@ -712,15 +776,18 @@ public class ChatServiceTest {
 
   @Test
   public void getMembers() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
+        .setUsername("owner");
+    User member = TestEntity
         .user()
+        .setId(2L)
         .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
+        .setUsername("member");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -746,8 +813,9 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember_whenNoEntityWithIdAndMember_expectException() {
-    User user = entityManager.persist(TestEntity
-        .user());
+    User user = TestEntity
+        .user()
+        .setId(1L);
 
     Assertions
         .assertThatThrownBy(() -> chatService.find(0L, user))
@@ -758,11 +826,13 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
+        .setUsername("owner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
@@ -784,11 +854,13 @@ public class ChatServiceTest {
 
   @Test
   public void findAll_byOwner() {
-    User owner = entityManager.persist(TestEntity
+    User owner = TestEntity
         .user()
+        .setId(1L)
         .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
+        .setUsername("owner");
+    chatIdentification.setStrategy(entity -> entity.setId(1L));
+    chatRepository.save(TestEntity
         .groupChat()
         .setOwner(owner)
         .setMembers(Sets
