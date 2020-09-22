@@ -12,8 +12,9 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.stub.repository.CommentRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -93,8 +94,7 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(TestEntity
                 .post()
@@ -134,8 +134,7 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(TestEntity
                 .post()
@@ -178,8 +177,7 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(TestEntity
                 .post()
@@ -231,10 +229,8 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .commentComparator())
-        .usingComparatorForFields(TestComparator
-            .notNullFirst(), "updated")
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(new Comment()
             .setPost(TestEntity
                 .post()
@@ -301,8 +297,7 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(service.findAll(post, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .commentComparator(), Comment.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(Comment.class), Comment.class)
         .containsExactly((Comment) TestEntity
             .comment()
             .setPost(TestEntity

@@ -9,8 +9,9 @@ import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.PostRepository;
-import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.stub.repository.PostRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -39,8 +40,7 @@ public class PostServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .postComparator())
+        .usingComparator(ComparatorFactory.getComparator(Post.class))
         .isEqualTo(new Post()
             .setId(1L)
             .setTitle("title")
@@ -79,10 +79,8 @@ public class PostServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .postComparator())
-        .usingComparatorForFields(TestComparator
-            .notNullFirst(), "updated")
+        .usingComparator(ComparatorFactory.getComparator(Post.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(new Post()
             .setId(1L)
             .setTitle("new title")
@@ -143,8 +141,7 @@ public class PostServiceTest {
 
     Assertions
         .assertThat(service.find(1L))
-        .usingComparator(TestComparator
-            .postComparator())
+        .usingComparator(ComparatorFactory.getComparator(Post.class))
         .isEqualTo(TestEntity
             .post()
             .setId(1L)
@@ -165,8 +162,7 @@ public class PostServiceTest {
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .postComparator(), Post.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
         .containsExactly(TestEntity
             .post()
             .setId(1L)
@@ -187,8 +183,7 @@ public class PostServiceTest {
 
     Assertions
         .assertThat(service.findAll(author, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .postComparator(), Post.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
         .containsExactly(TestEntity
             .post()
             .setId(1L)

@@ -14,8 +14,8 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.stub.repository.ChatRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -99,8 +99,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createPrivate(user, target))
-        .usingRecursiveComparison()
-        .ignoringFields("members.friends")
+        .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets
@@ -137,8 +136,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createPrivate(user, target))
-        .usingRecursiveComparison()
-        .ignoringFields("members.friends")
+        .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets
@@ -340,8 +338,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.updateGroup(1L, member, "new name"))
-        .usingComparator(TestComparator
-            .chatComparator())
+        .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(new GroupChat()
             .setName("new name")
             .setOwner(TestEntity
@@ -794,8 +791,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .userComparator(), User.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
         .containsExactlyInAnyOrder(
             TestEntity
                 .user()
@@ -839,8 +835,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.find(1L, owner))
-        .usingComparator(TestComparator
-            .chatComparator())
+        .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(TestEntity
@@ -867,8 +862,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.findAll(owner, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .chatComparator(), Chat.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
         .containsExactly(TestEntity
             .groupChat()
             .setOwner(TestEntity

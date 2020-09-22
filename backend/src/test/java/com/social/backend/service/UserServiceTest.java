@@ -12,8 +12,8 @@ import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
-import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.stub.PasswordEncoderStub;
 import com.social.backend.test.stub.repository.UserRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
@@ -46,8 +46,7 @@ public class UserServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(new User()
             .setId(1L)
             .setEmail("email@mail.com")
@@ -92,8 +91,7 @@ public class UserServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(new User()
             .setId(1L)
             .setEmail("new@mail.com")
@@ -125,8 +123,7 @@ public class UserServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(TestEntity
             .user()
             .setId(1L)
@@ -167,8 +164,7 @@ public class UserServiceTest {
     Assertions
         .assertThat(repository.findById(1L))
         .get()
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(TestEntity
             .user()
             .setId(1L)
@@ -414,8 +410,9 @@ public class UserServiceTest {
         .assertThat(repository.findById(1L))
         .get()
         .describedAs("Should remove target from entity friends")
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingRecursiveComparison()
+        .ignoringAllOverriddenEquals()
+        .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(TestEntity
             .user()
             .setId(1L)
@@ -425,8 +422,9 @@ public class UserServiceTest {
         .assertThat(repository.findById(2L))
         .get()
         .describedAs("Should remove entity from target friends")
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingRecursiveComparison()
+        .ignoringAllOverriddenEquals()
+        .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(TestEntity
             .user()
             .setId(2L)
@@ -451,8 +449,7 @@ public class UserServiceTest {
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .userComparator(), User.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
         .containsExactly(TestEntity
             .user()
             .setId(2L)
@@ -476,8 +473,7 @@ public class UserServiceTest {
 
     Assertions
         .assertThat(service.find(1L))
-        .usingComparator(TestComparator
-            .userComparator())
+        .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(TestEntity
             .user()
             .setId(1L));
@@ -490,8 +486,7 @@ public class UserServiceTest {
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .userComparator(), User.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
         .containsExactly(TestEntity
             .user()
             .setId(1L));

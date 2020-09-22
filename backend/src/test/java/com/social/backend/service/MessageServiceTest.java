@@ -10,8 +10,9 @@ import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestComparator;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.stub.repository.MessageRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -46,8 +47,7 @@ public class MessageServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .messageComparator())
+        .usingComparator(ComparatorFactory.getComparator(Message.class))
         .isEqualTo(new Message()
             .setChat(TestEntity
                 .privateChat()
@@ -96,10 +96,8 @@ public class MessageServiceTest {
 
     Assertions
         .assertThat(repository.find(1L))
-        .usingComparator(TestComparator
-            .messageComparator())
-        .usingComparatorForFields(TestComparator
-            .notNullFirst(), "updated")
+        .usingComparator(ComparatorFactory.getComparator(Message.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(new Message()
             .setChat(TestEntity
                 .privateChat()
@@ -171,8 +169,7 @@ public class MessageServiceTest {
 
     Assertions
         .assertThat(service.findAll(chat, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .messageComparator(), Message.class)
+        .usingComparatorForType(ComparatorFactory.getComparator(Message.class), Message.class)
         .containsExactly((Message) TestEntity
             .message()
             .setChat(TestEntity
