@@ -10,11 +10,11 @@ public class UserFactory extends ModelFactory<User> {
   public User createModel(ModelType<User> type) {
     switch (Enum.valueOf(UserType.class, type.name())) {
       case JOHN_SMITH:
-        return new JohnSmith();
+        return new JohnSmith().getModel();
       case JANE_DOE:
-        return new JaneDoe();
+        return new JaneDoe().getModel();
       case FRED_BLOGGS:
-        return new FredBloggs();
+        return new FredBloggs().getModel();
       default:
         return null;
     }

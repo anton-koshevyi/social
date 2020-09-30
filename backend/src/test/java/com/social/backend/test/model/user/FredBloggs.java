@@ -1,19 +1,20 @@
 package com.social.backend.test.model.user;
 
 import com.social.backend.model.user.Publicity;
-import com.social.backend.model.user.User;
 
-class FredBloggs extends User {
+class FredBloggs extends UserWrapper {
 
   FredBloggs() {
-    super.setEmail("fredbloggs@example.com");
-    super.setUsername("fredbloggs");
-    super.setFirstName("Fred");
-    super.setLastName("Bloggs");
-    super.setPublicity(Publicity.PRIVATE);
-    super.setPassword("{encoded}password");
-    super.setModer(false);
-    super.setAdmin(false);
+    super(
+        "fredbloggs@example.com",
+        "fredbloggs",
+        "Fred",
+        "Bloggs",
+        Publicity.PRIVATE,
+        "{encoded}password",
+        false,
+        false
+    );
   }
 
 }
