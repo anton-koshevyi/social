@@ -34,6 +34,8 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -42,6 +44,9 @@ import com.social.backend.test.TestEntity;
 @Transactional
 @AutoConfigureTestEntityManager
 public class ChatControllerTest {
+
+  private static final FormAuthConfig AUTH_FORM =
+      new FormAuthConfig("/auth", "username", "password");
 
   @LocalServerPort
   private int port;
@@ -64,9 +69,8 @@ public class ChatControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
@@ -78,7 +82,7 @@ public class ChatControllerTest {
     String response = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .get("/chats")
@@ -97,10 +101,10 @@ public class ChatControllerTest {
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -112,9 +116,8 @@ public class ChatControllerTest {
 
   @Test
   public void get() throws JSONException {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
@@ -126,7 +129,7 @@ public class ChatControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .get("/chats/{id}", 1)
@@ -142,10 +145,10 @@ public class ChatControllerTest {
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -157,9 +160,8 @@ public class ChatControllerTest {
 
   @Test
   public void getMembers() throws JSONException {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
@@ -171,7 +173,7 @@ public class ChatControllerTest {
     String response = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .get("/chats/{id}/members", 1)
@@ -185,10 +187,10 @@ public class ChatControllerTest {
 
     String expected = "[{"
         + "id: 1,"
-        + "email: 'email@mail.com',"
-        + "username: 'username',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -199,9 +201,8 @@ public class ChatControllerTest {
 
   @Test
   public void deletePrivate() {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .privateChat()
@@ -212,7 +213,7 @@ public class ChatControllerTest {
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .delete("/chats/private/{id}", 1)
@@ -222,23 +223,18 @@ public class ChatControllerTest {
 
   @Test
   public void createGroup_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("creator@mail.com")
-        .setUsername("creator")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("members")
-        .setPassword(passwordEncoder.encode("password"))
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("creator", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -268,23 +264,18 @@ public class ChatControllerTest {
 
   @Test
   public void createGroup() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("creator@mail.com")
-        .setUsername("creator")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("members")
-        .setPassword(passwordEncoder.encode("password"))
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("creator", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
@@ -305,10 +296,10 @@ public class ChatControllerTest {
         + "members: 2,"
         + "owner: {"
         + "  id: 1,"
-        + "  email: 'creator@mail.com',"
-        + "  username: 'creator',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -320,21 +311,19 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroup_whenInvalidBody_expectBadRequest() throws JSONException {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"name\": \"\" }")
@@ -363,21 +352,19 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroup() throws JSONException {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(new GroupChat()
         .setName("name")
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"name\": \"new name\"}")
@@ -395,10 +382,10 @@ public class ChatControllerTest {
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -410,27 +397,21 @@ public class ChatControllerTest {
 
   @Test
   public void leaveGroup() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner")
-        .setPassword(passwordEncoder.encode("password")));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member")
+    User fredBloggs = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS));
+    User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
-        .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, member)));
+        .setOwner(fredBloggs)
+        .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
     TestTransaction.end();
 
     RestAssured
         .given()
         .auth()
-        .form("member", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .when()
         .put("/chats/group/{id}", 1)
         .then()
@@ -439,21 +420,19 @@ public class ChatControllerTest {
 
   @Test
   public void deleteGroup() {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .groupChat()
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .when()
         .delete("/chats/group/{id}", 1)
         .then()
@@ -462,28 +441,22 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroupMembers_whenInvalidBody_expectBadRequest() throws JSONException {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner")
+    User owner = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("members")
-        .setPassword(passwordEncoder.encode("password"))
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("owner", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -512,28 +485,22 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroupMembers() throws JSONException {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner")
+    User owner = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("members")
-        .setPassword(passwordEncoder.encode("password"))
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     entityManager.persist(TestEntity
         .groupChat()
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("owner", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"members\": [ 1, 2 ] }")
@@ -551,10 +518,10 @@ public class ChatControllerTest {
         + "members: 2,"
         + "owner: {"
         + "  id: 1,"
-        + "  email: 'owner@mail.com',"
-        + "  username: 'owner',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -566,27 +533,21 @@ public class ChatControllerTest {
 
   @Test
   public void changeOwner() throws JSONException {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner")
+    User fredBloggs = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
-    User newOwner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newOwner@mail.com")
-        .setUsername("newOwner")
-        .setPassword(passwordEncoder.encode("password")));
+    User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     entityManager.persist(TestEntity
         .groupChat()
-        .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, newOwner)));
+        .setOwner(fredBloggs)
+        .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("owner", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("fredbloggs", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .put("/chats/group/{id}/members/2", 1)
@@ -602,9 +563,9 @@ public class ChatControllerTest {
         + "members: 2,"
         + "owner: {"
         + "  id: 2,"
-        + "  username: 'newOwner',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"

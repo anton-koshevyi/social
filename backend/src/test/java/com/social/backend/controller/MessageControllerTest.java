@@ -34,6 +34,8 @@ import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -42,6 +44,9 @@ import com.social.backend.test.TestEntity;
 @Transactional
 @AutoConfigureTestEntityManager
 public class MessageControllerTest {
+
+  private static final FormAuthConfig AUTH_FORM =
+      new FormAuthConfig("/auth", "username", "password");
 
   @LocalServerPort
   private int port;
@@ -64,9 +69,8 @@ public class MessageControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     Chat chat = entityManager.persist(TestEntity
         .privateChat()
@@ -81,7 +85,7 @@ public class MessageControllerTest {
     String response = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .get("/chats/{chatId}/messages", 1)
         .then()
@@ -98,10 +102,10 @@ public class MessageControllerTest {
         + "body: 'message body',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -111,10 +115,10 @@ public class MessageControllerTest {
         + "  type: 'private',"
         + "  members: [{"
         + "    id: 1,"
-        + "    email: 'email@mail.com',"
-        + "    username: 'username',"
-        + "    firstName: 'first',"
-        + "    lastName: 'last',"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
@@ -123,15 +127,14 @@ public class MessageControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].createdAt", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .privateChat()
@@ -142,7 +145,7 @@ public class MessageControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -165,15 +168,14 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void create() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .privateChat()
@@ -184,7 +186,7 @@ public class MessageControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"body\" }")
@@ -201,10 +203,10 @@ public class MessageControllerTest {
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -214,10 +216,10 @@ public class MessageControllerTest {
         + "  type: 'private',"
         + "  members: [{"
         + "    id: 1,"
-        + "    email: 'email@mail.com',"
-        + "    username: 'username',"
-        + "    firstName: 'first',"
-        + "    lastName: 'last',"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
@@ -226,15 +228,14 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     Chat chat = entityManager.persist(TestEntity
         .privateChat()
@@ -249,7 +250,7 @@ public class MessageControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
@@ -272,15 +273,14 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     Chat chat = entityManager.persist(TestEntity
         .privateChat()
@@ -295,7 +295,7 @@ public class MessageControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"new body\" }")
@@ -313,10 +313,10 @@ public class MessageControllerTest {
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -326,10 +326,10 @@ public class MessageControllerTest {
         + "  type: 'private',"
         + "  members: [{"
         + "    id: 1,"
-        + "    email: 'email@mail.com',"
-        + "    username: 'username',"
-        + "    firstName: 'first',"
-        + "    lastName: 'last',"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
@@ -338,21 +338,19 @@ public class MessageControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true),
-            new Customization("updatedAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null),
+            new Customization("updatedAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void delete() {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     Chat chat = entityManager.persist(TestEntity
         .privateChat()
-        .setMembers(Sets
-            .newHashSet(author)));
+        .setMembers(Sets.newHashSet(author)));
     entityManager.persist((Message) TestEntity
         .message()
         .setChat(chat)
@@ -362,7 +360,7 @@ public class MessageControllerTest {
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .when()
         .delete("/chats/{chatId}/messages/{id}", 1, 1)
         .then()

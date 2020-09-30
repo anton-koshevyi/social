@@ -15,6 +15,8 @@ import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.CommentRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -33,19 +35,17 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.PRIVATE);
     Post post = TestEntity
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    User author = TestEntity
-        .user()
-        .setId(2L)
-        .setEmail("commentAuthor@mail.com")
-        .setUsername("commentAuthor");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
@@ -56,19 +56,17 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.INTERNAL);
     Post post = TestEntity
         .post()
         .setId(1L)
         .setAuthor(postAuthor);
-    User author = TestEntity
-        .user()
-        .setId(1L)
-        .setEmail("commentAuthor@mail.com")
-        .setUsername("commentAuthor");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
@@ -80,8 +78,8 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.PRIVATE);
     Post post = TestEntity
@@ -99,31 +97,27 @@ public class CommentServiceTest {
             .setPost(TestEntity
                 .post()
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
             .setBody("body")
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L)
-        .setEmail("postAuthor@mail.com")
-        .setUsername("postAuthor")
         .setPublicity(Publicity.INTERNAL);
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+        .setFriends(Sets.newHashSet(postAuthor));
     postAuthor.setFriends(Sets.newHashSet(author));
-    author.setFriends(Sets.newHashSet(postAuthor));
     Post post = TestEntity
         .post()
         .setId(1L)
@@ -139,34 +133,26 @@ public class CommentServiceTest {
             .setPost(TestEntity
                 .post()
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("postAuthor@mail.com")
-                    .setUsername("postAuthor")
                     .setPublicity(Publicity.INTERNAL)))
             .setId(1L)
             .setBody("body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(2L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L)));
   }
 
   @Test
   public void create_whenPostOfPublicAuthor() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L)
-        .setEmail("postAuthor@mail.com")
-        .setUsername("postAuthor")
         .setPublicity(Publicity.PUBLIC);
-    User author = TestEntity
-        .user()
-        .setId(2L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
     Post post = TestEntity
         .post()
         .setId(1L)
@@ -182,25 +168,21 @@ public class CommentServiceTest {
             .setPost(TestEntity
                 .post()
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("postAuthor@mail.com")
-                    .setUsername("postAuthor")
                     .setPublicity(Publicity.PUBLIC)))
             .setId(1L)
             .setBody("body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(2L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L)));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -212,8 +194,8 @@ public class CommentServiceTest {
 
   @Test
   public void update() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     Post post = TestEntity
         .post()
@@ -235,20 +217,20 @@ public class CommentServiceTest {
             .setPost(TestEntity
                 .post()
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
             .setBody("new body")
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -260,8 +242,8 @@ public class CommentServiceTest {
 
   @Test
   public void delete() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     Post post = TestEntity
         .post()
@@ -282,8 +264,8 @@ public class CommentServiceTest {
 
   @Test
   public void findAll_byPost() {
-    User postAuthor = TestEntity
-        .user()
+    User postAuthor = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     Post post = TestEntity
         .post()
@@ -303,12 +285,12 @@ public class CommentServiceTest {
             .setPost(TestEntity
                 .post()
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 

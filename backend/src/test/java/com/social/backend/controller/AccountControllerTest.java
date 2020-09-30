@@ -28,9 +28,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -39,6 +39,9 @@ import com.social.backend.test.TestEntity;
 @Transactional
 @AutoConfigureTestEntityManager
 public class AccountControllerTest {
+
+  private static final FormAuthConfig AUTH_FORM =
+      new FormAuthConfig("/auth", "username", "password");
 
   @LocalServerPort
   private int port;
@@ -61,16 +64,15 @@ public class AccountControllerTest {
 
   @Test
   public void get() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .get("/account")
@@ -81,10 +83,10 @@ public class AccountControllerTest {
 
     String expected = "{"
         + "id: 1,"
-        + "email: 'email@mail.com',"
-        + "username: 'username',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -123,7 +125,7 @@ public class AccountControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
@@ -134,11 +136,10 @@ public class AccountControllerTest {
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"id\": 1,"
-            + "\"email\": \"email@mail.com\","
-            + "\"username\": \"username\","
-            + "\"firstName\": \"first\","
-            + "\"lastName\": \"last\","
+            + "\"email\": \"johnsmith@example.com\","
+            + "\"username\": \"johnsmith\","
+            + "\"firstName\": \"John\","
+            + "\"lastName\": \"Smith\","
             + "\"password\": \"password\","
             + "\"confirm\": \"password\""
             + "}")
@@ -151,10 +152,10 @@ public class AccountControllerTest {
 
     String expected = "{"
         + "id: 1,"
-        + "email: 'email@mail.com',"
-        + "username: 'username',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -165,19 +166,15 @@ public class AccountControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(new User()
-        .setEmail("email@mail.com")
-        .setUsername("username")
-        .setFirstName("first")
-        .setLastName("last")
-        .setPublicity(Publicity.PRIVATE)
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("fredbloggs", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"email\": \"\" }")
@@ -200,32 +197,28 @@ public class AccountControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void update() throws JSONException {
-    entityManager.persist(new User()
-        .setEmail("email@mail.com")
-        .setUsername("username")
-        .setFirstName("first")
-        .setLastName("last")
-        .setPublicity(Publicity.PRIVATE)
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("fredbloggs", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"email\": \"new_email@mail.com\","
-            + "\"username\": \"new_username\","
-            + "\"firstName\": \"new_first\","
-            + "\"lastName\": \"new_last\","
+            + "\"email\": \"johnsmith@example.com\","
+            + "\"username\": \"johnsmith\","
+            + "\"firstName\": \"John\","
+            + "\"lastName\": \"Smith\","
             + "\"publicity\": 30"
             + "}")
         .when()
@@ -237,10 +230,10 @@ public class AccountControllerTest {
 
     String expected = "{"
         + "id: 1,"
-        + "email: 'new_email@mail.com',"
-        + "username: 'new_username',"
-        + "firstName: 'new_first',"
-        + "lastName: 'new_last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 30,"
         + "moder: false,"
         + "admin: false"
@@ -251,16 +244,15 @@ public class AccountControllerTest {
 
   @Test
   public void delete_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -283,22 +275,21 @@ public class AccountControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void delete() {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Content-Type", "application/json")
         .body("{ \"password\": \"password\" }")
         .when()
@@ -309,16 +300,15 @@ public class AccountControllerTest {
 
   @Test
   public void changePassword_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -345,22 +335,21 @@ public class AccountControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void changePassword() {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Content-Type", "application/json")
         .body("{"
             + "\"actual\": \"password\","

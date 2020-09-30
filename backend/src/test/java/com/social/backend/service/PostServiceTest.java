@@ -12,6 +12,8 @@ import com.social.backend.repository.PostRepository;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.PostRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -30,8 +32,8 @@ public class PostServiceTest {
 
   @Test
   public void create() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
 
@@ -45,15 +47,15 @@ public class PostServiceTest {
             .setId(1L)
             .setTitle("title")
             .setBody("body")
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -65,8 +67,8 @@ public class PostServiceTest {
 
   @Test
   public void update() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(new Post()
@@ -85,15 +87,15 @@ public class PostServiceTest {
             .setId(1L)
             .setTitle("new title")
             .setBody("new body")
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -105,8 +107,8 @@ public class PostServiceTest {
 
   @Test
   public void delete() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(TestEntity
@@ -131,8 +133,8 @@ public class PostServiceTest {
 
   @Test
   public void find_byId() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(TestEntity
@@ -145,15 +147,15 @@ public class PostServiceTest {
         .isEqualTo(TestEntity
             .post()
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void findAll() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(TestEntity
@@ -166,15 +168,15 @@ public class PostServiceTest {
         .containsExactly(TestEntity
             .post()
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void findAll_byAuthor() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(TestEntity
@@ -187,8 +189,8 @@ public class PostServiceTest {
         .containsExactly(TestEntity
             .post()
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 

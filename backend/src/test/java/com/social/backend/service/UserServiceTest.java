@@ -12,8 +12,9 @@ import com.social.backend.exception.WrongCredentialsException;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.PasswordEncoderStub;
 import com.social.backend.test.stub.repository.UserRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
@@ -36,10 +37,10 @@ public class UserServiceTest {
     identification.setStrategy(e -> e.setId(1L));
 
     service.create(
-        "email@mail.com",
-        "username",
-        "first",
-        "last",
+        "johnsmith@example.com",
+        "johnsmith",
+        "John",
+        "Smith",
         "password"
     );
 
@@ -49,10 +50,10 @@ public class UserServiceTest {
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(new User()
             .setId(1L)
-            .setEmail("email@mail.com")
-            .setUsername("username")
-            .setFirstName("first")
-            .setLastName("last")
+            .setEmail("johnsmith@example.com")
+            .setUsername("johnsmith")
+            .setFirstName("John")
+            .setLastName("Smith")
             .setPassword("{encoded}password"));
   }
 
@@ -61,10 +62,10 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.update(
             1L,
-            "email@mail.com",
-            "username",
-            "first",
-            "last",
+            "fredbloggs@example.com",
+            "fredbloggs",
+            "Fred",
+            "Bloggs",
             Publicity.PUBLIC
         ))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -75,17 +76,21 @@ public class UserServiceTest {
   @Test
   public void update() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(new User()
+        .setEmail("johnsmith@example.com")
+        .setUsername("johnsmith")
+        .setFirstName("John")
+        .setLastName("Smith")
+        .setPublicity(Publicity.PRIVATE)
         .setPassword("{encoded}password"));
 
     service.update(
         1L,
-        "new@mail.com",
-        "new username",
-        "new first",
-        "new last",
-        Publicity.INTERNAL
+        "fredbloggs@example.com",
+        "fredbloggs",
+        "Fred",
+        "Bloggs",
+        Publicity.PUBLIC
     );
 
     Assertions
@@ -94,11 +99,11 @@ public class UserServiceTest {
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(new User()
             .setId(1L)
-            .setEmail("new@mail.com")
-            .setUsername("new username")
-            .setFirstName("new first")
-            .setLastName("new last")
-            .setPublicity(Publicity.INTERNAL)
+            .setEmail("fredbloggs@example.com")
+            .setUsername("fredbloggs")
+            .setFirstName("Fred")
+            .setLastName("Bloggs")
+            .setPublicity(Publicity.PUBLIC)
             .setPassword("{encoded}password"));
   }
 
@@ -114,8 +119,8 @@ public class UserServiceTest {
   @Test
   public void updateRole() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setModer(false));
 
     service.updateRole(1L, true);
@@ -124,8 +129,8 @@ public class UserServiceTest {
         .assertThat(repository.findById(1L))
         .get()
         .usingComparator(ComparatorFactory.getComparator(User.class))
-        .isEqualTo(TestEntity
-            .user()
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.JOHN_SMITH)
             .setId(1L)
             .setModer(true));
   }
@@ -142,8 +147,8 @@ public class UserServiceTest {
   @Test
   public void changePassword_whenWrongActualPassword_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword("{encoded}actual"));
 
     Assertions
@@ -155,8 +160,8 @@ public class UserServiceTest {
   @Test
   public void changePassword() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword("{encoded}actual"));
 
     service.changePassword(1L, "actual", "change");
@@ -165,8 +170,8 @@ public class UserServiceTest {
         .assertThat(repository.findById(1L))
         .get()
         .usingComparator(ComparatorFactory.getComparator(User.class))
-        .isEqualTo(TestEntity
-            .user()
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.JOHN_SMITH)
             .setId(1L)
             .setPassword("{encoded}change"));
   }
@@ -183,8 +188,8 @@ public class UserServiceTest {
   @Test
   public void delete_whenWrongActualPassword_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword("{encoded}password"));
 
     Assertions
@@ -196,8 +201,8 @@ public class UserServiceTest {
   @Test
   public void delete() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword("{encoded}password"));
 
     service.delete(1L, "password");
@@ -227,7 +232,8 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenNoTargetEntityWithId_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity.user());
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -239,15 +245,11 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenPrivateTargetEntity_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PRIVATE));
 
     Assertions
@@ -260,15 +262,12 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenFriendAlreadyPresent_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    User user = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setPublicity(Publicity.PRIVATE));
     identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
+    User target = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     user.setFriends(Sets.newHashSet(target));
     target.setFriends(Sets.newHashSet(user));
@@ -283,15 +282,12 @@ public class UserServiceTest {
   @Test
   public void addFriend() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setPublicity(Publicity.PRIVATE));
     identification.setStrategy(e -> e.setId(2L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
 
     service.addFriend(1L, 2L);
@@ -303,18 +299,14 @@ public class UserServiceTest {
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
-        .isEqualTo(TestEntity
-            .user()
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.JOHN_SMITH)
             .setId(1L)
-            .setEmail("user@mail.com")
-            .setUsername("user")
             .setPublicity(Publicity.PRIVATE)
             .setFriends(Sets
-                .newHashSet(TestEntity
-                    .user()
+                .newHashSet(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
-                    .setEmail("target@mail.com")
-                    .setUsername("target")
                     .setPublicity(Publicity.PUBLIC))
             ));
     Assertions
@@ -324,18 +316,14 @@ public class UserServiceTest {
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
-        .isEqualTo(TestEntity
-            .user()
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.FRED_BLOGGS)
             .setId(2L)
-            .setEmail("target@mail.com")
-            .setUsername("target")
             .setPublicity(Publicity.PUBLIC)
             .setFriends(Sets
-                .newHashSet(TestEntity
-                    .user()
+                .newHashSet(ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("user@mail.com")
-                    .setUsername("user")
                     .setPublicity(Publicity.PRIVATE))
             ));
   }
@@ -360,7 +348,8 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenNoTargetWithId_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity.user());
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -372,15 +361,11 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenNoTargetInFriends_expectException() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
-    repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target"));
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -392,15 +377,11 @@ public class UserServiceTest {
   @Test
   public void removeFriend() {
     identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    User user = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target"));
+    User target = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS));
     user.setFriends(Sets.newHashSet(target));
     target.setFriends(Sets.newHashSet(user));
 
@@ -413,11 +394,9 @@ public class UserServiceTest {
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
-        .isEqualTo(TestEntity
-            .user()
-            .setId(1L)
-            .setEmail("user@mail.com")
-            .setUsername("user"));
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
     Assertions
         .assertThat(repository.findById(2L))
         .get()
@@ -425,36 +404,28 @@ public class UserServiceTest {
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
-        .isEqualTo(TestEntity
-            .user()
-            .setId(2L)
-            .setEmail("target@mail.com")
-            .setUsername("target"));
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.FRED_BLOGGS)
+            .setId(2L));
   }
 
   @Test
   public void getFriends() {
     identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    User user = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target"));
+    User target = repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS));
     user.setFriends(Sets.newHashSet(target));
     target.setFriends(Sets.newHashSet(user));
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
-        .containsExactly(TestEntity
-            .user()
-            .setId(2L)
-            .setEmail("target@mail.com")
-            .setUsername("target"));
+        .containsExactly(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.FRED_BLOGGS)
+            .setId(2L));
   }
 
   @Test
@@ -469,27 +440,36 @@ public class UserServiceTest {
   @Test
   public void find_byId() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity.user());
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
 
     Assertions
         .assertThat(service.find(1L))
         .usingComparator(ComparatorFactory.getComparator(User.class))
-        .isEqualTo(TestEntity
-            .user()
+        .isEqualTo(ModelFactoryProducer.getFactory(User.class)
+            .createModel(UserType.JOHN_SMITH)
             .setId(1L));
   }
 
   @Test
   public void findAll() {
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity.user());
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
+    identification.setStrategy(e -> e.setId(2L));
+    repository.save(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS));
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
-        .containsExactly(TestEntity
-            .user()
-            .setId(1L));
+        .containsExactlyInAnyOrder(
+            ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L),
+            ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L));
   }
 
 }

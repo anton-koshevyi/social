@@ -13,6 +13,8 @@ import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.MessageRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
@@ -31,11 +33,9 @@ public class MessageServiceTest {
 
   @Test
   public void create() {
-    User author = TestEntity
-        .user()
-        .setId(1L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     Chat chat = TestEntity
         .privateChat()
@@ -54,17 +54,15 @@ public class MessageServiceTest {
                 .setId(1L))
             .setId(1L)
             .setBody("body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L)));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -76,16 +74,13 @@ public class MessageServiceTest {
 
   @Test
   public void update() {
-    User author = TestEntity
-        .user()
-        .setId(1L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
     Chat chat = TestEntity
         .privateChat()
         .setId(1L)
-        .setMembers(Sets
-            .newHashSet(author));
+        .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
     repository.save((Message) new Message()
         .setChat(chat)
@@ -104,17 +99,15 @@ public class MessageServiceTest {
                 .setId(1L))
             .setId(1L)
             .setBody("new body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L)));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = TestEntity
-        .user()
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
     Assertions
@@ -126,16 +119,13 @@ public class MessageServiceTest {
 
   @Test
   public void delete() {
-    User author = TestEntity
-        .user()
-        .setId(1L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
     Chat chat = TestEntity
         .privateChat()
         .setId(1L)
-        .setMembers(Sets
-            .newHashSet(author));
+        .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
     repository.save((Message) TestEntity
         .message()
@@ -151,16 +141,13 @@ public class MessageServiceTest {
 
   @Test
   public void findAll_byChat() {
-    User author = TestEntity
-        .user()
-        .setId(1L)
-        .setEmail("author@mail.com")
-        .setUsername("author");
+    User author = ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
     Chat chat = TestEntity
         .privateChat()
         .setId(1L)
-        .setMembers(Sets
-            .newHashSet(author));
+        .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
     repository.save((Message) TestEntity
         .message()
@@ -176,11 +163,9 @@ public class MessageServiceTest {
                 .privateChat()
                 .setId(1L))
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L)));
   }
 
 }

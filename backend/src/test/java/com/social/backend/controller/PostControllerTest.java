@@ -32,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -40,6 +42,9 @@ import com.social.backend.test.TestEntity;
 @Transactional
 @AutoConfigureTestEntityManager
 public class PostControllerTest {
+
+  private static final FormAuthConfig AUTH_FORM =
+      new FormAuthConfig("/auth", "username", "password");
 
   @LocalServerPort
   private int port;
@@ -62,7 +67,8 @@ public class PostControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(TestEntity.user());
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
@@ -89,9 +95,9 @@ public class PostControllerTest {
         + "comments: 0,"
         + "author: {"
         + "  id: 1,"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -99,22 +105,21 @@ public class PostControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].createdAt", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -138,22 +143,21 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void create() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
@@ -173,10 +177,10 @@ public class PostControllerTest {
         + "body: 'body',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -185,13 +189,14 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void get() throws JSONException {
-    User author = entityManager.persist(TestEntity.user());
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
@@ -214,9 +219,9 @@ public class PostControllerTest {
         + "body: 'post body',"
         + "author: {"
         + "  id: 1,"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -225,15 +230,14 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(new Post()
         .setTitle("title")
@@ -244,7 +248,7 @@ public class PostControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
@@ -267,15 +271,14 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(new Post()
         .setTitle("title")
@@ -286,7 +289,7 @@ public class PostControllerTest {
     String actual = RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
@@ -308,10 +311,10 @@ public class PostControllerTest {
         + "body: 'new body',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -320,16 +323,15 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true),
-            new Customization("updatedAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null),
+            new Customization("updatedAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void delete() {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(TestEntity
         .post()
@@ -339,7 +341,7 @@ public class PostControllerTest {
     RestAssured
         .given()
         .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .when()
         .delete("/posts/{id}", 1)
         .then()

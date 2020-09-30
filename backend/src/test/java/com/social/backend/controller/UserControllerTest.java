@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
+import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -41,6 +43,9 @@ import com.social.backend.test.TestEntity;
 @Transactional
 @AutoConfigureTestEntityManager
 public class UserControllerTest {
+
+  private static final FormAuthConfig AUTH_FORM =
+      new FormAuthConfig("/auth", "username", "password");
 
   @LocalServerPort
   private int port;
@@ -63,7 +68,8 @@ public class UserControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    entityManager.persist(TestEntity.user());
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
     String response = RestAssured
@@ -81,9 +87,9 @@ public class UserControllerTest {
 
     String expected = "[{"
         + "id: 1,"
-        + "username: 'username',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -94,7 +100,8 @@ public class UserControllerTest {
 
   @Test
   public void get() throws JSONException {
-    entityManager.persist(TestEntity.user());
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
     String actual = RestAssured
@@ -109,9 +116,9 @@ public class UserControllerTest {
 
     String expected = "{"
         + "id: 1,"
-        + "username: 'username',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -122,22 +129,18 @@ public class UserControllerTest {
 
   @Test
   public void updateRole_whenEmptyBody_expectNoChanges() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("admin@mail.com")
-        .setUsername("admin")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("admin", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("fredbloggs", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
@@ -150,10 +153,10 @@ public class UserControllerTest {
 
     String expected = "{"
         + "id: 2,"
-        + "email: 'user@mail.com',"
-        + "username: 'user',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -164,22 +167,18 @@ public class UserControllerTest {
 
   @Test
   public void updateRole() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("admin@mail.com")
-        .setUsername("admin")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("admin", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("fredbloggs", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"moder\": true }")
@@ -192,10 +191,10 @@ public class UserControllerTest {
 
     String expected = "{"
         + "id: 2,"
-        + "email: 'user@mail.com',"
-        + "username: 'user',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "email: 'johnsmith@example.com',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: true,"
         + "admin: false"
@@ -206,16 +205,11 @@ public class UserControllerTest {
 
   @Test
   public void getFriends() throws JSONException {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("email_1@mail.com")
-        .setUsername("username_1"));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("email_2@mail.com")
-        .setUsername("username_2")
-        .setFriends(Sets
-            .newHashSet(user)));
+    User user = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
+        .setFriends(Sets.newHashSet(user)));
     TestTransaction.end();
 
     String response = RestAssured
@@ -233,9 +227,9 @@ public class UserControllerTest {
 
     String expected = "[{"
         + "id: 1,"
-        + "username: 'username_1',"
-        + "firstName: 'first',"
-        + "lastName: 'last',"
+        + "username: 'johnsmith',"
+        + "firstName: 'John',"
+        + "lastName: 'Smith',"
         + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
@@ -246,22 +240,18 @@ public class UserControllerTest {
 
   @Test
   public void addFriend() {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("username_2")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
 
     RestAssured
         .given()
         .auth()
-        .form("user", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .post("/users/{id}/friends", 2)
@@ -271,15 +261,11 @@ public class UserControllerTest {
 
   @Test
   public void removeFriend() {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user")
+    User user = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    User target = entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
+    User target = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
     TestTransaction.end();
@@ -287,7 +273,7 @@ public class UserControllerTest {
     RestAssured
         .given()
         .auth()
-        .form("user", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .when()
         .delete("/users/{id}/friends", 2)
         .then()
@@ -296,7 +282,8 @@ public class UserControllerTest {
 
   @Test
   public void getPosts() throws JSONException {
-    User author = entityManager.persist(TestEntity.user());
+    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH));
     entityManager.persist(TestEntity
         .post()
         .setAuthor(author));
@@ -323,9 +310,9 @@ public class UserControllerTest {
         + "comments: 0,"
         + "author: {"
         + "  id: 1,"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -333,28 +320,24 @@ public class UserControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].createdAt", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void createPrivateChat() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
+    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+        .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
 
     String actual = RestAssured
         .given()
         .auth()
-        .form("user", "password", new FormAuthConfig("/auth", "username", "password"))
+        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .when()
         .post("/users/{id}/chats/private", 2)
@@ -368,20 +351,20 @@ public class UserControllerTest {
         + "type: 'private',"
         + "members: [{"
         + "  id: 1,"
-        + "  email: 'user@mail.com',"
-        + "  username: 'user',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
         + "},"
         + "{"
         + "  id: 2,"
-        + "  email: 'target@mail.com',"
-        + "  username: 'target',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'fredbloggs@example.com',"
+        + "  username: 'fredbloggs',"
+        + "  firstName: 'Fred',"
+        + "  lastName: 'Bloggs',"
         + "  publicity: 30,"
         + "  moder: false,"
         + "  admin: false"
