@@ -30,10 +30,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -284,8 +285,8 @@ public class UserControllerTest {
   public void getPosts() throws JSONException {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -305,8 +306,8 @@ public class UserControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'post body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "comments: 0,"
         + "author: {"
         + "  id: 1,"

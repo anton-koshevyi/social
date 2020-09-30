@@ -16,6 +16,7 @@ import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.CommentRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
@@ -39,8 +40,8 @@ public class CommentServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.PRIVATE);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     User author = ModelFactoryProducer.getFactory(User.class)
@@ -60,13 +61,13 @@ public class CommentServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.INTERNAL);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     User author = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.FRED_BLOGGS)
-        .setId(1L);
+        .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
@@ -82,8 +83,8 @@ public class CommentServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L)
         .setPublicity(Publicity.PRIVATE);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -94,8 +95,8 @@ public class CommentServiceTest {
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactoryProducer.getFactory(Post.class)
+                .createModel(PostType.READING)
                 .setId(1L)
                 .setAuthor(ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)
@@ -118,8 +119,8 @@ public class CommentServiceTest {
         .setId(2L)
         .setFriends(Sets.newHashSet(postAuthor));
     postAuthor.setFriends(Sets.newHashSet(author));
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -130,8 +131,8 @@ public class CommentServiceTest {
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactoryProducer.getFactory(Post.class)
+                .createModel(PostType.READING)
                 .setId(1L)
                 .setAuthor(ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)
@@ -153,8 +154,8 @@ public class CommentServiceTest {
     User author = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -165,8 +166,8 @@ public class CommentServiceTest {
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactoryProducer.getFactory(Post.class)
+                .createModel(PostType.READING)
                 .setId(1L)
                 .setAuthor(ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)
@@ -197,8 +198,8 @@ public class CommentServiceTest {
     User postAuthor = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -214,8 +215,8 @@ public class CommentServiceTest {
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactoryProducer.getFactory(Post.class)
+                .createModel(PostType.READING)
                 .setId(1L)
                 .setAuthor(ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)
@@ -245,8 +246,8 @@ public class CommentServiceTest {
     User postAuthor = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -267,8 +268,8 @@ public class CommentServiceTest {
     User postAuthor = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Post post = TestEntity
-        .post()
+    Post post = ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
@@ -282,8 +283,8 @@ public class CommentServiceTest {
         .usingComparatorForType(ComparatorFactory.getComparator(Comment.class), Comment.class)
         .containsExactly((Comment) TestEntity
             .comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactoryProducer.getFactory(Post.class)
+                .createModel(PostType.READING)
                 .setId(1L)
                 .setAuthor(ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)

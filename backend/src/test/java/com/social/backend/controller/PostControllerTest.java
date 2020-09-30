@@ -31,8 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -69,8 +69,8 @@ public class PostControllerTest {
   public void getAll() throws JSONException {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -90,8 +90,8 @@ public class PostControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'post body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "comments: 0,"
         + "author: {"
         + "  id: 1,"
@@ -161,8 +161,8 @@ public class PostControllerTest {
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"title\": \"title\","
-            + "\"body\": \"body\""
+            + "\"title\": \"Favorite books\","
+            + "\"body\": \"My personal must-read fiction\""
             + "}")
         .post("/posts")
         .then()
@@ -173,8 +173,8 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -197,8 +197,8 @@ public class PostControllerTest {
   public void get() throws JSONException {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -215,8 +215,8 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'post body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
         + "  username: 'johnsmith',"
@@ -239,9 +239,8 @@ public class PostControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(new Post()
-        .setTitle("title")
-        .setBody("body")
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.COOKING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -280,9 +279,8 @@ public class PostControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(new Post()
-        .setTitle("title")
-        .setBody("body")
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.COOKING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -293,8 +291,8 @@ public class PostControllerTest {
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"title\": \"new title\","
-            + "\"body\": \"new body\""
+            + "\"title\": \"Favorite books\","
+            + "\"body\": \"My personal must-read fiction\""
             + "}")
         .when()
         .patch("/posts/{id}", 1)
@@ -307,8 +305,8 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "title: 'new title',"
-        + "body: 'new body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -333,8 +331,8 @@ public class PostControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 

@@ -34,6 +34,7 @@ import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -70,8 +71,8 @@ public class CommentControllerTest {
   public void getAll() throws JSONException {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH));
-    Post post = entityManager.persist(TestEntity
-        .post()
+    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     entityManager.persist((Comment) TestEntity
         .comment()
@@ -108,8 +109,8 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
-        + "  title: 'title',"
-        + "  body: 'post body',"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
         + "  comments: 1,"
         + "  author: {"
         + "    id: 1,"
@@ -133,8 +134,8 @@ public class CommentControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -173,8 +174,8 @@ public class CommentControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .post()
+    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
 
@@ -209,8 +210,8 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
-        + "  title: 'title',"
-        + "  body: 'post body',"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
         + "  comments: 1,"
         + "  author: {"
         + "    id: 1,"
@@ -235,8 +236,8 @@ public class CommentControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(TestEntity
-        .post()
+    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     entityManager.persist((Comment) new Comment()
         .setPost(post)
@@ -279,8 +280,8 @@ public class CommentControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(TestEntity
-        .post()
+    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     entityManager.persist((Comment) new Comment()
         .setPost(post)
@@ -320,8 +321,8 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
-        + "  title: 'title',"
-        + "  body: 'post body',"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
         + "  comments: 1,"
         + "  author: {"
         + "    id: 1,"
@@ -347,8 +348,8 @@ public class CommentControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(TestEntity
-        .post()
+    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+        .createModel(PostType.READING)
         .setAuthor(author));
     entityManager.persist((Comment) TestEntity
         .comment()

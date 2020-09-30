@@ -3,7 +3,9 @@ package com.social.backend.test.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
+import com.social.backend.test.model.post.PostFactory;
 import com.social.backend.test.model.user.UserFactory;
 
 public final class ModelFactoryProducer {
@@ -23,6 +25,10 @@ public final class ModelFactoryProducer {
     if (!typeFactories.containsKey(typeName)) {
       if (User.class.equals(type)) {
         typeFactories.put(typeName, new UserFactory());
+      }
+
+      if (Post.class.equals(type)) {
+        typeFactories.put(typeName, new PostFactory());
       }
     }
 
