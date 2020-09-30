@@ -27,11 +27,11 @@ class ChatComparator implements Comparator<Chat> {
       return commonCompare;
     }
 
-    if ((left instanceof PrivateChat)) {
+    if (left instanceof PrivateChat) {
       return commonCompare;
     }
 
-    if ((left instanceof GroupChat)) {
+    if (left instanceof GroupChat) {
       return compare((GroupChat) left, (GroupChat) right);
     }
 
