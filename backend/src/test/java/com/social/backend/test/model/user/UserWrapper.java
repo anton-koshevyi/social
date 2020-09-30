@@ -6,6 +6,7 @@ abstract class UserWrapper {
 
   private final User model;
 
+  @SuppressWarnings("checkstyle:ParameterNumber")
   UserWrapper(String email,
               String username,
               String firstName,
