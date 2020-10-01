@@ -40,8 +40,7 @@ public class MessageServiceTest {
     Chat chat = TestEntity
         .privateChat()
         .setId(1L)
-        .setMembers(Sets
-            .newHashSet(author));
+        .setMembers(Sets.newHashSet(author));
 
     service.create(chat, author, "body");
 
@@ -51,7 +50,12 @@ public class MessageServiceTest {
         .isEqualTo(new Message()
             .setChat(TestEntity
                 .privateChat()
-                .setId(1L))
+                .setId(1L)
+                .setMembers(Sets.newHashSet(
+                    ModelFactoryProducer.getFactory(User.class)
+                        .createModel(UserType.JOHN_SMITH)
+                        .setId(1L)
+                )))
             .setId(1L)
             .setBody("body")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
@@ -96,7 +100,12 @@ public class MessageServiceTest {
         .isEqualTo(new Message()
             .setChat(TestEntity
                 .privateChat()
-                .setId(1L))
+                .setId(1L)
+                .setMembers(Sets.newHashSet(
+                    ModelFactoryProducer.getFactory(User.class)
+                        .createModel(UserType.JOHN_SMITH)
+                        .setId(1L)
+                )))
             .setId(1L)
             .setBody("new body")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
@@ -161,7 +170,12 @@ public class MessageServiceTest {
             .message()
             .setChat(TestEntity
                 .privateChat()
-                .setId(1L))
+                .setId(1L)
+                .setMembers(Sets.newHashSet(
+                    ModelFactoryProducer.getFactory(User.class)
+                        .createModel(UserType.JOHN_SMITH)
+                        .setId(1L)
+                )))
             .setId(1L)
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
