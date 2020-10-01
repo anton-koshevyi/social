@@ -1,14 +1,11 @@
 package com.social.backend.test.model.post;
 
-import com.social.backend.model.user.User;
-
 class Cooking extends PostWrapper {
 
-  Cooking(User author) {
+  Cooking() {
     super(
         "Cooking of omelet",
-        "How to cook an omelet",
-        author
+        "How to cook an omelet"
     );
   }
 
