@@ -268,9 +268,9 @@ public class UserServiceTest {
     identification.setStrategy(e -> e.setId(2L));
     User target = repository.save(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
+        .setPublicity(Publicity.PUBLIC)
+        .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
-    target.setFriends(Sets.newHashSet(user));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -303,12 +303,13 @@ public class UserServiceTest {
             .createModel(UserType.JOHN_SMITH)
             .setId(1L)
             .setPublicity(Publicity.PRIVATE)
-            .setFriends(Sets
-                .newHashSet(ModelFactoryProducer.getFactory(User.class)
+            .setFriends(Sets.newHashSet(
+                ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
-                    .setPublicity(Publicity.PUBLIC))
-            ));
+                    .setPublicity(Publicity.PUBLIC)
+            ))
+        );
     Assertions
         .assertThat(repository.findById(2L))
         .get()
@@ -320,12 +321,13 @@ public class UserServiceTest {
             .createModel(UserType.FRED_BLOGGS)
             .setId(2L)
             .setPublicity(Publicity.PUBLIC)
-            .setFriends(Sets
-                .newHashSet(ModelFactoryProducer.getFactory(User.class)
+            .setFriends(Sets.newHashSet(
+                ModelFactoryProducer.getFactory(User.class)
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setPublicity(Publicity.PRIVATE))
-            ));
+                    .setPublicity(Publicity.PRIVATE)
+            ))
+        );
   }
 
   @Test
@@ -381,9 +383,9 @@ public class UserServiceTest {
         .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
     User target = repository.save(ModelFactoryProducer.getFactory(User.class)
-        .createModel(UserType.FRED_BLOGGS));
+        .createModel(UserType.FRED_BLOGGS)
+        .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
-    target.setFriends(Sets.newHashSet(user));
 
     service.removeFriend(1L, 2L);
 
@@ -416,9 +418,9 @@ public class UserServiceTest {
         .createModel(UserType.JOHN_SMITH));
     identification.setStrategy(e -> e.setId(2L));
     User target = repository.save(ModelFactoryProducer.getFactory(User.class)
-        .createModel(UserType.FRED_BLOGGS));
+        .createModel(UserType.FRED_BLOGGS)
+        .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
-    target.setFriends(Sets.newHashSet(user));
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
@@ -469,7 +471,8 @@ public class UserServiceTest {
                 .setId(1L),
             ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.FRED_BLOGGS)
-                .setId(2L));
+                .setId(2L)
+        );
   }
 
 }
