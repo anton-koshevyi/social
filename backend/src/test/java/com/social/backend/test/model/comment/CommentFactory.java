@@ -1,10 +1,10 @@
 package com.social.backend.test.model.comment;
 
 import com.social.backend.model.post.Comment;
-import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.AbstractFactory;
 import com.social.backend.test.model.ModelType;
 
-public class CommentFactory extends ModelFactory<Comment> {
+public class CommentFactory extends AbstractFactory<Comment> {
 
   @Override
   public Comment createModel(ModelType<Comment> type) {

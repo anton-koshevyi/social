@@ -1,10 +1,10 @@
 package com.social.backend.test.model.post;
 
 import com.social.backend.model.post.Post;
-import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.AbstractFactory;
 import com.social.backend.test.model.ModelType;
 
-public class PostFactory extends ModelFactory<Post> {
+public class PostFactory extends AbstractFactory<Post> {
 
   @Override
   public Post createModel(ModelType<Post> type) {

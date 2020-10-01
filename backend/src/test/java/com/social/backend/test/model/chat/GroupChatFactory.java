@@ -1,10 +1,10 @@
 package com.social.backend.test.model.chat;
 
 import com.social.backend.model.chat.GroupChat;
-import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.AbstractFactory;
 import com.social.backend.test.model.ModelType;
 
-public class GroupChatFactory extends ModelFactory<GroupChat> {
+public class GroupChatFactory extends AbstractFactory<GroupChat> {
 
   @Override
   public GroupChat createModel(ModelType<GroupChat> type) {

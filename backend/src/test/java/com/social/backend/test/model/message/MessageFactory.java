@@ -1,10 +1,10 @@
 package com.social.backend.test.model.message;
 
 import com.social.backend.model.chat.Message;
-import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.AbstractFactory;
 import com.social.backend.test.model.ModelType;
 
-public class MessageFactory extends ModelFactory<Message> {
+public class MessageFactory extends AbstractFactory<Message> {
 
   @Override
   public Message createModel(ModelType<Message> type) {

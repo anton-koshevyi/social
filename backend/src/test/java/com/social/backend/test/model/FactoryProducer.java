@@ -16,14 +16,14 @@ import com.social.backend.test.model.message.MessageFactory;
 import com.social.backend.test.model.post.PostFactory;
 import com.social.backend.test.model.user.UserFactory;
 
-public final class ModelFactoryProducer {
+final class FactoryProducer {
 
-  private static final Map<String, ModelFactory<?>> typeFactories = new HashMap<>();
+  private static final Map<String, AbstractFactory<?>> typeFactories = new HashMap<>();
 
-  private ModelFactoryProducer() {
+  private FactoryProducer() {
   }
 
-  public static <T> ModelFactory<T> getFactory(Class<T> type) {
+  static <T> AbstractFactory<T> getFactory(Class<T> type) {
     String typeName = type.getName();
 
     if (!typeFactories.containsKey(typeName)) {
@@ -52,7 +52,7 @@ public final class ModelFactoryProducer {
       }
     }
 
-    return (ModelFactory<T>) typeFactories.get(typeName);
+    return (AbstractFactory<T>) typeFactories.get(typeName);
   }
 
 }

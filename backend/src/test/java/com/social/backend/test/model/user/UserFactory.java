@@ -1,10 +1,10 @@
 package com.social.backend.test.model.user;
 
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.AbstractFactory;
 import com.social.backend.test.model.ModelType;
 
-public class UserFactory extends ModelFactory<User> {
+public class UserFactory extends AbstractFactory<User> {
 
   @Override
   public User createModel(ModelType<User> type) {
