@@ -11,7 +11,7 @@ abstract class ReplyComparator<T extends Reply> implements Comparator<T> {
 
   private final Comparator<User> userComparator;
 
-  ReplyComparator(Comparator<User> userComparator) {
+  protected ReplyComparator(Comparator<User> userComparator) {
     this.userComparator = userComparator;
   }
 
