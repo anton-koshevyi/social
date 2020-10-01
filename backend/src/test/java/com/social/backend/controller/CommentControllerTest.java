@@ -1,86 +1,108 @@
 package com.social.backend.controller;
 
+import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;
 
-import io.restassured.RestAssured;
-import io.restassured.authentication.FormAuthConfig;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import org.assertj.core.api.Assertions;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
+import com.social.backend.repository.CommentRepository;
+import com.social.backend.repository.PostRepository;
+import com.social.backend.repository.UserRepository;
+import com.social.backend.service.CommentServiceImpl;
+import com.social.backend.service.PostServiceImpl;
+import com.social.backend.service.UserServiceImpl;
+import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
+import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.stub.PasswordEncoderStub;
+import com.social.backend.test.stub.repository.CommentRepositoryStub;
+import com.social.backend.test.stub.repository.PostRepositoryStub;
+import com.social.backend.test.stub.repository.UserRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-@Commit
-@Transactional
-@AutoConfigureTestEntityManager
 public class CommentControllerTest {
 
-  private static final FormAuthConfig AUTH_FORM =
-      new FormAuthConfig("/auth", "username", "password");
-
-  @LocalServerPort
-  private int port;
-
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-
-  @Autowired
-  private TestEntityManager entityManager;
-
-  @BeforeAll
-  public static void beforeAll() {
-    RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-  }
+  private IdentificationContext<User> userIdentification;
+  private IdentificationContext<Post> postIdentification;
+  private IdentificationContext<Comment> commentIdentification;
+  private UserRepository userRepository;
+  private PostRepository postRepository;
+  private CommentRepository commentRepository;
 
   @BeforeEach
   public void setUp() {
-    RestAssured.port = port;
+    userIdentification = new IdentificationContext<>();
+    postIdentification = new IdentificationContext<>();
+    commentIdentification = new IdentificationContext<>();
+    userRepository = new UserRepositoryStub(userIdentification);
+    postRepository = new PostRepositoryStub(postIdentification);
+    commentRepository = new CommentRepositoryStub(commentIdentification);
+
+    GenericApplicationContext appContext = new GenericApplicationContext();
+    appContext.registerBean(PasswordEncoderStub.class);
+    appContext.registerBean(UserRepository.class, () -> userRepository);
+    appContext.registerBean(PostRepository.class, () -> postRepository);
+    appContext.registerBean(CommentRepository.class, () -> commentRepository);
+    appContext.registerBean(UserServiceImpl.class);
+    appContext.registerBean(PostServiceImpl.class);
+    appContext.registerBean(CommentServiceImpl.class);
+    appContext.refresh();
+
+    AnnotationConfigWebApplicationContext webContext =
+        new AnnotationConfigWebApplicationContext();
+    webContext.setParent(appContext);
+    webContext.addBeanFactoryPostProcessor(new LazyInitBeanFactoryPostProcessor());
+    webContext.setServletContext(new MockServletContext());
+    webContext.register(TestConfig.class);
+    webContext.register(CommentController.class);
+    webContext.refresh();
+
+    RestAssuredMockMvc.mockMvc(MockMvcBuilders
+        .webAppContextSetup(webContext)
+        .alwaysDo(MockMvcResultHandlers.log())
+        .build());
   }
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(ModelFactory
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    Post post = entityManager.persist(ModelFactory
+    postIdentification.setStrategy(e -> e.setId(1L));
+    Post post = postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactory
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    commentRepository.save((Comment) ModelFactory
         .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
-    TestTransaction.end();
 
-    String response = RestAssured
+    String response = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
         .when()
@@ -96,9 +118,11 @@ public class CommentControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "updatedAt: null,"
         + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
+        + "  email: null,"
         + "  username: 'johnsmith',"
         + "  firstName: 'John',"
         + "  lastName: 'Smith',"
@@ -109,11 +133,13 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
+        + "  updatedAt: null,"
         + "  title: 'Favorite books',"
         + "  body: 'My personal must-read fiction',"
-        + "  comments: 1,"
+        + "  comments: (customized),"
         + "  author: {"
         + "    id: 1,"
+        + "    email: null,"
         + "    username: 'johnsmith',"
         + "    firstName: 'John',"
         + "    lastName: 'Smith',"
@@ -125,64 +151,52 @@ public class CommentControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.createdAt", (act, exp) -> act != null)
+            new Customization("**.createdAt", (act, exp) -> act != null),
+            new Customization("[*].post.comments", (act, exp) -> true)
         ));
   }
 
   @Test
-  public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactory
+  public void create_whenInvalidBody_expectException() {
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    TestTransaction.end();
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    RestAssuredMockMvc
         .given()
-        .auth()
-        .form("johnsmith", "password", AUTH_FORM)
-        .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
         .when()
         .post("/posts/{postId}/comments", 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "timestamp: (customized),"
-        + "status: 400,"
-        + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
-        + "errors: {"
-        + "  'body': ['must not be null']"
-        + "},"
-        + "path: '/posts/1/comments'"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> act != null)
-        ));
+        .expect(result -> Assertions
+            .assertThat(result.getResolvedException())
+            .isExactlyInstanceOf(MethodArgumentNotValidException.class));
   }
 
   @Test
   public void create() throws JSONException {
-    User author = entityManager.persist(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactory
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    TestTransaction.end();
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    String actual = RestAssuredMockMvc
         .given()
-        .auth()
-        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"Like\" }")
@@ -196,6 +210,7 @@ public class CommentControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
+        + "updatedAt: null,"
         + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
@@ -210,9 +225,10 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
+        + "  updatedAt: null,"
         + "  title: 'Favorite books',"
         + "  body: 'My personal must-read fiction',"
-        + "  comments: 1,"
+        + "  comments: (customized),"
         + "  author: {"
         + "    id: 1,"
         + "    email: 'johnsmith@example.com',"
@@ -227,72 +243,60 @@ public class CommentControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("**.createdAt", (act, exp) -> act != null)
+            new Customization("**.createdAt", (act, exp) -> act != null),
+            new Customization("post.comments", (act, exp) -> true)
         ));
   }
 
   @Test
-  public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactory
+  public void update_whenInvalidBody_expectException() {
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    Post post = postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactory
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    commentRepository.save((Comment) ModelFactory
         .createModel(CommentType.BADLY)
         .setPost(post)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    RestAssuredMockMvc
         .given()
-        .auth()
-        .form("johnsmith", "password", AUTH_FORM)
-        .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
         .when()
         .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "timestamp: (customized),"
-        + "status: 400,"
-        + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
-        + "errors: {"
-        + "  'body': ['size must be between 1 and 250']"
-        + "},"
-        + "path: '/posts/1/comments/1'"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> act != null)
-        ));
+        .expect(result -> Assertions
+            .assertThat(result.getResolvedException())
+            .isExactlyInstanceOf(MethodArgumentNotValidException.class));
   }
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactory
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    Post post = postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactory
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    commentRepository.save((Comment) ModelFactory
         .createModel(CommentType.BADLY)
         .setPost(post)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    String actual = RestAssuredMockMvc
         .given()
-        .auth()
-        .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"Like\" }")
@@ -321,9 +325,10 @@ public class CommentControllerTest {
         + "post: {"
         + "  id: 1,"
         + "  createdAt: (customized),"
+        + "  updatedAt: null,"
         + "  title: 'Favorite books',"
         + "  body: 'My personal must-read fiction',"
-        + "  comments: 1,"
+        + "  comments: (customized),"
         + "  author: {"
         + "    id: 1,"
         + "    email: 'johnsmith@example.com',"
@@ -339,32 +344,38 @@ public class CommentControllerTest {
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
             new Customization("**.createdAt", (act, exp) -> act != null),
-            new Customization("updatedAt", (act, exp) -> act != null)
+            new Customization("updatedAt", (act, exp) -> act != null),
+            new Customization("post.comments", (act, exp) -> true)
         ));
   }
 
   @Test
   public void delete() {
-    User author = entityManager.persist(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactory
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    Post post = postRepository.save(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactory
+    commentIdentification.setStrategy(e -> e.setId(1L));
+    commentRepository.save((Comment) ModelFactory
         .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    RestAssured
-        .given()
-        .auth()
-        .form("johnsmith", "password", AUTH_FORM)
-        .when()
+    RestAssuredMockMvc
         .delete("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+  }
+
+
+  @EnableWebMvc
+  @EnableSpringDataWebSupport
+  private static class TestConfig {
   }
 
 }
