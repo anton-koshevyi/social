@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.Message;
+import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
@@ -19,10 +21,6 @@ public final class ComparatorFactory {
 
   @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
   public static <T> Comparator<T> getComparator(Class<T> type) {
-    if (type == null) {
-      return null;
-    }
-
     String typeName = type.getName();
 
     if (!typeComparators.containsKey(typeName)) {
@@ -36,23 +34,34 @@ public final class ComparatorFactory {
         ));
       }
 
-      if (Message.class.equals(type)) {
-        typeComparators.put(typeName, new MessageComparator(
-            ComparatorFactory.getComparator(User.class),
-            ComparatorFactory.getComparator(Chat.class)
-        ));
-      }
-
-      if (Chat.class.isAssignableFrom(type)) {
-        typeComparators.put(typeName, new ChatComparator(
-            ComparatorFactory.getComparator(User.class)
-        ));
-      }
-
       if (Comment.class.equals(type)) {
         typeComparators.put(typeName, new CommentComparator(
             ComparatorFactory.getComparator(User.class),
             ComparatorFactory.getComparator(Post.class)
+        ));
+      }
+
+      if (Chat.class.isAssignableFrom(type)) {
+        if (PrivateChat.class.equals(type)) {
+          typeComparators.put(typeName, new ChatPrivateComparator(
+              ComparatorFactory.getComparator(User.class)
+          ));
+        } else if (GroupChat.class.equals(type)) {
+          typeComparators.put(typeName, new ChatGroupComparator(
+              ComparatorFactory.getComparator(User.class)
+          ));
+        } else {
+          typeComparators.put(typeName, new ChatCompositeComparator(
+              ComparatorFactory.getComparator(PrivateChat.class),
+              ComparatorFactory.getComparator(GroupChat.class)
+          ));
+        }
+      }
+
+      if (Message.class.equals(type)) {
+        typeComparators.put(typeName, new MessageComparator(
+            ComparatorFactory.getComparator(User.class),
+            ComparatorFactory.getComparator(Chat.class)
         ));
       }
     }

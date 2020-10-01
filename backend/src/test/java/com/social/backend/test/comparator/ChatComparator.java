@@ -1,47 +1,26 @@
 package com.social.backend.test.comparator;
 
 import java.util.Comparator;
+import java.util.Set;
 
 import com.google.common.collect.ComparisonChain;
 
 import com.social.backend.model.chat.Chat;
-import com.social.backend.model.chat.GroupChat;
-import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
 
-class ChatComparator implements Comparator<Chat> {
+abstract class ChatComparator<T extends Chat> implements Comparator<T> {
 
-  private final Comparator<User> userComparator;
+  private final Comparator<Set<User>> membersComparator;
 
-  ChatComparator(Comparator<User> userComparator) {
-    this.userComparator = userComparator;
+  protected ChatComparator(Comparator<User> userComparator) {
+    this.membersComparator = new CollectionComparatorAdapter<>(userComparator);
   }
 
   @Override
-  public int compare(Chat left, Chat right) {
-    int commonCompare = ComparisonChain.start()
-        .compare(left.getId(), right.getId())
-        .result();
-
-    if (commonCompare != 0) {
-      return commonCompare;
-    }
-
-    if (left instanceof PrivateChat) {
-      return commonCompare;
-    }
-
-    if (left instanceof GroupChat) {
-      return compare((GroupChat) left, (GroupChat) right);
-    }
-
-    throw new IllegalStateException("Unsupported chat type");
-  }
-
-  private int compare(GroupChat left, GroupChat right) {
+  public int compare(T left, T right) {
     return ComparisonChain.start()
-        .compare(left.getName(), right.getName())
-        .compare(left.getOwner(), right.getOwner(), userComparator)
+        .compare(left.getId(), right.getId())
+        .compare(left.getMembers(), right.getMembers(), membersComparator)
         .result();
   }
 
