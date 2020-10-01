@@ -17,6 +17,7 @@ dependencies {
 
   // Common
   implementation("com.google.guava:guava:29.0-jre")
+  implementation("org.apache.commons:commons-collections4:4.4")
   implementation("org.apache.commons:commons-lang3:3.9")
   implementation("org.mapstruct:mapstruct:1.3.1.Final")
   annotationProcessor("org.mapstruct:mapstruct-processor:1.3.1.Final")
