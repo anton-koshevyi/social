@@ -32,8 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
@@ -74,8 +74,8 @@ public class CommentControllerTest {
     Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) TestEntity
-        .comment()
+    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
     TestTransaction.end();
@@ -96,7 +96,7 @@ public class CommentControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "body: 'comment body',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
         + "  username: 'johnsmith',"
@@ -185,7 +185,7 @@ public class CommentControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"comment body\"}")
+        .body("{ \"body\": \"Like\"}")
         .when()
         .post("/posts/{postId}/comments", 1)
         .then()
@@ -196,7 +196,7 @@ public class CommentControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "body: 'comment body',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -239,9 +239,9 @@ public class CommentControllerTest {
     Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) new Comment()
+    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.BADLY)
         .setPost(post)
-        .setBody("body")
         .setAuthor(author));
     TestTransaction.end();
 
@@ -283,9 +283,9 @@ public class CommentControllerTest {
     Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) new Comment()
+    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.BADLY)
         .setPost(post)
-        .setBody("body")
         .setAuthor(author));
     TestTransaction.end();
 
@@ -295,7 +295,7 @@ public class CommentControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"new body\" }")
+        .body("{ \"body\": \"Like\" }")
         .when()
         .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()
@@ -307,7 +307,7 @@ public class CommentControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "body: 'new body',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -351,8 +351,8 @@ public class CommentControllerTest {
     Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) TestEntity
-        .comment()
+    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
     TestTransaction.end();

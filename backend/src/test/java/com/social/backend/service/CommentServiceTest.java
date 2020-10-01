@@ -12,10 +12,10 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.CommentRepositoryStub;
@@ -50,7 +50,7 @@ public class CommentServiceTest {
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> service.create(post, author, "body"))
+        .assertThatThrownBy(() -> service.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
   }
@@ -71,7 +71,7 @@ public class CommentServiceTest {
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> service.create(post, author, "body"))
+        .assertThatThrownBy(() -> service.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.comment.internalPost"});
@@ -89,7 +89,7 @@ public class CommentServiceTest {
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
 
-    service.create(post, postAuthor, "body");
+    service.create(post, postAuthor, "Like");
 
     Assertions
         .assertThat(repository.find(1L))
@@ -102,7 +102,7 @@ public class CommentServiceTest {
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setBody("body")
+            .setBody("Like")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
@@ -125,7 +125,7 @@ public class CommentServiceTest {
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
 
-    service.create(post, author, "body");
+    service.create(post, author, "Like");
 
     Assertions
         .assertThat(repository.find(1L))
@@ -139,7 +139,7 @@ public class CommentServiceTest {
                     .setId(1L)
                     .setPublicity(Publicity.INTERNAL)))
             .setId(1L)
-            .setBody("body")
+            .setBody("Like")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.FRED_BLOGGS)
                 .setId(2L)));
@@ -160,7 +160,7 @@ public class CommentServiceTest {
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
 
-    service.create(post, author, "body");
+    service.create(post, author, "Like");
 
     Assertions
         .assertThat(repository.find(1L))
@@ -174,7 +174,7 @@ public class CommentServiceTest {
                     .setId(1L)
                     .setPublicity(Publicity.PUBLIC)))
             .setId(1L)
-            .setBody("body")
+            .setBody("Like")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.FRED_BLOGGS)
                 .setId(2L)));
@@ -187,7 +187,7 @@ public class CommentServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> service.update(0L, author, "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "Like"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -203,18 +203,19 @@ public class CommentServiceTest {
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) new Comment()
+    repository.save((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.BADLY)
         .setPost(post)
-        .setBody("comment body")
         .setAuthor(postAuthor));
 
-    service.update(1L, postAuthor, "new body");
+    service.update(1L, postAuthor, "Like");
 
     Assertions
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
-        .isEqualTo(new Comment()
+        .isEqualTo(ModelFactoryProducer.getFactory(Comment.class)
+            .createModel(CommentType.BADLY)
             .setPost(ModelFactoryProducer.getFactory(Post.class)
                 .createModel(PostType.READING)
                 .setId(1L)
@@ -222,7 +223,7 @@ public class CommentServiceTest {
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setBody("new body")
+            .setBody("Like")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
@@ -251,8 +252,8 @@ public class CommentServiceTest {
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) TestEntity
-        .comment()
+    repository.save((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(postAuthor));
 
@@ -273,16 +274,16 @@ public class CommentServiceTest {
         .setId(1L)
         .setAuthor(postAuthor);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) TestEntity
-        .comment()
+    repository.save((Comment) ModelFactoryProducer.getFactory(Comment.class)
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(postAuthor));
 
     Assertions
         .assertThat(service.findAll(post, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Comment.class), Comment.class)
-        .containsExactly((Comment) TestEntity
-            .comment()
+        .containsExactly((Comment) ModelFactoryProducer.getFactory(Comment.class)
+            .createModel(CommentType.LIKE)
             .setPost(ModelFactoryProducer.getFactory(Post.class)
                 .createModel(PostType.READING)
                 .setId(1L)
