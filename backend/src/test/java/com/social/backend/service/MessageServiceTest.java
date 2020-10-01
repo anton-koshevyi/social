@@ -11,11 +11,11 @@ import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.ModelFactoryProducer;
 import com.social.backend.test.model.chat.PrivateChatType;
+import com.social.backend.test.model.message.MessageType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.MessageRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
@@ -44,7 +44,7 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
 
-    service.create(chat, author, "body");
+    service.create(chat, author, "How are you?");
 
     Assertions
         .assertThat(repository.find(1L))
@@ -59,7 +59,7 @@ public class MessageServiceTest {
                         .setId(1L)
                 )))
             .setId(1L)
-            .setBody("body")
+            .setBody("How are you?")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
@@ -72,7 +72,7 @@ public class MessageServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> service.update(0L, author, "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "How are you?"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -88,18 +88,19 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) new Message()
+    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.MEETING)
         .setChat(chat)
-        .setBody("message body")
         .setAuthor(author));
 
-    service.update(1L, author, "new body");
+    service.update(1L, author, "How are you?");
 
     Assertions
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
-        .isEqualTo(new Message()
+        .isEqualTo(ModelFactoryProducer.getFactory(Message.class)
+            .createModel(MessageType.MEETING)
             .setChat(ModelFactoryProducer.getFactory(PrivateChat.class)
                 .createModel(PrivateChatType.RAW)
                 .setId(1L)
@@ -109,7 +110,7 @@ public class MessageServiceTest {
                         .setId(1L)
                 )))
             .setId(1L)
-            .setBody("new body")
+            .setBody("How are you?")
             .setAuthor(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
@@ -138,8 +139,8 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) TestEntity
-        .message()
+    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
 
@@ -160,16 +161,16 @@ public class MessageServiceTest {
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) TestEntity
-        .message()
+    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
 
     Assertions
         .assertThat(service.findAll(chat, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Message.class), Message.class)
-        .containsExactly((Message) TestEntity
-            .message()
+        .containsExactly((Message) ModelFactoryProducer.getFactory(Message.class)
+            .createModel(MessageType.WHATS_UP)
             .setChat(ModelFactoryProducer.getFactory(PrivateChat.class)
                 .createModel(PrivateChatType.RAW)
                 .setId(1L)

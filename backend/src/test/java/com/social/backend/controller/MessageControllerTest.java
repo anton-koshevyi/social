@@ -34,9 +34,9 @@ import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
 import com.social.backend.test.model.chat.PrivateChatType;
+import com.social.backend.test.model.message.MessageType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -77,8 +77,8 @@ public class MessageControllerTest {
     Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) TestEntity
-        .message()
+    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
     TestTransaction.end();
@@ -100,7 +100,7 @@ public class MessageControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "body: 'message body',"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -179,8 +179,7 @@ public class MessageControllerTest {
         .setPassword(passwordEncoder.encode("password")));
     entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
         .createModel(PrivateChatType.RAW)
-        .setMembers(Sets
-            .newHashSet(author)));
+        .setMembers(Sets.newHashSet(author)));
     TestTransaction.end();
 
     String actual = RestAssured
@@ -189,7 +188,7 @@ public class MessageControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"body\" }")
+        .body("{ \"body\": \"How are you?\" }")
         .when()
         .post("/chats/{chatId}/messages", 1)
         .then()
@@ -200,7 +199,7 @@ public class MessageControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "body: 'body',"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -240,9 +239,9 @@ public class MessageControllerTest {
     Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) new Message()
+    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.MEETING)
         .setChat(chat)
-        .setBody("body")
         .setAuthor(author));
     TestTransaction.end();
 
@@ -284,9 +283,9 @@ public class MessageControllerTest {
     Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) new Message()
+    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.MEETING)
         .setChat(chat)
-        .setBody("body")
         .setAuthor(author));
     TestTransaction.end();
 
@@ -296,7 +295,7 @@ public class MessageControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"new body\" }")
+        .body("{ \"body\": \"How are you?\" }")
         .when()
         .patch("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
@@ -308,7 +307,7 @@ public class MessageControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "body: 'new body',"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -349,8 +348,8 @@ public class MessageControllerTest {
     Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) TestEntity
-        .message()
+    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+        .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
     TestTransaction.end();
