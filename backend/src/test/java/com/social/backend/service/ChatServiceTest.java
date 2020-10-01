@@ -88,7 +88,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createPrivate(johnSmith, fredBloggs))
-        .usingComparator(ComparatorFactory.getComparator(Chat.class))
+        .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets.newHashSet(
@@ -116,7 +116,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createPrivate(johnSmith, fredBloggs))
-        .usingComparator(ComparatorFactory.getComparator(Chat.class))
+        .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets.newHashSet(
@@ -200,9 +200,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createGroup(owner, "name", ImmutableSet.of(member)))
-        .usingRecursiveComparison()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
             .setName("name")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -234,9 +232,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.createGroup(owner, "name", ImmutableSet.of(member)))
-        .usingRecursiveComparison()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
             .setName("name")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -280,13 +276,19 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.updateGroup(1L, member, "new name"))
-        .usingComparator(ComparatorFactory.getComparator(Chat.class))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
             .setName("new name")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
-            .setId(1L));
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
   @Test
@@ -364,10 +366,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -403,10 +402,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -441,9 +437,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -512,9 +506,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.changeOwner(1L, owner, newOwner))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -581,9 +573,8 @@ public class ChatServiceTest {
     service.leaveGroup(1L, member);
 
     Assertions
-        .assertThat(repository.find(1L))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
+        .assertThat((GroupChat) repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
@@ -684,24 +675,30 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
     repository.save(TestEntity
         .groupChat()
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+        .setOwner(member)
+        .setMembers(Sets.newHashSet(member)));
 
     Assertions
-        .assertThat(service.find(1L, owner))
+        .assertThat(service.find(1L, member))
         .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(TestEntity
             .groupChat()
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
-            .setId(1L));
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
   @Test
@@ -723,7 +720,13 @@ public class ChatServiceTest {
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
-            .setId(1L));
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactoryProducer.getFactory(User.class)
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
 }
