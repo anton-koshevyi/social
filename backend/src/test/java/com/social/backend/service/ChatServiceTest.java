@@ -17,6 +17,7 @@ import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.ChatRepositoryStub;
 import com.social.backend.test.stub.repository.identification.IdentificationContext;
@@ -154,8 +155,8 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .privateChat()
+    repository.save(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
 
     service.deletePrivate(1L, johnSmith);

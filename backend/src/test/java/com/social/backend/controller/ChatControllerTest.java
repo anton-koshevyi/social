@@ -31,10 +31,12 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.model.chat.GroupChat;
+import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -204,10 +206,9 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(member)));
+    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     RestAssured

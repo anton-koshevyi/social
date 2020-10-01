@@ -32,9 +32,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
+import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
 import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -72,10 +74,9 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(author)));
+    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(author)));
     entityManager.persist((Message) TestEntity
         .message()
         .setChat(chat)
@@ -136,10 +137,9 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(author)));
+    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(author)));
     TestTransaction.end();
 
     String actual = RestAssured
@@ -177,8 +177,8 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .privateChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
         .setMembers(Sets
             .newHashSet(author)));
     TestTransaction.end();
@@ -237,10 +237,9 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(author)));
+    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(author)));
     entityManager.persist((Message) new Message()
         .setChat(chat)
         .setBody("body")
@@ -282,10 +281,9 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(author)));
+    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(author)));
     entityManager.persist((Message) new Message()
         .setChat(chat)
         .setBody("body")
@@ -348,8 +346,8 @@ public class MessageControllerTest {
     User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(TestEntity
-        .privateChat()
+    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+        .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
     entityManager.persist((Message) TestEntity
         .message()
