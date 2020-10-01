@@ -3,8 +3,8 @@
     "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
     "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 <suppressions>
-    <suppress files="src/test/.*Test.java"
-              checks="FinalClass|MagicNumber|MethodName"/>
-    <suppress files="util/.*.java"
-              checks="CyclomaticComplexity|JavaNCSS|MagicNumber"/>
+  <suppress files="src/test/.*Test.java"
+            checks="CyclomaticComplexity|FinalClass|JavaNCSS|MagicNumber|MethodName"/>
+  <suppress files="util/.*.java"
+            checks="CyclomaticComplexity|JavaNCSS|MagicNumber"/>
 </suppressions>
