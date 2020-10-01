@@ -14,9 +14,9 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.chat.GroupChatType;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.ChatRepositoryStub;
@@ -179,7 +179,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThatThrownBy(() ->
-            service.createGroup(owner, "name", ImmutableSet.of(member)))
+            service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.addNotFriend"})
@@ -200,10 +200,10 @@ public class ChatServiceTest {
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(service.createGroup(owner, "name", ImmutableSet.of(member)))
+        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
-            .setName("name")
+            .setName("Classmates")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -232,10 +232,10 @@ public class ChatServiceTest {
     identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(service.createGroup(owner, "name", ImmutableSet.of(member)))
+        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
-            .setName("name")
+            .setName("Classmates")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -271,15 +271,17 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity.groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.SCIENTISTS)
         .setOwner(member))
         .setMembers(Sets.newHashSet(member));
 
     Assertions
-        .assertThat(service.updateGroup(1L, member, "new name"))
+        .assertThat(service.updateGroup(1L, member, "Classmates"))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(new GroupChat()
-            .setName("new name")
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.SCIENTISTS)
+            .setName("Classmates")
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -311,8 +313,8 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
@@ -334,8 +336,8 @@ public class ChatServiceTest {
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
@@ -360,16 +362,16 @@ public class ChatServiceTest {
         .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(newMember));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -396,16 +398,16 @@ public class ChatServiceTest {
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -431,16 +433,16 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -478,8 +480,8 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
@@ -500,16 +502,16 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, newOwner)));
 
     Assertions
         .assertThat(service.changeOwner(1L, owner, newOwner))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.FRED_BLOGGS)
                 .setId(2L))
@@ -544,8 +546,8 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
@@ -566,8 +568,8 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
 
@@ -576,8 +578,8 @@ public class ChatServiceTest {
     Assertions
         .assertThat((GroupChat) repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -609,8 +611,8 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
@@ -643,8 +645,8 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
 
@@ -680,16 +682,16 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
 
     Assertions
         .assertThat(service.find(1L, member))
         .usingComparator(ComparatorFactory.getComparator(Chat.class))
-        .isEqualTo(TestEntity
-            .groupChat()
+        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
@@ -708,16 +710,16 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(TestEntity
-        .groupChat()
+    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
 
     Assertions
         .assertThat(service.findAll(owner, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
-        .containsExactly(TestEntity
-            .groupChat()
+        .containsExactly(ModelFactoryProducer.getFactory(GroupChat.class)
+            .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactoryProducer.getFactory(User.class)
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))

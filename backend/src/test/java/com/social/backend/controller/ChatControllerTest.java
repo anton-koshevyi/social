@@ -34,8 +34,8 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
 import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.chat.GroupChatType;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
 
@@ -74,11 +74,10 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     String response = RestAssured
@@ -99,7 +98,7 @@ public class ChatControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'name',"
+        + "name: 'Classmates',"
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
@@ -121,11 +120,10 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     String actual = RestAssured
@@ -143,7 +141,7 @@ public class ChatControllerTest {
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'name',"
+        + "name: 'Classmates',"
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
@@ -165,11 +163,10 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
-        .setMembers(Sets
-            .newHashSet(member)));
+        .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
 
     String response = RestAssured
@@ -280,7 +277,7 @@ public class ChatControllerTest {
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"name\": \"name\","
+            + "\"name\": \"Classmates\","
             + "\"members\": [ 2 ]"
             + "}")
         .when()
@@ -293,7 +290,7 @@ public class ChatControllerTest {
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'name',"
+        + "name: 'Classmates',"
         + "members: 2,"
         + "owner: {"
         + "  id: 1,"
@@ -315,8 +312,8 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
@@ -356,8 +353,8 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(new GroupChat()
-        .setName("name")
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.SCIENTISTS)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
@@ -368,7 +365,7 @@ public class ChatControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"name\": \"new name\"}")
+        .body("{ \"name\": \"Classmates\"}")
         .when()
         .patch("/chats/group/{id}", 1)
         .then()
@@ -379,7 +376,7 @@ public class ChatControllerTest {
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'new name',"
+        + "name: 'Classmates',"
         + "members: 1,"
         + "owner: {"
         + "  id: 1,"
@@ -403,8 +400,8 @@ public class ChatControllerTest {
     User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(fredBloggs)
         .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
     TestTransaction.end();
@@ -424,8 +421,8 @@ public class ChatControllerTest {
     User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
@@ -448,8 +445,8 @@ public class ChatControllerTest {
     entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
     TestTransaction.end();
@@ -492,8 +489,8 @@ public class ChatControllerTest {
     entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
     TestTransaction.end();
@@ -515,7 +512,7 @@ public class ChatControllerTest {
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'name',"
+        + "name: 'Classmates',"
         + "members: 2,"
         + "owner: {"
         + "  id: 1,"
@@ -539,8 +536,8 @@ public class ChatControllerTest {
         .setPassword(passwordEncoder.encode("password")));
     User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(TestEntity
-        .groupChat()
+    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(fredBloggs)
         .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
     TestTransaction.end();
@@ -560,7 +557,7 @@ public class ChatControllerTest {
     String expected = "{"
         + "id: 1,"
         + "type: 'group',"
-        + "name: 'name',"
+        + "name: 'Classmates',"
         + "members: 2,"
         + "owner: {"
         + "  id: 2,"
