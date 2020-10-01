@@ -4,4 +4,6 @@ public interface ModelType<T> {
 
   String name();
 
+  Class<T> modelClass();
+
 }

@@ -7,6 +7,11 @@ public enum GroupChatType implements ModelType<GroupChat> {
 
   CLASSMATES,
   PARENTS,
-  SCIENTISTS
+  SCIENTISTS;
+
+  @Override
+  public Class<GroupChat> modelClass() {
+    return GroupChat.class;
+  }
 
 }

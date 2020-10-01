@@ -7,6 +7,11 @@ public enum PostType implements ModelType<Post> {
 
   COOKING,
   GAMING,
-  READING
+  READING;
+
+  @Override
+  public Class<Post> modelClass() {
+    return Post.class;
+  }
 
 }

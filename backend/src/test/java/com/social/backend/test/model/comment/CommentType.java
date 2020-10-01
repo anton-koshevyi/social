@@ -7,6 +7,11 @@ public enum CommentType implements ModelType<Comment> {
 
   BADLY,
   LIKE,
-  USEFUL
+  USEFUL;
+
+  @Override
+  public Class<Comment> modelClass() {
+    return Comment.class;
+  }
 
 }

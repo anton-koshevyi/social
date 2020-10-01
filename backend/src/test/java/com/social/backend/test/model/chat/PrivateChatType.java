@@ -5,6 +5,11 @@ import com.social.backend.test.model.ModelType;
 
 public enum PrivateChatType implements ModelType<PrivateChat> {
 
-  RAW
+  RAW;
+
+  @Override
+  public Class<PrivateChat> modelClass() {
+    return PrivateChat.class;
+  }
 
 }
