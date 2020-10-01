@@ -29,9 +29,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
@@ -67,9 +66,9 @@ public class PostControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
@@ -111,7 +110,7 @@ public class PostControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -149,7 +148,7 @@ public class PostControllerTest {
 
   @Test
   public void create() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -195,9 +194,9 @@ public class PostControllerTest {
 
   @Test
   public void get() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
@@ -236,10 +235,10 @@ public class PostControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
     TestTransaction.end();
@@ -276,10 +275,10 @@ public class PostControllerTest {
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
     TestTransaction.end();
@@ -328,10 +327,10 @@ public class PostControllerTest {
 
   @Test
   public void delete() {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();

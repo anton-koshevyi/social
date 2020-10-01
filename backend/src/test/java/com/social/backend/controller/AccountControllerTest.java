@@ -28,8 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.user.UserType;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -64,7 +63,7 @@ public class AccountControllerTest {
 
   @Test
   public void get() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -166,7 +165,7 @@ public class AccountControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -203,7 +202,7 @@ public class AccountControllerTest {
 
   @Test
   public void update() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -244,7 +243,7 @@ public class AccountControllerTest {
 
   @Test
   public void delete_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -281,7 +280,7 @@ public class AccountControllerTest {
 
   @Test
   public void delete() {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -300,7 +299,7 @@ public class AccountControllerTest {
 
   @Test
   public void changePassword_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();
@@ -341,7 +340,7 @@ public class AccountControllerTest {
 
   @Test
   public void changePassword() {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
     TestTransaction.end();

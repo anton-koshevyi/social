@@ -15,7 +15,7 @@ import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.test.comparator.ComparatorFactory;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.GroupChatType;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
@@ -37,10 +37,10 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenEntityAlreadyExists_expectException() {
-    User johnSmith = ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
@@ -57,10 +57,10 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsNotPublicNorFriend_expectException() {
-    User johnSmith = ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
@@ -76,10 +76,10 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsFriend() {
-    User johnSmith = ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL)
@@ -93,10 +93,10 @@ public class ChatServiceTest {
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.INTERNAL)
@@ -106,10 +106,10 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsPublic() {
-    User johnSmith = ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
@@ -121,10 +121,10 @@ public class ChatServiceTest {
         .isEqualTo(new PrivateChat()
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.PUBLIC)
@@ -134,7 +134,7 @@ public class ChatServiceTest {
 
   @Test
   public void deletePrivate_whenNoEntityWithIdAndMember_expectException() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -148,14 +148,14 @@ public class ChatServiceTest {
 
   @Test
   public void deletePrivate() {
-    User johnSmith = ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(PrivateChat.class)
+    repository.save(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
 
@@ -168,10 +168,10 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenAnyMemberIsNotPublicNorFriend_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
@@ -188,10 +188,10 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenMembersAreFriends() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL)
@@ -204,15 +204,15 @@ public class ChatServiceTest {
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
             .setName("Classmates")
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.INTERNAL)
@@ -222,10 +222,10 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenMembersArePublic() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
@@ -236,15 +236,15 @@ public class ChatServiceTest {
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
             .setName("Classmates")
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.PUBLIC)
@@ -254,7 +254,7 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroup_whenNoEntityWithIdAndMember_expectException() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -267,11 +267,11 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroup() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.SCIENTISTS)
         .setOwner(member))
         .setMembers(Sets.newHashSet(member));
@@ -279,15 +279,15 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.updateGroup(1L, member, "Classmates"))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.SCIENTISTS)
             .setName("Classmates")
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
             ))
@@ -296,7 +296,7 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -309,11 +309,11 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenNoOwnerInMemberList_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -328,15 +328,15 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenAnyNewMemberIsNotPublicNorFriend_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newMember = ModelFactoryProducer.getFactory(User.class)
+    User newMember = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -352,17 +352,17 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenMemberIsFriend_expectAddNewMember() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newMember = ModelFactoryProducer.getFactory(User.class)
+    User newMember = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL)
         .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(newMember));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -370,17 +370,17 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.INTERNAL)
@@ -390,15 +390,15 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenMemberIsPublic_expectAddNewMember() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newMember = ModelFactoryProducer.getFactory(User.class)
+    User newMember = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -406,17 +406,17 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.PUBLIC)
@@ -426,14 +426,14 @@ public class ChatServiceTest {
 
   @Test
   public void updateGroupMembers_whenAbsent_expectRemoveMember() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
@@ -441,14 +441,14 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
             ))
@@ -457,10 +457,10 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newOwner = ModelFactoryProducer.getFactory(User.class)
+    User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
 
@@ -473,14 +473,14 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner_whenNewOwnerIsNotMember_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newOwner = ModelFactoryProducer.getFactory(User.class)
+    User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -495,14 +495,14 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User newOwner = ModelFactoryProducer.getFactory(User.class)
+    User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, newOwner)));
@@ -510,17 +510,17 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.changeOwner(1L, owner, newOwner))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.FRED_BLOGGS)
                 .setId(2L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L),
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
             ))
@@ -529,7 +529,7 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup_whenNoEntityWithIdAndMember_expectException() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -542,11 +542,11 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup_whenLeavingMemberIsOwner_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -561,14 +561,14 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
@@ -578,14 +578,14 @@ public class ChatServiceTest {
     Assertions
         .assertThat((GroupChat) repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
             ))
@@ -594,7 +594,7 @@ public class ChatServiceTest {
 
   @Test
   public void deleteGroup_whenNoEntityWithIdAndOwner_expectException() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -607,11 +607,11 @@ public class ChatServiceTest {
 
   @Test
   public void deleteGroup() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -625,7 +625,7 @@ public class ChatServiceTest {
 
   @Test
   public void getMembers_whenNoEntityWithIdAndMember_expectException() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -638,14 +638,14 @@ public class ChatServiceTest {
 
   @Test
   public void getMembers() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner, member)));
@@ -654,10 +654,10 @@ public class ChatServiceTest {
         .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
         .containsExactlyInAnyOrder(
-            ModelFactoryProducer.getFactory(User.class)
+            ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L),
-            ModelFactoryProducer.getFactory(User.class)
+            ModelFactory
                 .createModel(UserType.FRED_BLOGGS)
                 .setId(2L)
         );
@@ -665,7 +665,7 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember_whenNoEntityWithIdAndMember_expectException() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -678,11 +678,11 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember() {
-    User member = ModelFactoryProducer.getFactory(User.class)
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -690,14 +690,14 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.find(1L, member))
         .usingComparator(ComparatorFactory.getComparator(Chat.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(GroupChat.class)
+        .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
             ))
@@ -706,11 +706,11 @@ public class ChatServiceTest {
 
   @Test
   public void findAll_byOwner() {
-    User owner = ModelFactoryProducer.getFactory(User.class)
+    User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(GroupChat.class)
+    repository.save(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -718,14 +718,14 @@ public class ChatServiceTest {
     Assertions
         .assertThat(service.findAll(owner, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
-        .containsExactly(ModelFactoryProducer.getFactory(GroupChat.class)
+        .containsExactly(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
-            .setOwner(ModelFactoryProducer.getFactory(User.class)
+            .setOwner(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L))
             .setId(1L)
             .setMembers(Sets.newHashSet(
-                ModelFactoryProducer.getFactory(User.class)
+                ModelFactory
                     .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
             ))

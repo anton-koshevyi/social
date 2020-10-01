@@ -32,9 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
-import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.message.MessageType;
 import com.social.backend.test.model.user.UserType;
@@ -71,13 +70,13 @@ public class MessageControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+    entityManager.persist((Message) ModelFactory
         .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
@@ -134,10 +133,10 @@ public class MessageControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
     TestTransaction.end();
@@ -174,10 +173,10 @@ public class MessageControllerTest {
 
   @Test
   public void create() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
     TestTransaction.end();
@@ -233,13 +232,13 @@ public class MessageControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+    entityManager.persist((Message) ModelFactory
         .createModel(MessageType.MEETING)
         .setChat(chat)
         .setAuthor(author));
@@ -277,13 +276,13 @@ public class MessageControllerTest {
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+    entityManager.persist((Message) ModelFactory
         .createModel(MessageType.MEETING)
         .setChat(chat)
         .setAuthor(author));
@@ -342,13 +341,13 @@ public class MessageControllerTest {
 
   @Test
   public void delete() {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Chat chat = entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(author)));
-    entityManager.persist((Message) ModelFactoryProducer.getFactory(Message.class)
+    entityManager.persist((Message) ModelFactory
         .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));

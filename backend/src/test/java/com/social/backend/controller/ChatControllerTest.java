@@ -30,11 +30,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.model.chat.GroupChat;
-import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.GroupChatType;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
@@ -71,10 +69,10 @@ public class ChatControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -117,10 +115,10 @@ public class ChatControllerTest {
 
   @Test
   public void get() throws JSONException {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -160,10 +158,10 @@ public class ChatControllerTest {
 
   @Test
   public void getMembers() throws JSONException {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -200,10 +198,10 @@ public class ChatControllerTest {
 
   @Test
   public void deletePrivate() {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(PrivateChat.class)
+    entityManager.persist(ModelFactory
         .createModel(PrivateChatType.RAW)
         .setMembers(Sets.newHashSet(member)));
     TestTransaction.end();
@@ -221,10 +219,10 @@ public class ChatControllerTest {
 
   @Test
   public void createGroup_whenInvalidBody_expectBadRequest() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
@@ -256,16 +254,16 @@ public class ChatControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void createGroup() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
@@ -309,10 +307,10 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroup_whenInvalidBody_expectBadRequest() throws JSONException {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -344,16 +342,16 @@ public class ChatControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void updateGroup() throws JSONException {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.SCIENTISTS)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -365,7 +363,7 @@ public class ChatControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"name\": \"Classmates\"}")
+        .body("{ \"name\": \"Classmates\" }")
         .when()
         .patch("/chats/group/{id}", 1)
         .then()
@@ -395,12 +393,12 @@ public class ChatControllerTest {
 
   @Test
   public void leaveGroup() {
-    User fredBloggs = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS));
-    User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(fredBloggs)
         .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
@@ -418,10 +416,10 @@ public class ChatControllerTest {
 
   @Test
   public void deleteGroup() {
-    User member = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User member = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(member)
         .setMembers(Sets.newHashSet(member)));
@@ -439,13 +437,13 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroupMembers_whenInvalidBody_expectBadRequest() throws JSONException {
-    User owner = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User owner = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -477,19 +475,19 @@ public class ChatControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (o1, o2) -> true)
+            new Customization("timestamp", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void updateGroupMembers() throws JSONException {
-    User owner = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User owner = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
         .setMembers(Sets.newHashSet(owner)));
@@ -531,12 +529,12 @@ public class ChatControllerTest {
 
   @Test
   public void changeOwner() throws JSONException {
-    User fredBloggs = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User fredBloggs = entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password")));
-    User johnSmith = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User johnSmith = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(ModelFactoryProducer.getFactory(GroupChat.class)
+    entityManager.persist(ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(fredBloggs)
         .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));

@@ -11,7 +11,7 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.PostRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.repository.PostRepositoryStub;
@@ -32,7 +32,7 @@ public class PostServiceTest {
 
   @Test
   public void create() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
@@ -47,14 +47,14 @@ public class PostServiceTest {
             .setId(1L)
             .setTitle("Favorite books")
             .setBody("My personal must-read fiction")
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -72,11 +72,11 @@ public class PostServiceTest {
 
   @Test
   public void update() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(Post.class)
+    repository.save(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
 
@@ -87,18 +87,19 @@ public class PostServiceTest {
         .get()
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
-        .isEqualTo(new Post()
+        .isEqualTo(ModelFactory
+            .createModel(PostType.COOKING)
             .setId(1L)
             .setTitle("Favorite books")
             .setBody("My personal must-read fiction")
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -111,11 +112,11 @@ public class PostServiceTest {
 
   @Test
   public void delete() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(Post.class)
+    repository.save(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
 
@@ -137,63 +138,63 @@ public class PostServiceTest {
 
   @Test
   public void find_byId() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(Post.class)
+    repository.save(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
 
     Assertions
         .assertThat(service.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
-        .isEqualTo(ModelFactoryProducer.getFactory(Post.class)
+        .isEqualTo(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void findAll() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(Post.class)
+    repository.save(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
-        .containsExactly(ModelFactoryProducer.getFactory(Post.class)
+        .containsExactly(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void findAll_byAuthor() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactoryProducer.getFactory(Post.class)
+    repository.save(ModelFactory
         .createModel(PostType.COOKING)
         .setAuthor(author));
 
     Assertions
         .assertThat(service.findAll(author, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
-        .containsExactly(ModelFactoryProducer.getFactory(Post.class)
+        .containsExactly(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }

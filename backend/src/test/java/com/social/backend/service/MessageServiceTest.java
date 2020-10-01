@@ -9,11 +9,10 @@ import org.springframework.data.domain.Pageable;
 import com.social.backend.exception.NotFoundException;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
-import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.User;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.message.MessageType;
 import com.social.backend.test.model.user.UserType;
@@ -35,11 +34,11 @@ public class MessageServiceTest {
 
   @Test
   public void create() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
     identification.setStrategy(e -> e.setId(1L));
-    Chat chat = ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
@@ -50,24 +49,24 @@ public class MessageServiceTest {
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
         .isEqualTo(new Message()
-            .setChat(ModelFactoryProducer.getFactory(PrivateChat.class)
+            .setChat(ModelFactory
                 .createModel(PrivateChatType.RAW)
                 .setId(1L)
                 .setMembers(Sets.newHashSet(
-                    ModelFactoryProducer.getFactory(User.class)
+                    ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
                 )))
             .setId(1L)
             .setBody("How are you?")
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -80,15 +79,15 @@ public class MessageServiceTest {
 
   @Test
   public void update() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Chat chat = ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+    repository.save((Message) ModelFactory
         .createModel(MessageType.MEETING)
         .setChat(chat)
         .setAuthor(author));
@@ -99,26 +98,26 @@ public class MessageServiceTest {
         .assertThat(repository.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
-        .isEqualTo(ModelFactoryProducer.getFactory(Message.class)
+        .isEqualTo(ModelFactory
             .createModel(MessageType.MEETING)
-            .setChat(ModelFactoryProducer.getFactory(PrivateChat.class)
+            .setChat(ModelFactory
                 .createModel(PrivateChatType.RAW)
                 .setId(1L)
                 .setMembers(Sets.newHashSet(
-                    ModelFactoryProducer.getFactory(User.class)
+                    ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
                 )))
             .setId(1L)
             .setBody("How are you?")
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
 
@@ -131,15 +130,15 @@ public class MessageServiceTest {
 
   @Test
   public void delete() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Chat chat = ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+    repository.save((Message) ModelFactory
         .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
@@ -153,15 +152,15 @@ public class MessageServiceTest {
 
   @Test
   public void findAll_byChat() {
-    User author = ModelFactoryProducer.getFactory(User.class)
+    User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    Chat chat = ModelFactoryProducer.getFactory(PrivateChat.class)
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
         .setId(1L)
         .setMembers(Sets.newHashSet(author));
     identification.setStrategy(e -> e.setId(1L));
-    repository.save((Message) ModelFactoryProducer.getFactory(Message.class)
+    repository.save((Message) ModelFactory
         .createModel(MessageType.WHATS_UP)
         .setChat(chat)
         .setAuthor(author));
@@ -169,18 +168,18 @@ public class MessageServiceTest {
     Assertions
         .assertThat(service.findAll(chat, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Message.class), Message.class)
-        .containsExactly((Message) ModelFactoryProducer.getFactory(Message.class)
+        .containsExactly((Message) ModelFactory
             .createModel(MessageType.WHATS_UP)
-            .setChat(ModelFactoryProducer.getFactory(PrivateChat.class)
+            .setChat(ModelFactory
                 .createModel(PrivateChatType.RAW)
                 .setId(1L)
                 .setMembers(Sets.newHashSet(
-                    ModelFactoryProducer.getFactory(User.class)
+                    ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
                 )))
             .setId(1L)
-            .setAuthor(ModelFactoryProducer.getFactory(User.class)
+            .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }

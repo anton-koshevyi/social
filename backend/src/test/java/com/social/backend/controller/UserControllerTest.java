@@ -30,10 +30,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
 
@@ -69,7 +68,7 @@ public class UserControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
@@ -101,7 +100,7 @@ public class UserControllerTest {
 
   @Test
   public void get() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
@@ -130,11 +129,11 @@ public class UserControllerTest {
 
   @Test
   public void updateRole_whenEmptyBody_expectNoChanges() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
@@ -168,11 +167,11 @@ public class UserControllerTest {
 
   @Test
   public void updateRole() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPassword(passwordEncoder.encode("password"))
         .setAdmin(true));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
     TestTransaction.end();
 
@@ -206,9 +205,9 @@ public class UserControllerTest {
 
   @Test
   public void getFriends() throws JSONException {
-    User user = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User user = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setFriends(Sets.newHashSet(user)));
     TestTransaction.end();
@@ -241,10 +240,10 @@ public class UserControllerTest {
 
   @Test
   public void addFriend() {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();
@@ -262,10 +261,10 @@ public class UserControllerTest {
 
   @Test
   public void removeFriend() {
-    User user = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User user = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    User target = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User target = entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setFriends(Sets.newHashSet(user)));
     user.setFriends(Sets.newHashSet(target));
@@ -283,9 +282,9 @@ public class UserControllerTest {
 
   @Test
   public void getPosts() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
@@ -327,10 +326,10 @@ public class UserControllerTest {
 
   @Test
   public void createPrivateChat() throws JSONException {
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    entityManager.persist(ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setPublicity(Publicity.PUBLIC));
     TestTransaction.end();

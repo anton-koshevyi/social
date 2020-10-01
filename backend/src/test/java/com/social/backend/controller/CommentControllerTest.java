@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelFactoryProducer;
+import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
@@ -69,12 +69,12 @@ public class CommentControllerTest {
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH));
-    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    Post post = entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+    entityManager.persist((Comment) ModelFactory
         .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
@@ -131,10 +131,10 @@ public class CommentControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
@@ -171,10 +171,10 @@ public class CommentControllerTest {
 
   @Test
   public void create() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
     TestTransaction.end();
@@ -185,7 +185,7 @@ public class CommentControllerTest {
         .form("johnsmith", "password", AUTH_FORM)
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"Like\"}")
+        .body("{ \"body\": \"Like\" }")
         .when()
         .post("/posts/{postId}/comments", 1)
         .then()
@@ -233,13 +233,13 @@ public class CommentControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectBadRequest() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    Post post = entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+    entityManager.persist((Comment) ModelFactory
         .createModel(CommentType.BADLY)
         .setPost(post)
         .setAuthor(author));
@@ -277,13 +277,13 @@ public class CommentControllerTest {
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    Post post = entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+    entityManager.persist((Comment) ModelFactory
         .createModel(CommentType.BADLY)
         .setPost(post)
         .setAuthor(author));
@@ -345,13 +345,13 @@ public class CommentControllerTest {
 
   @Test
   public void delete() {
-    User author = entityManager.persist(ModelFactoryProducer.getFactory(User.class)
+    User author = entityManager.persist(ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setPassword(passwordEncoder.encode("password")));
-    Post post = entityManager.persist(ModelFactoryProducer.getFactory(Post.class)
+    Post post = entityManager.persist(ModelFactory
         .createModel(PostType.READING)
         .setAuthor(author));
-    entityManager.persist((Comment) ModelFactoryProducer.getFactory(Comment.class)
+    entityManager.persist((Comment) ModelFactory
         .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(author));
