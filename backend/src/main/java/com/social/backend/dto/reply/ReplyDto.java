@@ -1,6 +1,6 @@
 package com.social.backend.dto.reply;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,8 +12,8 @@ import com.social.backend.dto.user.UserDto;
 public abstract class ReplyDto {
 
   private Long id;
-  private ZonedDateTime createdAt;
-  private ZonedDateTime updatedAt;
+  private Date createdAt;
+  private Date updatedAt;
   private String body;
   private UserDto author;
 
