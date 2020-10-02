@@ -5,10 +5,8 @@ import java.util.Collections;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
@@ -17,7 +15,6 @@ import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.test.SecurityManager;
 
-@ExtendWith(SpringExtension.class)
 public class UserMapperTest {
 
   @AfterEach
