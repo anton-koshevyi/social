@@ -60,7 +60,6 @@ dependencies {
 
   // Test: CDI
   testImplementation("org.springframework:spring-test:5.2.0.RELEASE")
-  testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:2.2.0.RELEASE")
 
   // Test: Mocking
   testImplementation("org.mockito:mockito-inline:3.4.0")
