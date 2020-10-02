@@ -1,74 +1,92 @@
 package com.social.backend.controller;
 
+import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;
 
-import io.restassured.RestAssured;
-import io.restassured.authentication.FormAuthConfig;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import org.assertj.core.api.Assertions;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.TestEntity;
+import com.social.backend.repository.PostRepository;
+import com.social.backend.repository.UserRepository;
+import com.social.backend.service.PostServiceImpl;
+import com.social.backend.service.UserServiceImpl;
+import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
+import com.social.backend.test.SecurityManager;
+import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.post.PostType;
+import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.stub.PasswordEncoderStub;
+import com.social.backend.test.stub.repository.PostRepositoryStub;
+import com.social.backend.test.stub.repository.UserRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
-@Commit
-@Transactional
-@AutoConfigureTestEntityManager
 public class PostControllerTest {
 
-  @LocalServerPort
-  private int port;
-
-  @Autowired
-  private PasswordEncoder passwordEncoder;
-
-  @Autowired
-  private TestEntityManager entityManager;
-
-  @BeforeAll
-  public static void beforeAll() {
-    RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
-  }
+  private IdentificationContext<User> userIdentification;
+  private IdentificationContext<Post> postIdentification;
+  private UserRepository userRepository;
+  private PostRepository postRepository;
 
   @BeforeEach
   public void setUp() {
-    RestAssured.port = port;
+    userIdentification = new IdentificationContext<>();
+    postIdentification = new IdentificationContext<>();
+    userRepository = new UserRepositoryStub(userIdentification);
+    postRepository = new PostRepositoryStub(postIdentification);
+
+    GenericApplicationContext appContext = new GenericApplicationContext();
+    appContext.registerBean(PasswordEncoderStub.class);
+    appContext.registerBean(UserRepository.class, () -> userRepository);
+    appContext.registerBean(PostRepository.class, () -> postRepository);
+    appContext.registerBean(UserServiceImpl.class);
+    appContext.registerBean(PostServiceImpl.class);
+    appContext.refresh();
+
+    AnnotationConfigWebApplicationContext webContext =
+        new AnnotationConfigWebApplicationContext();
+    webContext.setParent(appContext);
+    webContext.addBeanFactoryPostProcessor(new LazyInitBeanFactoryPostProcessor());
+    webContext.setServletContext(new MockServletContext());
+    webContext.register(TestConfig.class);
+    webContext.register(PostController.class);
+    webContext.refresh();
+
+    RestAssuredMockMvc.mockMvc(MockMvcBuilders
+        .webAppContextSetup(webContext)
+        .alwaysDo(MockMvcResultHandlers.log())
+        .build());
   }
 
   @Test
   public void getAll() throws JSONException {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
-        .post()
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
+        .createModel(PostType.READING)
         .setAuthor(author));
-    TestTransaction.end();
 
-    String response = RestAssured
+    String response = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
         .when()
@@ -84,14 +102,16 @@ public class PostControllerTest {
     String expected = "[{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'post body',"
+        + "updatedAt: null,"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "comments: 0,"
         + "author: {"
         + "  id: 1,"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: null,"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -99,66 +119,48 @@ public class PostControllerTest {
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].createdAt", (act, exp) -> true)
+            new Customization("[*].createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
-  public void create_badRequest_whenInvalidBody() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
-        .setPassword(passwordEncoder.encode("password")));
-    TestTransaction.end();
+  public void create_whenInvalidBody_expectException() {
+    userIdentification.setStrategy(e -> e.setId(1L));
+    userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    RestAssuredMockMvc
         .given()
-        .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
-        .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{}")
         .when()
         .post("/posts")
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "timestamp: (customized),"
-        + "status: 400,"
-        + "error: 'Bad Request',"
-        + "message: 'Invalid body: 2 error(s)',"
-        + "errors: {"
-        + "  'title': ['must not be null'],"
-        + "  'body': ['must not be null']"
-        + "},"
-        + "path: '/posts'"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
-        ));
+        .expect(result -> Assertions
+            .assertThat(result.getResolvedException())
+            .isExactlyInstanceOf(MethodArgumentNotValidException.class));
   }
 
   @Test
   public void create() throws JSONException {
-    entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
-        .setPassword(passwordEncoder.encode("password")));
-    TestTransaction.end();
+    userIdentification.setStrategy(e -> e.setId(1L));
+    userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    String actual = RestAssuredMockMvc
         .given()
-        .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"title\": \"title\","
-            + "\"body\": \"body\""
+            + "\"title\": \"Favorite books\","
+            + "\"body\": \"My personal must-read fiction\""
             + "}")
         .post("/posts")
         .then()
@@ -169,14 +171,15 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'body',"
+        + "updatedAt: null,"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -185,19 +188,21 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void get() throws JSONException {
-    User author = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity
-        .post()
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
+        .createModel(PostType.READING)
         .setAuthor(author));
-    TestTransaction.end();
 
-    String actual = RestAssured
+    String actual = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
         .when()
@@ -210,13 +215,15 @@ public class PostControllerTest {
     String expected = "{"
         + "id: 1,"
         + "createdAt: (customized),"
-        + "title: 'title',"
-        + "body: 'post body',"
+        + "updatedAt: null,"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: null,"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -225,73 +232,54 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
-  public void update_badRequest_whenInvalidBody() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
-        .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(new Post()
-        .setTitle("title")
-        .setBody("body")
+  public void update_whenInvalidBody_expectException() {
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
+        .createModel(PostType.COOKING)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    RestAssuredMockMvc
         .given()
-        .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
-        .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
         .when()
         .patch("/posts/{id}", 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "timestamp: (customized),"
-        + "status: 400,"
-        + "error: 'Bad Request',"
-        + "message: 'Invalid body: 1 error(s)',"
-        + "errors: {"
-        + "  'body': ['size must be between 1 and 1000']"
-        + "},"
-        + "path: '/posts/1'"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("timestamp", (act, exp) -> true)
-        ));
+        .expect(result -> Assertions
+            .assertThat(result.getResolvedException())
+            .isExactlyInstanceOf(MethodArgumentNotValidException.class));
   }
 
   @Test
   public void update() throws JSONException {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
-        .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(new Post()
-        .setTitle("title")
-        .setBody("body")
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
+        .createModel(PostType.COOKING)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    String actual = RestAssured
+    String actual = RestAssuredMockMvc
         .given()
-        .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
         .body("{"
-            + "\"title\": \"new title\","
-            + "\"body\": \"new body\""
+            + "\"title\": \"Favorite books\","
+            + "\"body\": \"My personal must-read fiction\""
             + "}")
         .when()
         .patch("/posts/{id}", 1)
@@ -304,14 +292,14 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "title: 'new title',"
-        + "body: 'new body',"
+        + "title: 'Favorite books',"
+        + "body: 'My personal must-read fiction',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'email@mail.com',"
-        + "  username: 'username',"
-        + "  firstName: 'first',"
-        + "  lastName: 'last',"
+        + "  email: 'johnsmith@example.com',"
+        + "  username: 'johnsmith',"
+        + "  firstName: 'John',"
+        + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
@@ -320,30 +308,33 @@ public class PostControllerTest {
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> true),
-            new Customization("updatedAt", (act, exp) -> true)
+            new Customization("createdAt", (act, exp) -> act != null),
+            new Customization("updatedAt", (act, exp) -> act != null)
         ));
   }
 
   @Test
   public void delete() {
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setUsername("username")
-        .setPassword(passwordEncoder.encode("password")));
-    entityManager.persist(TestEntity
-        .post()
+    userIdentification.setStrategy(e -> e.setId(1L));
+    User author = userRepository.save(ModelFactory
+        .createModel(UserType.JOHN_SMITH));
+    postIdentification.setStrategy(e -> e.setId(1L));
+    postRepository.save(ModelFactory
+        .createModel(PostType.READING)
         .setAuthor(author));
-    TestTransaction.end();
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
-    RestAssured
-        .given()
-        .auth()
-        .form("username", "password", new FormAuthConfig("/auth", "username", "password"))
-        .when()
+    RestAssuredMockMvc
         .delete("/posts/{id}", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+  }
+
+
+  @EnableWebMvc
+  @EnableSpringDataWebSupport
+  private static class TestConfig {
   }
 
 }

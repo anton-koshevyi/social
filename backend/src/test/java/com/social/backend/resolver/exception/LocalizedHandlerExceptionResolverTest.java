@@ -411,6 +411,7 @@ public class LocalizedHandlerExceptionResolverTest {
         ));
   }
 
+
   @Controller
   private static class TestController {
 

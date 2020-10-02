@@ -22,7 +22,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 public class LocalizedErrorAttributesTest {
 
   @Test
-  public void given_trueIncludeException_when_noErrorAttribute_then_nullExceptionAttribute() {
+  public void givenTrueIncludeException_whenNoErrorAttribute_thenNullExceptionAttribute() {
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(null, true);
     HttpServletRequest request = new MockHttpServletRequest();
     request.setAttribute("javax.servlet.error.status_code", 400);
@@ -43,7 +43,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_trueIncludeException_then_addExceptionAttribute() {
+  public void givenTrueIncludeException_thenAddExceptionAttribute() {
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(null, true);
     HttpServletRequest request = new MockHttpServletRequest();
     request.setAttribute(
@@ -68,7 +68,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_trueIncludeStackTrace_when_noErrorAttribute_then_nullTraceAttribute() {
+  public void givenTrueIncludeStackTrace_whenNoErrorAttribute_thenNullTraceAttribute() {
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(null, false);
     HttpServletRequest request = new MockHttpServletRequest();
     request.setAttribute("javax.servlet.error.status_code", 400);
@@ -89,7 +89,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_trueIncludeStackTrace_then_addTraceAttribute() {
+  public void givenTrueIncludeStackTrace_thenAddTraceAttribute() {
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(null, false);
     RuntimeException exception = new RuntimeException("Error");
     exception.setStackTrace(new StackTraceElement[]{
@@ -119,7 +119,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_illegalStatusCode_then_nullErrorAttribute() {
+  public void givenIllegalStatusCode_thenNullErrorAttribute() {
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(null, false);
     HttpServletRequest request = new MockHttpServletRequest();
     request.setAttribute("javax.servlet.error.status_code", 999);
@@ -139,7 +139,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_bindException_when_noFieldErrors_then_nullErrorsAttribute() {
+  public void givenBindException_whenNoFieldErrors_thenNullErrorsAttribute() {
     MessageSource messageSource = Mockito.mock(MessageSource.class);
     ErrorAttributes errorAttributes = new LocalizedErrorAttributes(messageSource, false);
     BindException bindException = new BindException(new Object(), "object");
@@ -166,7 +166,7 @@ public class LocalizedErrorAttributesTest {
   }
 
   @Test
-  public void given_methodArgumentNotValidException_then_addErrorsAttribute() {
+  public void givenMethodArgumentNotValidException_thenAddErrorsAttribute() {
     MessageSource messageSource = Mockito.mock(MessageSource.class);
     Mockito
         .when(messageSource.getMessage(

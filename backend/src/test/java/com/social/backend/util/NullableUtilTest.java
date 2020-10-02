@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class NullableUtilTest {
 
   @Test
-  public void set_exception_onNullSetter() {
+  public void set_whenNullSetter_expectException() {
     Assertions
         .assertThatThrownBy(() -> NullableUtil.set(null, "new value"))
         .isExactlyInstanceOf(NullPointerException.class)
@@ -14,7 +14,7 @@ public class NullableUtilTest {
   }
 
   @Test
-  public void set_falseAndNoChanges_whenNullValue() {
+  public void set_whenNullValue_expectFalseAndNoChanges() {
     TestObject object = new TestObject();
     object.setField("value");
 
@@ -38,6 +38,7 @@ public class NullableUtilTest {
         .assertThat(object.getField())
         .isEqualTo("new value");
   }
+
 
   private static class TestObject {
 

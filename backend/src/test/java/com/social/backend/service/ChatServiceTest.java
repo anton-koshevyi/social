@@ -3,15 +3,9 @@ package com.social.backend.service;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -20,38 +14,41 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepositoryImpl;
-import com.social.backend.test.TestComparator;
-import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.chat.GroupChatType;
+import com.social.backend.test.model.chat.PrivateChatType;
+import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.stub.repository.ChatRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({ChatServiceImpl.class, ChatRepositoryImpl.class})
 public class ChatServiceTest {
 
-  @Autowired
-  private ChatService chatService;
+  private IdentificationContext<Chat> identification;
+  private ChatRepositoryStub repository;
+  private ChatService service;
 
-  @Autowired
-  private TestEntityManager entityManager;
+  @BeforeEach
+  public void setUp() {
+    identification = new IdentificationContext<>();
+    repository = new ChatRepositoryStub(identification);
+    service = new ChatServiceImpl(repository);
+  }
 
   @Test
-  public void createPrivate_exception_whenEntityAlreadyExists() {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target"));
-    entityManager.persist(new PrivateChat()
-        .setMembers(Sets
-            .newHashSet(user, target)));
+  public void createPrivate_whenEntityAlreadyExists_expectException() {
+    User johnSmith = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User fredBloggs = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(new PrivateChat()
+        .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.createPrivate(user, target))
+        .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.private.alreadyExist"})
@@ -59,19 +56,18 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void createPrivate_exception_whenTargetIsNotPublicNorFriend() {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
-        .setPublicity(Publicity.INTERNAL));
+  public void createPrivate_whenTargetIsNotPublicNorFriend_expectException() {
+    User johnSmith = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User fredBloggs = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL);
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.createPrivate(user, target))
+        .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.private.createNotFriend"})
@@ -80,82 +76,70 @@ public class ChatServiceTest {
 
   @Test
   public void createPrivate_whenTargetIsFriend() {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
-        .setPublicity(Publicity.INTERNAL));
-    user.setFriends(Sets.newHashSet(target));
-    target.setFriends(Sets.newHashSet(user));
+    User johnSmith = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User fredBloggs = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL)
+        .setFriends(Sets.newHashSet(johnSmith));
+    johnSmith.setFriends(Sets.newHashSet(fredBloggs));
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(chatService.createPrivate(user, target))
-        .usingRecursiveComparison()
-        .ignoringFields("members.friends")
+        .assertThat(service.createPrivate(johnSmith, fredBloggs))
+        .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("user@mail.com")
-                        .setUsername("user"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("target@mail.com")
-                        .setUsername("target")
-                        .setPublicity(Publicity.INTERNAL)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.INTERNAL)
+            ))
+        );
   }
 
   @Test
   public void createPrivate_whenTargetIsPublic() {
-    User user = entityManager.persist(TestEntity
-        .user()
-        .setEmail("user@mail.com")
-        .setUsername("user"));
-    User target = entityManager.persist(TestEntity
-        .user()
-        .setEmail("target@mail.com")
-        .setUsername("target")
-        .setPublicity(Publicity.PUBLIC));
+    User johnSmith = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User fredBloggs = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.PUBLIC);
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(chatService.createPrivate(user, target))
-        .usingRecursiveComparison()
-        .ignoringFields("members.friends")
+        .assertThat(service.createPrivate(johnSmith, fredBloggs))
+        .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(new PrivateChat()
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("user@mail.com")
-                        .setUsername("user"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("target@mail.com")
-                        .setUsername("target")
-                        .setPublicity(Publicity.PUBLIC)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.PUBLIC)
+            ))
+        );
   }
 
   @Test
-  public void deletePrivate_exception_whenNoEntityWithIdAndMember() {
-    User user = entityManager.persist(TestEntity.user());
+  public void deletePrivate_whenNoEntityWithIdAndMember_expectException() {
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.deletePrivate(1L, user))
+        .assertThatThrownBy(() -> service.deletePrivate(1L, member))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.private.byIdAndMember"})
@@ -164,40 +148,38 @@ public class ChatServiceTest {
 
   @Test
   public void deletePrivate() {
-    User first = entityManager.persist(TestEntity
-        .user()
-        .setEmail("first@mail.com")
-        .setUsername("first"));
-    User second = entityManager.persist(TestEntity
-        .user()
-        .setEmail("second@mail.com")
-        .setUsername("second"));
-    entityManager.persist(TestEntity
-        .privateChat()
-        .setMembers(Sets
-            .newHashSet(first, second)));
+    User johnSmith = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User fredBloggs = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(PrivateChatType.RAW)
+        .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
 
-    chatService.deletePrivate(1L, first);
+    service.deletePrivate(1L, johnSmith);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
+        .assertThat(repository.find(1L))
         .isNull();
   }
 
   @Test
-  public void createGroup_exception_whenAnyMemberIsNotPublicNorFriend() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member")
-        .setPublicity(Publicity.INTERNAL));
+  public void createGroup_whenAnyMemberIsNotPublicNorFriend_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL);
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.createGroup(owner, "name", ImmutableSet.of(member)))
+        .assertThatThrownBy(() ->
+            service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.addNotFriend"})
@@ -206,148 +188,139 @@ public class ChatServiceTest {
 
   @Test
   public void createGroup_whenMembersAreFriends() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member")
-        .setPublicity(Publicity.INTERNAL));
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL)
+        .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(member));
-    member.setFriends(Sets.newHashSet(owner));
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
-        .usingRecursiveComparison()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
-            .setName("name")
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+            .setName("Classmates")
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("owner@mail.com")
-                        .setUsername("owner"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("member@mail.com")
-                        .setUsername("member")
-                        .setPublicity(Publicity.INTERNAL)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.INTERNAL)
+            ))
+        );
   }
 
   @Test
   public void createGroup_whenMembersArePublic() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member")
-        .setPublicity(Publicity.PUBLIC));
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.PUBLIC);
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThat(chatService.createGroup(owner, "name", ImmutableSet.of(member)))
-        .usingRecursiveComparison()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
+        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(new GroupChat()
-            .setName("name")
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+            .setName("Classmates")
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("owner@mail.com")
-                        .setUsername("owner"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("member@mail.com")
-                        .setUsername("member")
-                        .setPublicity(Publicity.PUBLIC)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.PUBLIC)
+            ))
+        );
   }
 
   @Test
-  public void updateGroup_exception_whenNoEntityWithIdAndMember() {
-    User user = entityManager.persist(TestEntity.user());
+  public void updateGroup_whenNoEntityWithIdAndMember_expectException() {
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.updateGroup(0L, user, "new name"))
+        .assertThatThrownBy(() -> service.updateGroup(0L, member, "Classmates"))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
   public void updateGroup() {
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity.groupChat()
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.SCIENTISTS)
         .setOwner(member))
-        .setMembers(Sets
-            .newHashSet(member));
+        .setMembers(Sets.newHashSet(member));
 
     Assertions
-        .assertThat(chatService.updateGroup(1L, member, "new name"))
-        .usingComparator(TestComparator
-            .chatComparator())
-        .isEqualTo(new GroupChat()
-            .setName("new name")
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("member@mail.com")
-                .setUsername("member"))
-            .setId(1L));
+        .assertThat(service.updateGroup(1L, member, "Classmates"))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.SCIENTISTS)
+            .setName("Classmates")
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
   @Test
-  public void updateGroupMembers_exception_whenNoEntityWithIdAndOwner() {
-    User owner = entityManager.persist(TestEntity
-        .user());
+  public void updateGroupMembers_whenNoEntityWithIdAndOwner_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.updateGroupMembers(0L, owner, ImmutableSet.of()))
+        .assertThatThrownBy(() -> service.updateGroupMembers(0L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
-  public void updateGroupMembers_exception_whenNoOwnerInMemberList() {
-    User owner = entityManager.persist(TestEntity.user());
-    entityManager.persist(TestEntity.groupChat()
+  public void updateGroupMembers_whenNoOwnerInMemberList_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.updateGroupMembers(1L, owner, ImmutableSet.of()))
+        .assertThatThrownBy(() -> service.updateGroupMembers(1L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.removeOwner"})
@@ -355,25 +328,23 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_exception_whenAnyNewMemberIsNotPublicNorFriend() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newMember@mail.com")
-        .setUsername("newMember")
-        .setPublicity(Publicity.INTERNAL));
-    entityManager.persist(TestEntity
-        .groupChat()
+  public void updateGroupMembers_whenAnyNewMemberIsNotPublicNorFriend_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newMember = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
         .assertThatThrownBy(() ->
-            chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+            service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.addNotFriend"})
@@ -381,173 +352,143 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void updateGroupMembers_addNewMember_whenMemberIsFriend() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newMember@mail.com")
-        .setUsername("newMember")
-        .setPublicity(Publicity.INTERNAL));
+  public void updateGroupMembers_whenMemberIsFriend_expectAddNewMember() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newMember = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.INTERNAL)
+        .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(newMember));
-    newMember.setFriends(Sets.newHashSet(owner));
-    entityManager.persist(TestEntity
-        .groupChat()
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
-        .isEqualTo(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("owner@mail.com")
-                        .setUsername("owner"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("newMember@mail.com")
-                        .setUsername("newMember")
-                        .setPublicity(Publicity.INTERNAL)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.INTERNAL)
+            ))
+        );
   }
 
   @Test
-  public void updateGroupMembers_addNewMember_whenMemberIsPublic() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newMember = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newMember@mail.com")
-        .setUsername("newMember")
-        .setPublicity(Publicity.PUBLIC));
-    entityManager.persist(TestEntity
-        .groupChat()
+  public void updateGroupMembers_whenMemberIsPublic_expectAddNewMember() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newMember = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setPublicity(Publicity.PUBLIC);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .ignoringFields("owner.friends", "members.friends")
-        .isEqualTo(TestEntity.groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("owner@mail.com")
-                        .setUsername("owner"),
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("newMember@mail.com")
-                        .setUsername("newMember")
-                        .setPublicity(Publicity.PUBLIC)
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+                    .setPublicity(Publicity.PUBLIC)
+            ))
+        );
   }
 
   @Test
-  public void updateGroupMembers_removeMember_whenAbsent() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
-        .groupChat()
+  public void updateGroupMembers_whenAbsent_expectRemoveMember() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, member)));
+        .setMembers(Sets.newHashSet(owner, member)));
 
     Assertions
-        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .isEqualTo(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(TestEntity
-                    .user()
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("owner@mail.com")
-                    .setUsername("owner"))));
+            ))
+        );
   }
 
   @Test
-  public void changeOwner_exception_whenNoEntityWithIdAndOwner() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
+  public void changeOwner_whenNoEntityWithIdAndOwner_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newOwner = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.changeOwner(0L, owner, newOwner))
+        .assertThatThrownBy(() -> service.changeOwner(0L, owner, newOwner))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
-  public void changeOwner_exception_whenNewOwnerIsNotMember() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
-    entityManager.persist(TestEntity
-        .groupChat()
-        .setOwner(owner));
+  public void changeOwner_whenNewOwnerIsNotMember_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newOwner = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
+        .setOwner(owner)
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.changeOwner(1L, owner, newOwner))
+        .assertThatThrownBy(() -> service.changeOwner(1L, owner, newOwner))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.setOwnerNotMember"})
@@ -556,74 +497,65 @@ public class ChatServiceTest {
 
   @Test
   public void changeOwner() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User newOwner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("newOwner@mail.com")
-        .setUsername("newOwner"));
-    entityManager.persist(TestEntity
-        .groupChat()
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newOwner = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, newOwner)));
+        .setMembers(Sets.newHashSet(owner, newOwner)));
 
     Assertions
-        .assertThat(chatService.changeOwner(1L, owner, newOwner))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .ignoringCollectionOrder()
-        .isEqualTo(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(2L)
-                .setEmail("newOwner@mail.com")
-                .setUsername("newOwner"))
+        .assertThat(service.changeOwner(1L, owner, newOwner))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(
-                    TestEntity
-                        .user()
-                        .setId(2L)
-                        .setEmail("newOwner@mail.com")
-                        .setUsername("newOwner"),
-                    TestEntity
-                        .user()
-                        .setId(1L)
-                        .setEmail("owner@mail.com")
-                        .setUsername("owner")
-                )
-            ));
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L),
+                ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)
+                    .setId(2L)
+            ))
+        );
   }
 
   @Test
-  public void leaveGroup_exception_whenNoEntityWithIdAndMember() {
-    User user = entityManager.persist(TestEntity.user());
+  public void leaveGroup_whenNoEntityWithIdAndMember_expectException() {
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.leaveGroup(0L, user))
+        .assertThatThrownBy(() -> service.leaveGroup(0L, member))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
-  public void leaveGroup_exception_whenLeavingMemberIsOwner() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
-        .groupChat()
+  public void leaveGroup_whenLeavingMemberIsOwner_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThatThrownBy(() -> chatService.leaveGroup(1L, owner))
+        .assertThatThrownBy(() -> service.leaveGroup(1L, owner))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.leaveOwner"})
@@ -632,79 +564,77 @@ public class ChatServiceTest {
 
   @Test
   public void leaveGroup() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
-        .groupChat()
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, member)));
+        .setMembers(Sets.newHashSet(owner, member)));
 
-    chatService.leaveGroup(1L, member);
+    service.leaveGroup(1L, member);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
-        .usingRecursiveComparison()
-        .ignoringAllOverriddenEquals()
-        .isEqualTo(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
+        .assertThat((GroupChat) repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
             .setId(1L)
-            .setMembers(Sets
-                .newHashSet(TestEntity
-                    .user()
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("owner@mail.com")
-                    .setUsername("owner"))
-            ));
+            ))
+        );
   }
 
   @Test
-  public void deleteGroup_exception_whenNoEntityWithIdAndOwner() {
-    User owner = entityManager.persist(TestEntity.user());
+  public void deleteGroup_whenNoEntityWithIdAndOwner_expectException() {
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.deleteGroup(0L, owner))
+        .assertThatThrownBy(() -> service.deleteGroup(0L, owner))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
   public void deleteGroup() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
-        .groupChat()
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
-    chatService.deleteGroup(1L, owner);
+    service.deleteGroup(1L, owner);
 
     Assertions
-        .assertThat(entityManager.find(Chat.class, 1L))
+        .assertThat(repository.find(1L))
         .isNull();
   }
 
   @Test
-  public void getMembers_exception_whenNoEntityWithIdAndMember() {
-    User user = entityManager.persist(TestEntity.user());
+  public void getMembers_whenNoEntityWithIdAndMember_expectException() {
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.getMembers(0L, user, Pageable.unpaged()))
+        .assertThatThrownBy(() -> service.getMembers(0L, member, Pageable.unpaged()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -712,45 +642,39 @@ public class ChatServiceTest {
 
   @Test
   public void getMembers() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    User member = entityManager.persist(TestEntity
-        .user()
-        .setEmail("member@mail.com")
-        .setUsername("member"));
-    entityManager.persist(TestEntity
-        .groupChat()
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner, member)));
+        .setMembers(Sets.newHashSet(owner, member)));
 
     Assertions
-        .assertThat(chatService.getMembers(1L, owner, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .userComparator(), User.class)
+        .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
+        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
         .containsExactlyInAnyOrder(
-            TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"),
-            TestEntity
-                .user()
+            ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L),
+            ModelFactory
+                .createModel(UserType.FRED_BLOGGS)
                 .setId(2L)
-                .setEmail("member@mail.com")
-                .setUsername("member")
         );
   }
 
   @Test
-  public void find_byIdAndMember_exception_whenNoEntityWithIdAndMember() {
-    User user = entityManager.persist(TestEntity
-        .user());
+  public void find_byIdAndMember_whenNoEntityWithIdAndMember_expectException() {
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> chatService.find(0L, user))
+        .assertThatThrownBy(() -> service.find(0L, member))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -758,54 +682,58 @@ public class ChatServiceTest {
 
   @Test
   public void find_byIdAndMember() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
-        .groupChat()
-        .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
+        .setOwner(member)
+        .setMembers(Sets.newHashSet(member)));
 
     Assertions
-        .assertThat(chatService.find(1L, owner))
-        .usingComparator(TestComparator
-            .chatComparator())
-        .isEqualTo(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
-            .setId(1L));
+        .assertThat(service.find(1L, member))
+        .usingComparator(ComparatorFactory.getComparator(Chat.class))
+        .isEqualTo(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
   @Test
   public void findAll_byOwner() {
-    User owner = entityManager.persist(TestEntity
-        .user()
-        .setEmail("owner@mail.com")
-        .setUsername("owner"));
-    entityManager.persist(TestEntity
-        .groupChat()
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save(ModelFactory
+        .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets
-            .newHashSet(owner)));
+        .setMembers(Sets.newHashSet(owner)));
 
     Assertions
-        .assertThat(chatService.findAll(owner, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .chatComparator(), Chat.class)
-        .containsExactly(TestEntity
-            .groupChat()
-            .setOwner(TestEntity
-                .user()
-                .setId(1L)
-                .setEmail("owner@mail.com")
-                .setUsername("owner"))
-            .setId(1L));
+        .assertThat(service.findAll(owner, Pageable.unpaged()))
+        .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
+        .containsExactly(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
+            .setId(1L)
+            .setMembers(Sets.newHashSet(
+                ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
+                    .setId(1L)
+            ))
+        );
   }
 
 }

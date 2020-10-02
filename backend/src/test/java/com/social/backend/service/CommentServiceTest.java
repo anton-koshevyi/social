@@ -2,15 +2,9 @@ package com.social.backend.service;
 
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.social.backend.exception.IllegalActionException;
 import com.social.backend.exception.NotFoundException;
@@ -18,56 +12,67 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.CommentRepositoryImpl;
-import com.social.backend.test.TestComparator;
-import com.social.backend.test.TestEntity;
+import com.social.backend.test.comparator.ComparatorFactory;
+import com.social.backend.test.comparator.NotNullComparator;
+import com.social.backend.test.model.ModelFactory;
+import com.social.backend.test.model.comment.CommentType;
+import com.social.backend.test.model.post.PostType;
+import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.stub.repository.CommentRepositoryStub;
+import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
-@DataJpaTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({CommentServiceImpl.class, CommentRepositoryImpl.class})
 public class CommentServiceTest {
 
-  @Autowired
-  private CommentService commentService;
+  private IdentificationContext<Comment> identification;
+  private CommentRepositoryStub repository;
+  private CommentService service;
 
-  @Autowired
-  private TestEntityManager entityManager;
-
-  @Test
-  public void create_exception_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor() {
-    User postAuthor = entityManager.persist(TestEntity
-        .user()
-        .setPublicity(Publicity.PRIVATE));
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setEmail("commentAuthor@mail.com")
-        .setUsername("commentAuthor"));
-
-    Assertions
-        .assertThatThrownBy(() -> commentService.create(post, author, "body"))
-        .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
+  @BeforeEach
+  public void setUp() {
+    identification = new IdentificationContext<>();
+    repository = new CommentRepositoryStub(identification);
+    service = new CommentServiceImpl(repository);
   }
 
   @Test
-  public void create_exception_whenPostOfInternalAuthor_andCommentNotOfFriend() {
-    User postAuthor = entityManager.persist(TestEntity
-        .user()
-        .setPublicity(Publicity.INTERNAL));
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setEmail("author@mail.com")
-        .setUsername("author"));
+  public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    User author = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
-        .assertThatThrownBy(() -> commentService.create(post, author, "body"))
+        .assertThatThrownBy(() -> service.create(post, author, "Like"))
+        .isExactlyInstanceOf(IllegalActionException.class)
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.comment.privatePost"});
+  }
+
+  @Test
+  public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L)
+        .setPublicity(Publicity.INTERNAL);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    User author = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    identification.setStrategy(e -> e.setId(1L));
+
+    Assertions
+        .assertThatThrownBy(() -> service.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.comment.internalPost"});
@@ -75,214 +80,222 @@ public class CommentServiceTest {
 
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
-    User postAuthor = entityManager.persist(TestEntity
-        .user()
-        .setPublicity(Publicity.PRIVATE));
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, postAuthor, "body");
+    service.create(post, postAuthor, "Like");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .assertThat(repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactory
+                .createModel(PostType.READING)
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setBody("body")
-            .setAuthor(TestEntity
-                .user()
+            .setBody("Like")
+            .setAuthor(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
-    User postAuthor = entityManager.persist(TestEntity
-        .user()
-        .setEmail("postAuthor@mail.com")
-        .setUsername("postAuthor")
-        .setPublicity(Publicity.INTERNAL));
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setEmail("author@mail.com")
-        .setUsername("author"));
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L)
+        .setPublicity(Publicity.INTERNAL);
+    User author = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
+        .setFriends(Sets.newHashSet(postAuthor));
     postAuthor.setFriends(Sets.newHashSet(author));
-    author.setFriends(Sets.newHashSet(postAuthor));
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, author, "body");
+    service.create(post, author, "Like");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .assertThat(repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactory
+                .createModel(PostType.READING)
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("postAuthor@mail.com")
-                    .setUsername("postAuthor")
                     .setPublicity(Publicity.INTERNAL)))
             .setId(1L)
-            .setBody("body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(2L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setBody("Like")
+            .setAuthor(ModelFactory
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L)));
   }
 
   @Test
   public void create_whenPostOfPublicAuthor() {
-    User postAuthor = entityManager.persist(TestEntity
-        .user()
-        .setEmail("postAuthor@mail.com")
-        .setUsername("postAuthor")
-        .setPublicity(Publicity.PUBLIC));
-    User author = entityManager.persist(TestEntity
-        .user()
-        .setEmail("author@mail.com")
-        .setUsername("author"));
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L)
+        .setPublicity(Publicity.PUBLIC);
+    User author = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(2L);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
 
-    commentService.create(post, author, "body");
+    service.create(post, author, "Like");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
-        .usingComparator(TestComparator
-            .commentComparator())
+        .assertThat(repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+            .setPost(ModelFactory
+                .createModel(PostType.READING)
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)
-                    .setEmail("postAuthor@mail.com")
-                    .setUsername("postAuthor")
                     .setPublicity(Publicity.PUBLIC)))
             .setId(1L)
-            .setBody("body")
-            .setAuthor(TestEntity
-                .user()
-                .setId(2L)
-                .setEmail("author@mail.com")
-                .setUsername("author")));
+            .setBody("Like")
+            .setAuthor(ModelFactory
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L)));
   }
 
   @Test
-  public void update_exception_whenNoEntityWithIdAndAuthor() {
-    User author = entityManager.persist(TestEntity.user());
+  public void update_whenNoEntityWithIdAndAuthor_expectException() {
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> commentService.update(0L, author, "body"))
+        .assertThatThrownBy(() -> service.update(0L, author, "Like"))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
   public void update() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
-    entityManager.persist(new Comment()
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) ModelFactory
+        .createModel(CommentType.BADLY)
         .setPost(post)
-        .setBody("comment body")
         .setAuthor(postAuthor));
 
-    commentService.update(1L, postAuthor, "new body");
+    service.update(1L, postAuthor, "Like");
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
-        .usingComparator(TestComparator
-            .commentComparator())
-        .usingComparatorForFields(TestComparator
-            .notNullFirst(), "updated")
-        .isEqualTo(new Comment()
-            .setPost(TestEntity
-                .post()
+        .assertThat(repository.find(1L))
+        .usingComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
+        .isEqualTo(ModelFactory
+            .createModel(CommentType.BADLY)
+            .setPost(ModelFactory
+                .createModel(PostType.READING)
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setBody("new body")
-            .setAuthor(TestEntity
-                .user()
+            .setBody("Like")
+            .setAuthor(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 
   @Test
-  public void delete_exception_whenNoEntityWithIdAndAuthor() {
-    User author = entityManager.persist(TestEntity.user());
+  public void delete_whenNoEntityWithIdAndAuthor_expectException() {
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> commentService.delete(0L, author))
+        .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
   @Test
   public void delete() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
-    entityManager.persist(TestEntity
-        .comment()
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) ModelFactory
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(postAuthor));
 
-    commentService.delete(1L, postAuthor);
+    service.delete(1L, postAuthor);
 
     Assertions
-        .assertThat(entityManager.find(Comment.class, 1L))
+        .assertThat(repository.find(1L))
         .isNull();
   }
 
   @Test
   public void findAll_byPost() {
-    User postAuthor = entityManager.persist(TestEntity.user());
-    Post post = entityManager.persist(TestEntity
-        .post()
-        .setAuthor(postAuthor));
-    entityManager.persist(TestEntity
-        .comment()
+    User postAuthor = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
+        .createModel(PostType.READING)
+        .setId(1L)
+        .setAuthor(postAuthor);
+    identification.setStrategy(e -> e.setId(1L));
+    repository.save((Comment) ModelFactory
+        .createModel(CommentType.LIKE)
         .setPost(post)
         .setAuthor(postAuthor));
 
     Assertions
-        .assertThat(commentService.findAll(post, Pageable.unpaged()))
-        .usingComparatorForType(TestComparator
-            .commentComparator(), Comment.class)
-        .containsExactly((Comment) TestEntity
-            .comment()
-            .setPost(TestEntity
-                .post()
+        .assertThat(service.findAll(post, Pageable.unpaged()))
+        .usingComparatorForType(ComparatorFactory.getComparator(Comment.class), Comment.class)
+        .containsExactly((Comment) ModelFactory
+            .createModel(CommentType.LIKE)
+            .setPost(ModelFactory
+                .createModel(PostType.READING)
                 .setId(1L)
-                .setAuthor(TestEntity
-                    .user()
+                .setAuthor(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)
                     .setId(1L)))
             .setId(1L)
-            .setAuthor(TestEntity
-                .user()
+            .setAuthor(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
                 .setId(1L)));
   }
 

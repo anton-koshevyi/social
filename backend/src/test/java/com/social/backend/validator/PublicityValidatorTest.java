@@ -12,44 +12,49 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.social.backend.model.user.Publicity;
 
 public class PublicityValidatorTest {
-  
-  private static final Validator validator =
+
+  private final Validator validator =
       Validation.buildDefaultValidatorFactory().getValidator();
-  
+
   @Test
-  public void when_nullField_then_noViolations() {
+  public void whenNullField_expectNoViolations() {
     Assertions
         .assertThat(validator.validate(new Target(null)))
         .isEmpty();
   }
-  
+
   @Test
-  public void when_nonExistentPublicityValue_then_fieldViolation() {
+  public void whenNonexistentPublicityValue_expectFieldViolation() {
     Assertions
         .assertThat(validator.validate(new Target(Integer.MAX_VALUE)))
-        .extracting("getPropertyPath.toString",
-            "getMessage")
-        .containsExactly(new Tuple("field",
-            "invalid publicity value"));
+        .extracting(
+            "getPropertyPath.toString",
+            "getMessage"
+        )
+        .containsExactly(new Tuple(
+            "field",
+            "invalid publicity value"
+        ));
   }
-  
+
   @ParameterizedTest
   @ValueSource(ints = {Publicity.PUBLIC, Publicity.INTERNAL, Publicity.PRIVATE})
-  public void when_existentPublicityValue_then_noViolations(int publicity) {
+  public void whenExistentPublicityValue_expectNoViolations(int publicity) {
     Assertions
         .assertThat(validator.validate(new Target(publicity)))
         .isEmpty();
   }
-  
+
+
   private static class Target {
-    
+
     @com.social.backend.constraint.Publicity
     private final Integer field;
-    
+
     private Target(Integer field) {
       this.field = field;
     }
-    
+
   }
-  
+
 }

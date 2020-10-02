@@ -3,8 +3,8 @@ package com.social.backend.service;
 import java.util.Collections;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableSet;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,65 +22,65 @@ import com.social.backend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class UserDetailsServiceTest {
-  
+
   @Mock
   private UserRepository userRepository;
   private UserDetailsService userDetailsService;
-  
+
   @BeforeEach
   public void setUp() {
     userDetailsService = new UserDetailsServiceImpl(userRepository);
   }
-  
+
   @Test
-  public void loadUserByUsername_exception_whenNoUserWithEmailOrUsername() {
+  public void loadUserByUsername_whenNoUserWithEmailOrUsername_expectException() {
     Assertions
-        .assertThatThrownBy(() -> userDetailsService.loadUserByUsername("username"))
+        .assertThatThrownBy(() -> userDetailsService.loadUserByUsername("johnsmith"))
         .isExactlyInstanceOf(UsernameNotFoundException.class)
-        .hasMessage("No user with email or username: username");
+        .hasMessage("No user with email or username: johnsmith");
   }
-  
+
   @Test
   public void loadUserByUsername_whenUserFoundByEmail() {
     Mockito
-        .when(userRepository.findByEmail("email@mail.com"))
+        .when(userRepository.findByEmail("johnsmith@example.com"))
         .thenReturn(Optional.of(new User()
             .setId(1L)
-            .setEmail("email@mail.com")
-            .setPassword("password")));
-    
+            .setEmail("johnsmith@example.com")
+            .setPassword("{encoded}password")));
+
     Assertions
-        .assertThat(userDetailsService.loadUserByUsername("email@mail.com"))
+        .assertThat(userDetailsService.loadUserByUsername("johnsmith@example.com"))
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,
-            "email@mail.com",
-            "password",
+            "johnsmith@example.com",
+            "{encoded}password",
             Collections.emptySet()
         ));
   }
-  
+
   @Test
   public void loadUserByUsername_whenUserFoundByUsername() {
     Mockito
-        .when(userRepository.findByUsername("username"))
+        .when(userRepository.findByUsername("johnsmith"))
         .thenReturn(Optional.of(new User()
             .setId(1L)
-            .setUsername("username")
-            .setPassword("password")
+            .setUsername("johnsmith")
+            .setPassword("{encoded}password")
             .setModer(true)
             .setAdmin(true)));
-    
+
     Assertions
-        .assertThat(userDetailsService.loadUserByUsername("username"))
+        .assertThat(userDetailsService.loadUserByUsername("johnsmith"))
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,
-            "username",
-            "password",
-            ImmutableSet.of(
-                new SimpleGrantedAuthority(Authority.ADMIN),
-                new SimpleGrantedAuthority(Authority.MODER)
+            "johnsmith",
+            "{encoded}password",
+            Sets.newLinkedHashSet(
+                new SimpleGrantedAuthority(Authority.MODER),
+                new SimpleGrantedAuthority(Authority.ADMIN)
             )
         ));
   }
-  
+
 }
