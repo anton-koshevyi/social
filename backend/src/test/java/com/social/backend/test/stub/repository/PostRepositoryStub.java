@@ -1,8 +1,8 @@
 package com.social.backend.test.stub.repository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -40,9 +40,10 @@ public class PostRepositoryStub
 
   @Override
   public Optional<Post> findByIdAndAuthor(Long id, User author) {
-    Post entity = super.find(post ->
-        Objects.equals(post.getId(), id)
-            && Objects.equals(post.getAuthor(), author));
+    Post entity = super.find(
+        byId(id)
+            .and(byAuthor(author))
+    );
     return Optional.ofNullable(entity);
   }
 
@@ -55,7 +56,7 @@ public class PostRepositoryStub
   @Override
   public Page<Post> findAllByAuthor(User author, Pageable pageable) {
     List<Post> entities = super.findAll().stream()
-        .filter(post -> Objects.equals(author, post.getAuthor()))
+        .filter(byAuthor(author))
         .collect(Collectors.toList());
     return new PageImpl<>(entities);
   }
@@ -63,6 +64,14 @@ public class PostRepositoryStub
   @Override
   public void delete(Post entity) {
     super.delete(entity);
+  }
+
+  private static Predicate<Post> byId(Long id) {
+    return e -> id.equals(e.getId());
+  }
+
+  private static Predicate<Post> byAuthor(User author) {
+    return e -> author.getId().equals(e.getAuthor().getId());
   }
 
 }

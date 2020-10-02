@@ -1,8 +1,8 @@
 package com.social.backend.test.stub.repository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -35,16 +35,17 @@ public class MessageRepositoryStub
 
   @Override
   public Optional<Message> findByIdAndAuthor(Long id, User author) {
-    Message entity = super.find(message ->
-        Objects.equals(message.getId(), id)
-            && Objects.equals(message.getAuthor(), author));
+    Message entity = super.find(
+        byId(id)
+            .and(byAuthor(author))
+    );
     return Optional.ofNullable(entity);
   }
 
   @Override
   public Page<Message> findAllByChat(Chat chat, Pageable pageable) {
     List<Message> entities = super.findAll().stream()
-        .filter(message -> Objects.equals(chat, message.getChat()))
+        .filter(byChat(chat))
         .collect(Collectors.toList());
     return new PageImpl<>(entities);
   }
@@ -52,6 +53,18 @@ public class MessageRepositoryStub
   @Override
   public void delete(Message entity) {
     super.delete(entity);
+  }
+
+  private static Predicate<Message> byId(Long id) {
+    return e -> id.equals(e.getId());
+  }
+
+  private static Predicate<Message> byAuthor(User author) {
+    return e -> author.getId().equals(e.getAuthor().getId());
+  }
+
+  private static Predicate<Message> byChat(Chat chat) {
+    return e -> chat.getId().equals(e.getChat().getId());
   }
 
 }

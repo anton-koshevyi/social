@@ -1,8 +1,8 @@
 package com.social.backend.test.stub.repository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -35,16 +35,17 @@ public class CommentRepositoryStub
 
   @Override
   public Optional<Comment> findByIdAndAuthor(Long id, User author) {
-    Comment entity = super.find(comment ->
-        Objects.equals(comment.getId(), id)
-            && Objects.equals(comment.getAuthor(), author));
+    Comment entity = super.find(
+        byId(id)
+            .and(byAuthor(author))
+    );
     return Optional.ofNullable(entity);
   }
 
   @Override
   public Page<Comment> findAllByPost(Post post, Pageable pageable) {
     List<Comment> entities = super.findAll().stream()
-        .filter(comment -> Objects.equals(post, comment.getPost()))
+        .filter(byPost(post))
         .collect(Collectors.toList());
     return new PageImpl<>(entities);
   }
@@ -52,6 +53,18 @@ public class CommentRepositoryStub
   @Override
   public void delete(Comment entity) {
     super.delete(entity);
+  }
+
+  private static Predicate<Comment> byId(Long id) {
+    return e -> id.equals(e.getId());
+  }
+
+  private static Predicate<Comment> byAuthor(User author) {
+    return e -> author.getId().equals(e.getAuthor().getId());
+  }
+
+  private static Predicate<Comment> byPost(Post post) {
+    return e -> post.getId().equals(e.getPost().getId());
   }
 
 }

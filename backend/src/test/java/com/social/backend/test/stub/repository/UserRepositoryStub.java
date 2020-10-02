@@ -1,8 +1,8 @@
 package com.social.backend.test.stub.repository;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -38,15 +38,13 @@ public class UserRepositoryStub
 
   @Override
   public Optional<User> findByEmail(String email) {
-    User entity = super.find(user ->
-        Objects.equals(user.getEmail(), email));
+    User entity = super.find(byEmail(email));
     return Optional.ofNullable(entity);
   }
 
   @Override
   public Optional<User> findByUsername(String username) {
-    User entity = super.find(user ->
-        Objects.equals(user.getUsername(), username));
+    User entity = super.find(byUsername(username));
     return Optional.ofNullable(entity);
   }
 
@@ -58,17 +56,25 @@ public class UserRepositoryStub
 
   @Override
   public boolean existsByEmail(String email) {
-    return super.exists(user -> Objects.equals(user.getEmail(), email));
+    return super.exists(byEmail(email));
   }
 
   @Override
   public boolean existsByUsername(String username) {
-    return super.exists(user -> Objects.equals(user.getUsername(), username));
+    return super.exists(byUsername(username));
   }
 
   @Override
   public void delete(User entity) {
     super.delete(entity);
+  }
+
+  private static Predicate<User> byEmail(String email) {
+    return e -> email.equals(e.getEmail());
+  }
+
+  private static Predicate<User> byUsername(String username) {
+    return e -> username.equals(e.getUsername());
   }
 
 }
