@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.social.backend.common.PrincipalHolder;
@@ -41,6 +42,7 @@ public class AccountController {
 
   @PostMapping("/account")
   public UserDto create(@Valid @RequestBody CreateDto dto,
+                        @RequestParam(required = false) boolean autoLogin,
                         HttpServletRequest request) throws ServletException {
     User account = userService.create(
         dto.getEmail(),
@@ -49,10 +51,14 @@ public class AccountController {
         dto.getLastName(),
         dto.getPassword()
     );
-    request.login(
-        dto.getUsername(),
-        dto.getPassword()
-    );
+
+    if (autoLogin) {
+      request.login(
+          dto.getUsername(),
+          dto.getPassword()
+      );
+    }
+
     return UserMapper.INSTANCE.toDto(account);
   }
 

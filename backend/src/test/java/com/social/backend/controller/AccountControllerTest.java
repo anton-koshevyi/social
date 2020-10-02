@@ -7,7 +7,6 @@ import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -117,7 +116,6 @@ public class AccountControllerTest {
   }
 
   @Test
-  @Disabled("Perform auto-login when required")
   public void create() throws JSONException {
     identification.setStrategy(e -> e.setId(1L));
 
@@ -142,7 +140,7 @@ public class AccountControllerTest {
 
     String expected = "{"
         + "id: 1,"
-        + "email: 'johnsmith@example.com',"
+        + "email: null,"
         + "username: 'johnsmith',"
         + "firstName: 'John',"
         + "lastName: 'Smith',"
