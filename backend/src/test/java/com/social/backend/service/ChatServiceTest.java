@@ -259,9 +259,10 @@ public class ChatServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> service.updateGroup(0L, member, "new name"))
+        .assertThatThrownBy(() -> service.updateGroup(0L, member, "Classmates"))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -467,7 +468,8 @@ public class ChatServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.changeOwner(0L, owner, newOwner))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -536,7 +538,8 @@ public class ChatServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.leaveGroup(0L, member))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndMember"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -601,7 +604,8 @@ public class ChatServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.deleteGroup(0L, owner))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 

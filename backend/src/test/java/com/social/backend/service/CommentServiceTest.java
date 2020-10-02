@@ -52,7 +52,8 @@ public class CommentServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.comment.privatePost"});
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.comment.privatePost"});
   }
 
   @Test
@@ -189,7 +190,8 @@ public class CommentServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.update(0L, author, "Like"))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -238,7 +240,8 @@ public class CommentServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.comment.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.comment.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 

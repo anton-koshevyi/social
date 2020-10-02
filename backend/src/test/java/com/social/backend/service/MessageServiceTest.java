@@ -56,7 +56,8 @@ public class MessageServiceTest {
                     ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
-                )))
+                ))
+            )
             .setId(1L)
             .setBody("How are you?")
             .setAuthor(ModelFactory
@@ -73,7 +74,8 @@ public class MessageServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.update(0L, author, "How are you?"))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -107,7 +109,8 @@ public class MessageServiceTest {
                     ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
-                )))
+                ))
+            )
             .setId(1L)
             .setBody("How are you?")
             .setAuthor(ModelFactory
@@ -124,7 +127,8 @@ public class MessageServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.message.byIdAndAuthor"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.message.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -177,7 +181,8 @@ public class MessageServiceTest {
                     ModelFactory
                         .createModel(UserType.JOHN_SMITH)
                         .setId(1L)
-                )))
+                ))
+            )
             .setId(1L)
             .setAuthor(ModelFactory
                 .createModel(UserType.JOHN_SMITH)

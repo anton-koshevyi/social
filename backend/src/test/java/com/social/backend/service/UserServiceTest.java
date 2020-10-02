@@ -62,10 +62,10 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.update(
             1L,
-            "fredbloggs@example.com",
-            "fredbloggs",
-            "Fred",
-            "Bloggs",
+            "johnsmith@example.com",
+            "johnsmith",
+            "John",
+            "Smith",
             Publicity.PUBLIC
         ))
         .isExactlyInstanceOf(NotFoundException.class)
@@ -77,12 +77,7 @@ public class UserServiceTest {
   public void update() {
     identification.setStrategy(e -> e.setId(1L));
     repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setEmail("fredbloggs@example.com")
-        .setUsername("fredbloggs")
-        .setFirstName("Fred")
-        .setLastName("Bloggs")
-        .setPublicity(Publicity.PRIVATE));
+        .createModel(UserType.FRED_BLOGGS));
 
     service.update(
         1L,
@@ -217,7 +212,8 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addHimself"});
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.user.addHimself"});
   }
 
   @Test
@@ -255,7 +251,8 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPrivate"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.user.addPrivate"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
 
@@ -275,7 +272,8 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.addPresent"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.user.addPresent"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
 
@@ -335,7 +333,8 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeHimself"});
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.user.removeHimself"});
   }
 
   @Test
@@ -372,7 +371,8 @@ public class UserServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"illegalAction.user.removeAbsent"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"illegalAction.user.removeAbsent"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
 
