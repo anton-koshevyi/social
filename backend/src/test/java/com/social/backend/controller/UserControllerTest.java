@@ -151,48 +151,6 @@ public class UserControllerTest {
   }
 
   @Test
-  public void updateRole_whenEmptyBody_expectNoChanges() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setAdmin(true));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L,
-        "fredbloggs",
-        "password",
-        SecurityManager.createAuthorities(Authority.ADMIN)
-    ));
-
-    String actual = RestAssuredMockMvc
-        .given()
-        .header("Accept", "application/json")
-        .header("Content-Type", "application/json")
-        .body("{}")
-        .when()
-        .patch("/users/{id}/roles", 2)
-        .then()
-        .statusCode(HttpServletResponse.SC_OK)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "id: 2,"
-        + "email: 'johnsmith@example.com',"
-        + "username: 'johnsmith',"
-        + "firstName: 'John',"
-        + "lastName: 'Smith',"
-        + "publicity: 10,"
-        + "moder: false,"
-        + "admin: false"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
-  }
-
-  @Test
   public void updateRole() throws JSONException {
     userIdentification.setStrategy(e -> e.setId(1L));
     userRepository.save(ModelFactory
