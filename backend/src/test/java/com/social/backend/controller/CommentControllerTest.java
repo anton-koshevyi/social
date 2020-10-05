@@ -5,15 +5,24 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -26,50 +35,29 @@ import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.CommentRepository;
-import com.social.backend.repository.PostRepository;
-import com.social.backend.repository.UserRepository;
-import com.social.backend.service.CommentServiceImpl;
-import com.social.backend.service.PostServiceImpl;
-import com.social.backend.service.UserServiceImpl;
+import com.social.backend.service.CommentService;
+import com.social.backend.service.PostService;
+import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.PasswordEncoderStub;
-import com.social.backend.test.stub.repository.CommentRepositoryStub;
-import com.social.backend.test.stub.repository.PostRepositoryStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class CommentControllerTest {
 
-  private IdentificationContext<User> userIdentification;
-  private IdentificationContext<Post> postIdentification;
-  private IdentificationContext<Comment> commentIdentification;
-  private UserRepository userRepository;
-  private PostRepository postRepository;
-  private CommentRepository commentRepository;
+  private @Mock CommentService commentService;
+  private @Mock PostService postService;
+  private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
-    userIdentification = new IdentificationContext<>();
-    postIdentification = new IdentificationContext<>();
-    commentIdentification = new IdentificationContext<>();
-    userRepository = new UserRepositoryStub(userIdentification);
-    postRepository = new PostRepositoryStub(postIdentification);
-    commentRepository = new CommentRepositoryStub(commentIdentification);
-
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(PasswordEncoderStub.class);
-    appContext.registerBean(UserRepository.class, () -> userRepository);
-    appContext.registerBean(PostRepository.class, () -> postRepository);
-    appContext.registerBean(CommentRepository.class, () -> commentRepository);
-    appContext.registerBean(UserServiceImpl.class);
-    appContext.registerBean(PostServiceImpl.class);
-    appContext.registerBean(CommentServiceImpl.class);
+    appContext.registerBean(CommentService.class, () -> commentService);
+    appContext.registerBean(PostService.class, () -> postService);
+    appContext.registerBean(UserService.class, () -> userService);
     appContext.refresh();
 
     AnnotationConfigWebApplicationContext webContext =
@@ -87,20 +75,32 @@ public class CommentControllerTest {
         .build());
   }
 
+  @AfterEach
+  public void tearDown() {
+    SecurityManager.clearContext();
+  }
+
   @Test
   public void getAll() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    Post post = postRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
         .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
-    commentRepository.save((Comment) ModelFactory
-        .createModel(CommentType.LIKE)
-        .setPost(post)
-        .setAuthor(author));
+        .setId(1L)
+        .setAuthor(author);
+    Mockito
+        .when(postService.find(1L))
+        .thenReturn(post);
+    Mockito
+        .when(commentService.findAll(post, PageRequest.of(0, 20, Sort.unsorted())))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList((Comment) ModelFactory
+                .createModel(CommentType.LIKE)
+                .setPost(post)
+                .setId(1L)
+                .setAuthor(author))
+        ));
 
     String response = RestAssuredMockMvc
         .given()
@@ -158,17 +158,6 @@ public class CommentControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    postRepository.save(ModelFactory
-        .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -184,14 +173,26 @@ public class CommentControllerTest {
 
   @Test
   public void create() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    postRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
         .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
+        .setId(1L)
+        .setAuthor(author);
+    Mockito
+        .when(postService.find(1L))
+        .thenReturn(post);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(commentService.create(post, author, "Like"))
+        .thenReturn((Comment) ModelFactory
+            .createModel(CommentType.LIKE)
+            .setPost(post)
+            .setId(1L)
+            .setAuthor(author));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -250,21 +251,6 @@ public class CommentControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    Post post = postRepository.save(ModelFactory
-        .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
-    commentRepository.save((Comment) ModelFactory
-        .createModel(CommentType.BADLY)
-        .setPost(post)
-        .setAuthor(author));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -280,18 +266,23 @@ public class CommentControllerTest {
 
   @Test
   public void update() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    Post post = postRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Post post = ModelFactory
         .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
-    commentRepository.save((Comment) ModelFactory
-        .createModel(CommentType.BADLY)
-        .setPost(post)
-        .setAuthor(author));
+        .setId(1L)
+        .setAuthor(author);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(commentService.update(1L, author, "Like"))
+        .thenReturn((Comment) ModelFactory
+            .createModel(CommentType.LIKE)
+            .setPost(post)
+            .setId(1L)
+            .setAuthor(author));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -351,18 +342,11 @@ public class CommentControllerTest {
 
   @Test
   public void delete() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    postIdentification.setStrategy(e -> e.setId(1L));
-    Post post = postRepository.save(ModelFactory
-        .createModel(PostType.READING)
-        .setAuthor(author));
-    commentIdentification.setStrategy(e -> e.setId(1L));
-    commentRepository.save((Comment) ModelFactory
-        .createModel(CommentType.LIKE)
-        .setPost(post)
-        .setAuthor(author));
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -370,6 +354,10 @@ public class CommentControllerTest {
         .delete("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(commentService)
+        .delete(Mockito.eq(1L), Mockito.any());
   }
 
 

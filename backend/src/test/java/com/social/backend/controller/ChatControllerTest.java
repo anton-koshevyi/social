@@ -6,13 +6,22 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.common.collect.Sets;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -22,44 +31,28 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
-import com.social.backend.model.chat.Chat;
+import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepository;
-import com.social.backend.repository.UserRepository;
-import com.social.backend.service.ChatServiceImpl;
-import com.social.backend.service.UserServiceImpl;
+import com.social.backend.service.ChatService;
+import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.GroupChatType;
-import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.PasswordEncoderStub;
-import com.social.backend.test.stub.repository.ChatRepositoryStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class ChatControllerTest {
 
-  private IdentificationContext<User> userIdentification;
-  private IdentificationContext<Chat> chatIdentification;
-  private UserRepository userRepository;
-  private ChatRepository chatRepository;
+  private @Mock ChatService chatService;
+  private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
-    userIdentification = new IdentificationContext<>();
-    chatIdentification = new IdentificationContext<>();
-    userRepository = new UserRepositoryStub(userIdentification);
-    chatRepository = new ChatRepositoryStub(chatIdentification);
-
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(PasswordEncoderStub.class);
-    appContext.registerBean(UserRepository.class, () -> userRepository);
-    appContext.registerBean(ChatRepository.class, () -> chatRepository);
-    appContext.registerBean(UserServiceImpl.class);
-    appContext.registerBean(ChatServiceImpl.class);
+    appContext.registerBean(ChatService.class, () -> chatService);
+    appContext.registerBean(UserService.class, () -> userService);
     appContext.refresh();
 
     AnnotationConfigWebApplicationContext webContext =
@@ -77,16 +70,28 @@ public class ChatControllerTest {
         .build());
   }
 
+  @AfterEach
+  public void tearDown() {
+    SecurityManager.clearContext();
+  }
+
   @Test
   public void getAll() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
+    Mockito
+        .when(chatService.findAll(member, PageRequest.of(0, 20, Sort.unsorted())))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(ModelFactory
+                .createModel(GroupChatType.CLASSMATES)
+                .setOwner(member)
+                .setId(1L)
+                .setMembers(Sets.newHashSet(member)))
+        ));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -125,14 +130,19 @@ public class ChatControllerTest {
 
   @Test
   public void get() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
+    Mockito
+        .when(chatService.find(1L, member))
+        .thenReturn(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(member)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(member)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -168,14 +178,17 @@ public class ChatControllerTest {
 
   @Test
   public void getMembers() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
+    Mockito
+        .when(chatService.getMembers(1L, member, PageRequest.of(0, 20, Sort.unsorted())))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(member)
+        ));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -208,13 +221,12 @@ public class ChatControllerTest {
 
   @Test
   public void deletePrivate() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(member)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -222,21 +234,14 @@ public class ChatControllerTest {
         .delete("/chats/private/{id}", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(chatService)
+        .deletePrivate(1L, member);
   }
 
   @Test
   public void createGroup_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -252,14 +257,26 @@ public class ChatControllerTest {
 
   @Test
   public void createGroup() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    userRepository.save(ModelFactory
+    User creator = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
-    chatIdentification.setStrategy(e -> e.setId(1L));
+        .setId(2L)
+        .setPublicity(Publicity.PUBLIC);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(creator);
+    Mockito
+        .when(userService.find(2L))
+        .thenReturn(member);
+    Mockito
+        .when(chatService.createGroup(creator, "Classmates", Sets.newHashSet(member)))
+        .thenReturn((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(creator)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(creator, member)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -300,17 +317,6 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroup_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.SCIENTISTS)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -326,14 +332,19 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroup() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.SCIENTISTS)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
+    Mockito
+        .when(chatService.updateGroup(1L, member, "Classmates"))
+        .thenReturn((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(member)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(member)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -371,36 +382,33 @@ public class ChatControllerTest {
 
   @Test
   public void leaveGroup() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User fredBloggs = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    User johnSmith = userRepository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(fredBloggs)
-        .setMembers(Sets.newHashSet(fredBloggs, johnSmith)));
+    User member = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(member);
     SecurityManager.setUser(new IdentifiedUserDetails(
-        2L, "fredbloggs", "password", Collections.emptySet()));
+        1L, "johnsmith", "password", Collections.emptySet()));
 
     RestAssuredMockMvc
         .put("/chats/group/{id}", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(chatService)
+        .leaveGroup(1L, member);
   }
 
   @Test
   public void deleteGroup() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User member = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(owner);
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -408,25 +416,14 @@ public class ChatControllerTest {
         .delete("/chats/group/{id}", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(chatService)
+        .deleteGroup(1L, owner);
   }
 
   @Test
   public void updateGroupMembers_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User owner = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    userRepository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -442,18 +439,26 @@ public class ChatControllerTest {
 
   @Test
   public void updateGroupMembers() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User owner = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    userRepository.save(ModelFactory
+    User owner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User newMember = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+        .setPublicity(Publicity.PUBLIC)
+        .setId(2L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(owner);
+    Mockito
+        .when(userService.find(2L))
+        .thenReturn(newMember);
+    Mockito
+        .when(chatService.updateGroupMembers(1L, owner, Sets.newHashSet(owner, newMember)))
+        .thenReturn((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner, newMember)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -491,17 +496,25 @@ public class ChatControllerTest {
 
   @Test
   public void changeOwner() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User owner = userRepository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
-    userIdentification.setStrategy(e -> e.setId(2L));
-    User newOwner = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner, newOwner)));
+    User owner = ModelFactory
+        .createModel(UserType.FRED_BLOGGS)
+        .setId(1L);
+    User newOwner = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(2L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(owner);
+    Mockito
+        .when(userService.find(2L))
+        .thenReturn(newOwner);
+    Mockito
+        .when(chatService.changeOwner(1L, owner, newOwner))
+        .thenReturn((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(newOwner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner, newOwner)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "fredbloggs", "password", Collections.emptySet()));
 
@@ -509,7 +522,7 @@ public class ChatControllerTest {
         .given()
         .header("Accept", "application/json")
         .when()
-        .put("/chats/group/{id}/members/2", 1)
+        .put("/chats/group/{id}/members/{newOwnerId}", 1, 2)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()

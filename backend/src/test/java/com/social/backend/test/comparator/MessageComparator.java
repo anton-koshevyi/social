@@ -2,7 +2,7 @@ package com.social.backend.test.comparator;
 
 import java.util.Comparator;
 
-import com.google.common.collect.ComparisonChain;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
@@ -19,15 +19,10 @@ class MessageComparator extends ReplyComparator<Message> {
 
   @Override
   public int compare(Message left, Message right) {
-    int superCompare = super.compare(left, right);
-
-    if (superCompare != 0) {
-      return superCompare;
-    }
-
-    return ComparisonChain.start()
-        .compare(left.getChat(), right.getChat(), chatComparator)
-        .result();
+    return new CompareToBuilder()
+        .appendSuper(super.compare(left, right))
+        .append(left.getChat(), right.getChat(), chatComparator)
+        .toComparison();
   }
 
 }

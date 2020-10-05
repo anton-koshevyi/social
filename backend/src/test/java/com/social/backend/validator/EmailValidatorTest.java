@@ -20,8 +20,7 @@ import com.social.backend.repository.UserRepository;
 @ExtendWith(MockitoExtension.class)
 public class EmailValidatorTest {
 
-  @Mock
-  private UserRepository userRepository;
+  private @Mock UserRepository userRepository;
   private Validator validator;
 
   @BeforeEach

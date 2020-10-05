@@ -23,19 +23,18 @@ import com.social.backend.repository.UserRepository;
 @ExtendWith(MockitoExtension.class)
 public class UserDetailsServiceTest {
 
-  @Mock
-  private UserRepository userRepository;
-  private UserDetailsService userDetailsService;
+  private @Mock UserRepository repository;
+  private UserDetailsService service;
 
   @BeforeEach
   public void setUp() {
-    userDetailsService = new UserDetailsServiceImpl(userRepository);
+    service = new UserDetailsServiceImpl(repository);
   }
 
   @Test
   public void loadUserByUsername_whenNoUserWithEmailOrUsername_expectException() {
     Assertions
-        .assertThatThrownBy(() -> userDetailsService.loadUserByUsername("johnsmith"))
+        .assertThatThrownBy(() -> service.loadUserByUsername("johnsmith"))
         .isExactlyInstanceOf(UsernameNotFoundException.class)
         .hasMessage("No user with email or username: johnsmith");
   }
@@ -43,14 +42,14 @@ public class UserDetailsServiceTest {
   @Test
   public void loadUserByUsername_whenUserFoundByEmail() {
     Mockito
-        .when(userRepository.findByEmail("johnsmith@example.com"))
+        .when(repository.findByEmail("johnsmith@example.com"))
         .thenReturn(Optional.of(new User()
             .setId(1L)
             .setEmail("johnsmith@example.com")
             .setPassword("{encoded}password")));
 
     Assertions
-        .assertThat(userDetailsService.loadUserByUsername("johnsmith@example.com"))
+        .assertThat(service.loadUserByUsername("johnsmith@example.com"))
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,
             "johnsmith@example.com",
@@ -62,7 +61,7 @@ public class UserDetailsServiceTest {
   @Test
   public void loadUserByUsername_whenUserFoundByUsername() {
     Mockito
-        .when(userRepository.findByUsername("johnsmith"))
+        .when(repository.findByUsername("johnsmith"))
         .thenReturn(Optional.of(new User()
             .setId(1L)
             .setUsername("johnsmith")
@@ -71,8 +70,8 @@ public class UserDetailsServiceTest {
             .setAdmin(true)));
 
     Assertions
-        .assertThat(userDetailsService.loadUserByUsername("johnsmith"))
-        .isEqualToComparingFieldByField(new IdentifiedUserDetails(
+        .assertThat(service.loadUserByUsername("johnsmith"))
+        .isEqualTo(new IdentifiedUserDetails(
             1L,
             "johnsmith",
             "{encoded}password",

@@ -2,7 +2,7 @@ package com.social.backend.test.comparator;
 
 import java.util.Comparator;
 
-import com.google.common.collect.ComparisonChain;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
@@ -19,15 +19,10 @@ class CommentComparator extends ReplyComparator<Comment> {
 
   @Override
   public int compare(Comment left, Comment right) {
-    int superCompare = super.compare(left, right);
-
-    if (superCompare != 0) {
-      return superCompare;
-    }
-
-    return ComparisonChain.start()
-        .compare(left.getPost(), right.getPost(), postComparator)
-        .result();
+    return new CompareToBuilder()
+        .appendSuper(super.compare(left, right))
+        .append(left.getPost(), right.getPost(), postComparator)
+        .toComparison();
   }
 
 }

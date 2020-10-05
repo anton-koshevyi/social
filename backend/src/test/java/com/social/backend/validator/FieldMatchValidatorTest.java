@@ -8,7 +8,6 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -23,16 +22,13 @@ public class FieldMatchValidatorTest {
   public void givenAnyNotMatch_whenExceptionOnFieldReading_thenException()
       throws IllegalAccessException {
     try (MockedStatic<FieldUtils> ignored = Mockito.mockStatic(FieldUtils.class)) {
+      Match target = new Match(1, 1);
       Mockito
-          .when(FieldUtils.readField(
-              ArgumentMatchers.any(Match.class),
-              Mockito.eq("field"),
-              Mockito.eq(true)
-          ))
+          .when(FieldUtils.readField(target, "field", true))
           .thenThrow(new IllegalAccessException("Cause"));
 
       Assertions
-          .assertThatThrownBy(() -> validator.validate(new Match(1, 1)))
+          .assertThatThrownBy(() -> validator.validate(target))
           .isExactlyInstanceOf(ValidationException.class)
           .hasCause(new RuntimeException("Unable to read field: field"));
     }

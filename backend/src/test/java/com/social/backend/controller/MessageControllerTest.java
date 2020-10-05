@@ -6,15 +6,24 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.common.collect.Sets;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.Customization;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -27,50 +36,29 @@ import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.model.chat.Chat;
 import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
-import com.social.backend.repository.ChatRepository;
-import com.social.backend.repository.MessageRepository;
-import com.social.backend.repository.UserRepository;
-import com.social.backend.service.ChatServiceImpl;
-import com.social.backend.service.MessageServiceImpl;
-import com.social.backend.service.UserServiceImpl;
+import com.social.backend.service.ChatService;
+import com.social.backend.service.MessageService;
+import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.message.MessageType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.PasswordEncoderStub;
-import com.social.backend.test.stub.repository.ChatRepositoryStub;
-import com.social.backend.test.stub.repository.MessageRepositoryStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class MessageControllerTest {
 
-  private IdentificationContext<User> userIdentification;
-  private IdentificationContext<Chat> chatIdentification;
-  private IdentificationContext<Message> messageIdentification;
-  private UserRepository userRepository;
-  private ChatRepository chatRepository;
-  private MessageRepository messageRepository;
+  private @Mock MessageService messageService;
+  private @Mock ChatService chatService;
+  private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
-    userIdentification = new IdentificationContext<>();
-    chatIdentification = new IdentificationContext<>();
-    messageIdentification = new IdentificationContext<>();
-    userRepository = new UserRepositoryStub(userIdentification);
-    chatRepository = new ChatRepositoryStub(chatIdentification);
-    messageRepository = new MessageRepositoryStub(messageIdentification);
-
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(PasswordEncoderStub.class);
-    appContext.registerBean(UserRepository.class, () -> userRepository);
-    appContext.registerBean(ChatRepository.class, () -> chatRepository);
-    appContext.registerBean(MessageRepository.class, () -> messageRepository);
-    appContext.registerBean(UserServiceImpl.class);
-    appContext.registerBean(ChatServiceImpl.class);
-    appContext.registerBean(MessageServiceImpl.class);
+    appContext.registerBean(MessageService.class, () -> messageService);
+    appContext.registerBean(ChatService.class, () -> chatService);
+    appContext.registerBean(UserService.class, () -> userService);
     appContext.refresh();
 
     AnnotationConfigWebApplicationContext webContext =
@@ -88,20 +76,35 @@ public class MessageControllerTest {
         .build());
   }
 
+  @AfterEach
+  public void tearDown() {
+    SecurityManager.clearContext();
+  }
+
   @Test
   public void getAll() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    Chat chat = chatRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
-    messageRepository.save((Message) ModelFactory
-        .createModel(MessageType.WHATS_UP)
-        .setChat(chat)
-        .setAuthor(author));
+        .setId(1L)
+        .setMembers(Sets.newHashSet(author));
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(chatService.find(1L, author))
+        .thenReturn(chat);
+    Mockito
+        .when(messageService.findAll(chat, PageRequest.of(0, 20, Sort.unsorted())))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList((Message) ModelFactory
+                .createModel(MessageType.WHATS_UP)
+                .setChat(chat)
+                .setId(1L)
+                .setAuthor(author))
+        ));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -155,17 +158,6 @@ public class MessageControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -181,14 +173,26 @@ public class MessageControllerTest {
 
   @Test
   public void create() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    chatRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
+        .setId(1L)
+        .setMembers(Sets.newHashSet(author));
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(chatService.find(1L, author))
+        .thenReturn(chat);
+    Mockito
+        .when(messageService.create(chat, author, "How are you?"))
+        .thenReturn((Message) ModelFactory
+            .createModel(MessageType.WHATS_UP)
+            .setChat(chat)
+            .setId(1L)
+            .setAuthor(author));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -242,21 +246,6 @@ public class MessageControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectException() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    Chat chat = chatRepository.save(ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
-    messageRepository.save((Message) ModelFactory
-        .createModel(MessageType.MEETING)
-        .setChat(chat)
-        .setAuthor(author));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Content-Type", "application/json")
@@ -272,18 +261,23 @@ public class MessageControllerTest {
 
   @Test
   public void update() throws JSONException {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    Chat chat = chatRepository.save(ModelFactory
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Chat chat = ModelFactory
         .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
-    messageRepository.save((Message) ModelFactory
-        .createModel(MessageType.MEETING)
-        .setChat(chat)
-        .setAuthor(author));
+        .setId(1L)
+        .setMembers(Sets.newHashSet(author));
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(messageService.update(1L, author, "How are you?"))
+        .thenReturn((Message) ModelFactory
+            .createModel(MessageType.WHATS_UP)
+            .setChat(chat)
+            .setId(1L)
+            .setAuthor(author));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -338,18 +332,12 @@ public class MessageControllerTest {
 
   @Test
   public void delete() {
-    userIdentification.setStrategy(e -> e.setId(1L));
-    User author = userRepository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    chatIdentification.setStrategy(e -> e.setId(1L));
-    Chat chat = chatRepository.save(ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(author)));
-    messageIdentification.setStrategy(e -> e.setId(1L));
-    messageRepository.save((Message) ModelFactory
-        .createModel(MessageType.WHATS_UP)
-        .setChat(chat)
-        .setAuthor(author));
+    User author = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(author);
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -357,6 +345,10 @@ public class MessageControllerTest {
         .delete("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(messageService)
+        .delete(1L, author);
   }
 
 
