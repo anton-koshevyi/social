@@ -6,8 +6,13 @@ import javax.servlet.http.HttpServletResponse;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
 import org.json.JSONException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.springframework.context.support.GenericApplicationContext;
@@ -19,33 +24,25 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import com.social.backend.common.IdentifiedUserDetails;
-import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
-import com.social.backend.service.UserServiceImpl;
+import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.PasswordEncoderStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 import com.social.backend.validator.EmailValidator;
 import com.social.backend.validator.UsernameValidator;
 
+@ExtendWith(MockitoExtension.class)
 public class AccountControllerTest {
 
-  private IdentificationContext<User> identification;
-  private UserRepository repository;
+  private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
-    identification = new IdentificationContext<>();
-    repository = new UserRepositoryStub(identification);
-
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(PasswordEncoderStub.class);
-    appContext.registerBean(UserRepository.class, () -> repository);
-    appContext.registerBean(UserServiceImpl.class);
+    appContext.registerBean(UserService.class, () -> userService);
+    appContext.registerBean(UserRepository.class, () -> Mockito.mock(UserRepository.class));
     appContext.registerBean(EmailValidator.class);
     appContext.registerBean(UsernameValidator.class);
     appContext.refresh();
@@ -65,11 +62,18 @@ public class AccountControllerTest {
         .build());
   }
 
+  @AfterEach
+  public void tearDown() {
+    SecurityManager.clearContext();
+  }
+
   @Test
   public void get() throws JSONException {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
+    Mockito
+        .when(userService.find(1L))
+        .thenReturn(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -99,8 +103,6 @@ public class AccountControllerTest {
 
   @Test
   public void create_whenInvalidBody_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-
     RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
@@ -117,7 +119,17 @@ public class AccountControllerTest {
 
   @Test
   public void create() throws JSONException {
-    identification.setStrategy(e -> e.setId(1L));
+    Mockito
+        .when(userService.create(
+            "johnsmith@example.com",
+            "johnsmith",
+            "John",
+            "Smith",
+            "password"
+        ))
+        .thenReturn(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
 
     String actual = RestAssuredMockMvc
         .given()
@@ -154,12 +166,6 @@ public class AccountControllerTest {
 
   @Test
   public void update_whenInvalidBody_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "fredbloggs", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
@@ -176,9 +182,18 @@ public class AccountControllerTest {
 
   @Test
   public void update() throws JSONException {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
+    Mockito
+        .when(userService.update(
+            1L,
+            "johnsmith@example.com",
+            "johnsmith",
+            "John",
+            "Smith",
+            10
+        ))
+        .thenReturn(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "fredbloggs", "password", Collections.emptySet()));
 
@@ -191,7 +206,7 @@ public class AccountControllerTest {
             + "\"username\": \"johnsmith\","
             + "\"firstName\": \"John\","
             + "\"lastName\": \"Smith\","
-            + "\"publicity\": 30"
+            + "\"publicity\": 10"
             + "}")
         .when()
         .patch("/account")
@@ -206,7 +221,7 @@ public class AccountControllerTest {
         + "username: 'johnsmith',"
         + "firstName: 'John',"
         + "lastName: 'Smith',"
-        + "publicity: 30,"
+        + "publicity: 10,"
         + "moder: false,"
         + "admin: false"
         + "}";
@@ -216,12 +231,6 @@ public class AccountControllerTest {
 
   @Test
   public void delete_whenInvalidBody_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
@@ -238,9 +247,6 @@ public class AccountControllerTest {
 
   @Test
   public void delete() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -252,16 +258,14 @@ public class AccountControllerTest {
         .delete("/account")
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(userService)
+        .delete(1L, "password");
   }
 
   @Test
   public void changePassword_whenInvalidBody_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
-
     RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
@@ -278,9 +282,6 @@ public class AccountControllerTest {
 
   @Test
   public void changePassword() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -296,6 +297,10 @@ public class AccountControllerTest {
         .put("/account/password")
         .then()
         .statusCode(HttpServletResponse.SC_OK);
+
+    Mockito
+        .verify(userService)
+        .changePassword(1L, "password", "newPassword");
   }
 
 }
