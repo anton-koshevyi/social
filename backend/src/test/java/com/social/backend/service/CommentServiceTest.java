@@ -1,9 +1,17 @@
 package com.social.backend.service;
 
+import java.util.Optional;
+
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.social.backend.exception.IllegalActionException;
@@ -12,25 +20,22 @@ import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
+import com.social.backend.repository.CommentRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.comment.CommentType;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.repository.CommentRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
 
-  private IdentificationContext<Comment> identification;
-  private CommentRepositoryStub repository;
+  private @Mock CommentRepository repository;
   private CommentService service;
 
   @BeforeEach
   public void setUp() {
-    identification = new IdentificationContext<>();
-    repository = new CommentRepositoryStub(identification);
     service = new CommentServiceImpl(repository);
   }
 
@@ -47,7 +52,6 @@ public class CommentServiceTest {
     User author = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> service.create(post, author, "Like"))
@@ -69,7 +73,6 @@ public class CommentServiceTest {
     User author = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> service.create(post, author, "Like"))
@@ -88,12 +91,16 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-
-    service.create(post, postAuthor, "Like");
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> {
+          Comment entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
-        .assertThat(repository.find(1L))
+        .assertThat(service.create(post, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(ModelFactory
@@ -124,12 +131,16 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-
-    service.create(post, author, "Like");
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> {
+          Comment entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
-        .assertThat(repository.find(1L))
+        .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(ModelFactory
@@ -159,12 +170,16 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-
-    service.create(post, author, "Like");
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> {
+          Comment entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
-        .assertThat(repository.find(1L))
+        .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .isEqualTo(new Comment()
             .setPost(ModelFactory
@@ -204,16 +219,20 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) ModelFactory
-        .createModel(CommentType.BADLY)
-        .setPost(post)
-        .setAuthor(postAuthor));
-
-    service.update(1L, postAuthor, "Like");
+    Mockito
+        .when(repository.findByIdAndAuthor(1L, postAuthor))
+        .thenReturn(Optional.of((Comment) ModelFactory
+            .createModel(CommentType.BADLY)
+            .setPost(post)
+            .setId(1L)
+            .setBody("Badly")
+            .setAuthor(postAuthor)));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(repository.find(1L))
+        .assertThat(service.update(1L, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(ModelFactory
@@ -254,17 +273,20 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) ModelFactory
+    Comment entity = (Comment) ModelFactory
         .createModel(CommentType.LIKE)
         .setPost(post)
-        .setAuthor(postAuthor));
+        .setId(1L)
+        .setAuthor(postAuthor);
+    Mockito
+        .when(repository.findByIdAndAuthor(1L, postAuthor))
+        .thenReturn(Optional.of(entity));
 
     service.delete(1L, postAuthor);
 
-    Assertions
-        .assertThat(repository.find(1L))
-        .isNull();
+    Mockito
+        .verify(repository)
+        .delete(entity);
   }
 
   @Test
@@ -276,11 +298,15 @@ public class CommentServiceTest {
         .createModel(PostType.READING)
         .setId(1L)
         .setAuthor(postAuthor);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save((Comment) ModelFactory
-        .createModel(CommentType.LIKE)
-        .setPost(post)
-        .setAuthor(postAuthor));
+    Mockito
+        .when(repository.findAllByPost(post, Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList((Comment) ModelFactory
+                .createModel(CommentType.LIKE)
+                .setPost(post)
+                .setId(1L)
+                .setAuthor(postAuthor))
+        ));
 
     Assertions
         .assertThat(service.findAll(post, Pageable.unpaged()))

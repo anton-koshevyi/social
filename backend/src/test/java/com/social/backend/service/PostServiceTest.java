@@ -1,8 +1,16 @@
 package com.social.backend.service;
 
+import java.util.Optional;
+
+import com.google.common.collect.Lists;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.social.backend.exception.NotFoundException;
@@ -14,19 +22,15 @@ import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.post.PostType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.repository.PostRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
 
-  private IdentificationContext<Post> identification;
-  private PostRepository repository;
+  private @Mock PostRepository repository;
   private PostService service;
 
   @BeforeEach
   public void setUp() {
-    identification = new IdentificationContext<>();
-    repository = new PostRepositoryStub(identification);
     service = new PostServiceImpl(repository);
   }
 
@@ -35,13 +39,17 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-
-    service.create(author, "Favorite books", "My personal must-read fiction");
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> {
+          Post entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(service.create(
+            author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .isEqualTo(new Post()
             .setId(1L)
@@ -59,12 +67,8 @@ public class PostServiceTest {
         .setId(1L);
 
     Assertions
-        .assertThatThrownBy(() -> service.update(
-            0L,
-            author,
-            "Favorite books",
-            "My personal must-read fiction"
-        ))
+        .assertThatThrownBy(() ->
+            service.update(0L, author, "Favorite books", "My personal must-read fiction"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -75,16 +79,19 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(PostType.COOKING)
-        .setAuthor(author));
-
-    service.update(1L, author, "Favorite books", "My personal must-read fiction");
+    Mockito
+        .when(repository.findByIdAndAuthor(1L, author))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(PostType.COOKING)
+            .setId(1L)
+            .setAuthor(author)));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(service.update(
+            1L, author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
         .isEqualTo(ModelFactory
@@ -115,16 +122,19 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
+    Post entity = ModelFactory
         .createModel(PostType.COOKING)
-        .setAuthor(author));
+        .setId(1L)
+        .setAuthor(author);
+    Mockito
+        .when(repository.findByIdAndAuthor(1L, author))
+        .thenReturn(Optional.of(entity));
 
     service.delete(1L, author);
 
-    Assertions
-        .assertThat(repository.findById(1L))
-        .isEmpty();
+    Mockito
+        .verify(repository)
+        .delete(entity);
   }
 
   @Test
@@ -141,10 +151,12 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(PostType.COOKING)
-        .setAuthor(author));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(PostType.COOKING)
+            .setId(1L)
+            .setAuthor(author)));
 
     Assertions
         .assertThat(service.find(1L))
@@ -162,10 +174,14 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(PostType.COOKING)
-        .setAuthor(author));
+    Mockito
+        .when(repository.findAll(Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(ModelFactory
+                .createModel(PostType.COOKING)
+                .setId(1L)
+                .setAuthor(author))
+        ));
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
@@ -183,10 +199,14 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(PostType.COOKING)
-        .setAuthor(author));
+    Mockito
+        .when(repository.findAllByAuthor(author, Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(ModelFactory
+                .createModel(PostType.COOKING)
+                .setId(1L)
+                .setAuthor(author))
+        ));
 
     Assertions
         .assertThat(service.findAll(author, Pageable.unpaged()))

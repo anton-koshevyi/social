@@ -1,10 +1,20 @@
 package com.social.backend.service;
 
+import java.util.Collections;
+import java.util.Optional;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.social.backend.exception.IllegalActionException;
@@ -14,24 +24,21 @@ import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
+import com.social.backend.repository.ChatRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.chat.GroupChatType;
 import com.social.backend.test.model.chat.PrivateChatType;
 import com.social.backend.test.model.user.UserType;
-import com.social.backend.test.stub.repository.ChatRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class ChatServiceTest {
 
-  private IdentificationContext<Chat> identification;
-  private ChatRepositoryStub repository;
+  private @Mock ChatRepository repository;
   private ChatService service;
 
   @BeforeEach
   public void setUp() {
-    identification = new IdentificationContext<>();
-    repository = new ChatRepositoryStub(identification);
     service = new ChatServiceImpl(repository);
   }
 
@@ -43,9 +50,9 @@ public class ChatServiceTest {
     User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(new PrivateChat()
-        .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
+    Mockito
+        .when(repository.existsPrivateByMembers(johnSmith, fredBloggs))
+        .thenReturn(true);
 
     Assertions
         .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
@@ -64,7 +71,6 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
-    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
         .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
@@ -85,7 +91,13 @@ public class ChatServiceTest {
         .setPublicity(Publicity.INTERNAL)
         .setFriends(Sets.newHashSet(johnSmith));
     johnSmith.setFriends(Sets.newHashSet(fredBloggs));
-    identification.setStrategy(e -> e.setId(1L));
+    Mockito
+        .when(repository.save(Mockito.any(PrivateChat.class)))
+        .then(i -> {
+          Chat entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
         .assertThat(service.createPrivate(johnSmith, fredBloggs))
@@ -113,7 +125,13 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
-    identification.setStrategy(e -> e.setId(1L));
+    Mockito
+        .when(repository.save(Mockito.any(PrivateChat.class)))
+        .then(i -> {
+          Chat entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
         .assertThat(service.createPrivate(johnSmith, fredBloggs))
@@ -151,19 +169,18 @@ public class ChatServiceTest {
     User johnSmith = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    User fredBloggs = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
+    PrivateChat entity = (PrivateChat) ModelFactory
         .createModel(PrivateChatType.RAW)
-        .setMembers(Sets.newHashSet(johnSmith, fredBloggs)));
+        .setMembers(Sets.newHashSet(johnSmith));
+    Mockito
+        .when(repository.findPrivateByIdAndMember(1L, johnSmith))
+        .thenReturn(Optional.of(entity));
 
     service.deletePrivate(1L, johnSmith);
 
-    Assertions
-        .assertThat(repository.find(1L))
-        .isNull();
+    Mockito
+        .verify(repository)
+        .delete(entity);
   }
 
   @Test
@@ -175,7 +192,6 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
-    identification.setStrategy(e -> e.setId(1L));
 
     Assertions
         .assertThatThrownBy(() ->
@@ -197,7 +213,13 @@ public class ChatServiceTest {
         .setPublicity(Publicity.INTERNAL)
         .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(member));
-    identification.setStrategy(e -> e.setId(1L));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> {
+          Chat entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
         .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
@@ -229,7 +251,13 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
-    identification.setStrategy(e -> e.setId(1L));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> {
+          Chat entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
         .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
@@ -271,11 +299,16 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.SCIENTISTS)
-        .setOwner(member))
-        .setMembers(Sets.newHashSet(member));
+    Mockito
+        .when(repository.findGroupByIdAndMember(1L, member))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.SCIENTISTS)
+            .setOwner(member)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(member))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.updateGroup(1L, member, "Classmates"))
@@ -304,7 +337,8 @@ public class ChatServiceTest {
     Assertions
         .assertThatThrownBy(() -> service.updateGroupMembers(0L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(NotFoundException.class)
-        .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.group.byIdAndOwner"})
+        .hasFieldOrPropertyWithValue("getCodes",
+            new Object[]{"notFound.chat.group.byIdAndOwner"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
   }
 
@@ -313,14 +347,17 @@ public class ChatServiceTest {
     User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
 
     Assertions
-        .assertThatThrownBy(() -> service.updateGroupMembers(1L, owner, ImmutableSet.of()))
+        .assertThatThrownBy(() ->
+            service.updateGroupMembers(1L, owner, Collections.emptySet()))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.removeOwner"})
@@ -336,11 +373,13 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.INTERNAL);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
 
     Assertions
         .assertThatThrownBy(() ->
@@ -362,11 +401,16 @@ public class ChatServiceTest {
         .setPublicity(Publicity.INTERNAL)
         .setFriends(Sets.newHashSet(owner));
     owner.setFriends(Sets.newHashSet(newMember));
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
@@ -398,11 +442,16 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L)
         .setPublicity(Publicity.PUBLIC);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
@@ -433,11 +482,16 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner, member)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner, member))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
@@ -481,11 +535,13 @@ public class ChatServiceTest {
     User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
 
     Assertions
         .assertThatThrownBy(() -> service.changeOwner(1L, owner, newOwner))
@@ -503,11 +559,16 @@ public class ChatServiceTest {
     User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner, newOwner)));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner, newOwner))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.changeOwner(1L, owner, newOwner))
@@ -548,11 +609,13 @@ public class ChatServiceTest {
     User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findGroupByIdAndMember(1L, owner))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner))));
 
     Assertions
         .assertThatThrownBy(() -> service.leaveGroup(1L, owner))
@@ -570,16 +633,25 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner, member)));
+    Mockito
+        .when(repository.findGroupByIdAndMember(1L, member))
+        .thenReturn(Optional.of((GroupChat) ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(owner, member))));
+    Mockito
+        .when(repository.save(Mockito.any(GroupChat.class)))
+        .then(i -> i.getArgument(0));
 
     service.leaveGroup(1L, member);
 
+    ArgumentCaptor<GroupChat> captor = ArgumentCaptor.forClass(GroupChat.class);
+    Mockito
+        .verify(repository)
+        .save(captor.capture());
     Assertions
-        .assertThat((GroupChat) repository.find(1L))
+        .assertThat(captor.getValue())
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
@@ -614,17 +686,20 @@ public class ChatServiceTest {
     User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
+    Chat entity = ModelFactory
         .createModel(GroupChatType.CLASSMATES)
         .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+        .setId(1L)
+        .setMembers(Sets.newHashSet(owner));
+    Mockito
+        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .thenReturn(Optional.of((GroupChat) entity));
 
     service.deleteGroup(1L, owner);
 
-    Assertions
-        .assertThat(repository.find(1L))
-        .isNull();
+    Mockito
+        .verify(repository)
+        .delete(entity);
   }
 
   @Test
@@ -648,11 +723,12 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
         .setId(2L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner, member)));
+    Mockito
+        .when(repository.findByIdAndMember(1L, owner))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(owner)
+            .setMembers(Sets.newHashSet(owner, member))));
 
     Assertions
         .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
@@ -685,11 +761,13 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(member)
-        .setMembers(Sets.newHashSet(member)));
+    Mockito
+        .when(repository.findByIdAndMember(1L, member))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(GroupChatType.CLASSMATES)
+            .setOwner(member)
+            .setId(1L)
+            .setMembers(Sets.newHashSet(member))));
 
     Assertions
         .assertThat(service.find(1L, member))
@@ -709,18 +787,22 @@ public class ChatServiceTest {
   }
 
   @Test
-  public void findAll_byOwner() {
-    User owner = ModelFactory
+  public void findAll_byMember() {
+    User member = ModelFactory
         .createModel(UserType.JOHN_SMITH)
         .setId(1L);
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(GroupChatType.CLASSMATES)
-        .setOwner(owner)
-        .setMembers(Sets.newHashSet(owner)));
+    Mockito
+        .when(repository.findAllByMember(member, Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(ModelFactory
+                .createModel(GroupChatType.CLASSMATES)
+                .setOwner(member)
+                .setId(1L)
+                .setMembers(Sets.newHashSet(member)))
+        ));
 
     Assertions
-        .assertThat(service.findAll(owner, Pageable.unpaged()))
+        .assertThat(service.findAll(member, Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
         .containsExactly(ModelFactory
             .createModel(GroupChatType.CLASSMATES)

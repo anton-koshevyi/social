@@ -1,9 +1,19 @@
 package com.social.backend.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import com.social.backend.exception.IllegalActionException;
@@ -16,37 +26,36 @@ import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.model.ModelFactory;
 import com.social.backend.test.model.user.UserType;
 import com.social.backend.test.stub.PasswordEncoderStub;
-import com.social.backend.test.stub.repository.UserRepositoryStub;
-import com.social.backend.test.stub.repository.identification.IdentificationContext;
 
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-  private IdentificationContext<User> identification;
-  private UserRepository repository;
+  private @Mock UserRepository repository;
   private UserService service;
 
   @BeforeEach
   public void setUp() {
-    identification = new IdentificationContext<>();
-    repository = new UserRepositoryStub(identification);
     service = new UserServiceImpl(repository, PasswordEncoderStub.getInstance());
   }
 
   @Test
   public void create() {
-    identification.setStrategy(e -> e.setId(1L));
-
-    service.create(
-        "johnsmith@example.com",
-        "johnsmith",
-        "John",
-        "Smith",
-        "password"
-    );
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> {
+          User entity = i.getArgument(0);
+          entity.setId(1L);
+          return entity;
+        });
 
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(service.create(
+            "johnsmith@example.com",
+            "johnsmith",
+            "John",
+            "Smith",
+            "password"
+        ))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(new User()
             .setId(1L)
@@ -75,22 +84,24 @@ public class UserServiceTest {
 
   @Test
   public void update() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
-
-    service.update(
-        1L,
-        "johnsmith@example.com",
-        "johnsmith",
-        "John",
-        "Smith",
-        Publicity.PUBLIC
-    );
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.FRED_BLOGGS)
+            .setId(1L)));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(service.update(
+            1L,
+            "johnsmith@example.com",
+            "johnsmith",
+            "John",
+            "Smith",
+            Publicity.PUBLIC
+        ))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
             .createModel(UserType.FRED_BLOGGS)
@@ -113,16 +124,18 @@ public class UserServiceTest {
 
   @Test
   public void updateRole() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setModer(false));
-
-    service.updateRole(1L, true);
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)
+            .setModer(false)));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(service.updateRole(1L, true))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
             .createModel(UserType.JOHN_SMITH)
@@ -141,10 +154,12 @@ public class UserServiceTest {
 
   @Test
   public void changePassword_whenWrongActualPassword_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword("{encoded}actual"));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)
+            .setPassword("{encoded}actual")));
 
     Assertions
         .assertThatThrownBy(() -> service.changePassword(1L, "wrong", "change"))
@@ -154,21 +169,21 @@ public class UserServiceTest {
 
   @Test
   public void changePassword() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword("{encoded}actual"));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)
+            .setPassword("{encoded}actual")));
 
     service.changePassword(1L, "actual", "change");
 
-    Assertions
-        .assertThat(repository.findById(1L))
-        .get()
-        .usingComparator(ComparatorFactory.getComparator(User.class))
-        .isEqualTo(ModelFactory
+    Mockito
+        .verify(repository)
+        .save(Mockito.refEq(ModelFactory
             .createModel(UserType.JOHN_SMITH)
             .setId(1L)
-            .setPassword("{encoded}change"));
+            .setPassword("{encoded}change")));
   }
 
   @Test
@@ -182,10 +197,12 @@ public class UserServiceTest {
 
   @Test
   public void delete_whenWrongActualPassword_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setPassword("{encoded}password"));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)
+            .setPassword("{encoded}password")));
 
     Assertions
         .assertThatThrownBy(() -> service.delete(1L, "wrong"))
@@ -195,16 +212,19 @@ public class UserServiceTest {
 
   @Test
   public void delete() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
+    User entity = ModelFactory
         .createModel(UserType.JOHN_SMITH)
-        .setPassword("{encoded}password"));
+        .setId(1L)
+        .setPassword("{encoded}password");
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(entity));
 
     service.delete(1L, "password");
 
-    Assertions
-        .assertThat(repository.findById(1L))
-        .isEmpty();
+    Mockito
+        .verify(repository)
+        .delete(entity);
   }
 
   @Test
@@ -227,9 +247,11 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenNoTargetEntityWithId_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -240,13 +262,17 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenPrivateTargetEntity_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    identification.setStrategy(e -> e.setId(2L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PRIVATE));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)));
+    Mockito
+        .when(repository.findById(2L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.FRED_BLOGGS)
+            .setId(2L)
+            .setPublicity(Publicity.PRIVATE)));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -258,16 +284,22 @@ public class UserServiceTest {
 
   @Test
   public void addFriend_whenFriendAlreadyPresent_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(ModelFactory
+    User user = ModelFactory
         .createModel(UserType.JOHN_SMITH)
-        .setPublicity(Publicity.PRIVATE));
-    identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(ModelFactory
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    User target = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
+        .setId(2L)
         .setPublicity(Publicity.PUBLIC)
-        .setFriends(Sets.newHashSet(user)));
+        .setFriends(Sets.newHashSet(user));
     user.setFriends(Sets.newHashSet(target));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(user));
+    Mockito
+        .when(repository.findById(2L))
+        .thenReturn(Optional.of(target));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -279,20 +311,33 @@ public class UserServiceTest {
 
   @Test
   public void addFriend() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
+    User user = ModelFactory
         .createModel(UserType.JOHN_SMITH)
-        .setPublicity(Publicity.PRIVATE));
-    identification.setStrategy(e -> e.setId(2L));
-    repository.save(ModelFactory
+        .setId(1L)
+        .setPublicity(Publicity.PRIVATE);
+    User target = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC));
+        .setId(2L)
+        .setPublicity(Publicity.PUBLIC);
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(user));
+    Mockito
+        .when(repository.findById(2L))
+        .thenReturn(Optional.of(target));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     service.addFriend(1L, 2L);
 
+    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+    Mockito
+        .verify(repository, Mockito.times(2))
+        .save(captor.capture());
+    List<User> captures = captor.getAllValues();
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(captures.get(0))
         .describedAs("Should add target to entity friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
@@ -306,11 +351,9 @@ public class UserServiceTest {
                     .createModel(UserType.FRED_BLOGGS)
                     .setId(2L)
                     .setPublicity(Publicity.PUBLIC)
-            ))
-        );
+            )));
     Assertions
-        .assertThat(repository.findById(2L))
-        .get()
+        .assertThat(captures.get(1))
         .describedAs("Should add entity to target friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
@@ -348,9 +391,11 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend_whenNoTargetWithId_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -361,12 +406,16 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend_whenNoTargetInFriends_expectException() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    identification.setStrategy(e -> e.setId(2L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)));
+    Mockito
+        .when(repository.findById(2L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.FRED_BLOGGS)
+            .setId(2L)));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -378,34 +427,44 @@ public class UserServiceTest {
 
   @Test
   public void removeFriend() {
-    identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(ModelFactory
+    User user = ModelFactory
+        .createModel(UserType.JOHN_SMITH)
+        .setId(1L);
+    User target = ModelFactory
         .createModel(UserType.FRED_BLOGGS)
-        .setFriends(Sets.newHashSet(user)));
+        .setId(2L)
+        .setFriends(Sets.newHashSet(user));
     user.setFriends(Sets.newHashSet(target));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(user));
+    Mockito
+        .when(repository.findById(2L))
+        .thenReturn(Optional.of(target));
+    Mockito
+        .when(repository.save(Mockito.any()))
+        .then(i -> i.getArgument(0));
 
     service.removeFriend(1L, 2L);
 
+    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+    Mockito
+        .verify(repository, Mockito.times(2))
+        .save(captor.capture());
+    List<User> captures = captor.getAllValues();
     Assertions
-        .assertThat(repository.findById(1L))
-        .get()
+        .assertThat(captures.get(0))
         .describedAs("Should remove target from entity friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
-        .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(ModelFactory
             .createModel(UserType.JOHN_SMITH)
             .setId(1L));
     Assertions
-        .assertThat(repository.findById(2L))
-        .get()
+        .assertThat(captures.get(1))
         .describedAs("Should remove entity from target friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
-        .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(ModelFactory
             .createModel(UserType.FRED_BLOGGS)
             .setId(2L));
@@ -413,14 +472,14 @@ public class UserServiceTest {
 
   @Test
   public void getFriends() {
-    identification.setStrategy(e -> e.setId(1L));
-    User user = repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    identification.setStrategy(e -> e.setId(2L));
-    User target = repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setFriends(Sets.newHashSet(user)));
-    user.setFriends(Sets.newHashSet(target));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)
+            .setFriends(Sets.newHashSet(ModelFactory
+                .createModel(UserType.FRED_BLOGGS)
+                .setId(2L)))));
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
@@ -441,9 +500,11 @@ public class UserServiceTest {
 
   @Test
   public void find_byId() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
+    Mockito
+        .when(repository.findById(1L))
+        .thenReturn(Optional.of(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L)));
 
     Assertions
         .assertThat(service.find(1L))
@@ -455,24 +516,20 @@ public class UserServiceTest {
 
   @Test
   public void findAll() {
-    identification.setStrategy(e -> e.setId(1L));
-    repository.save(ModelFactory
-        .createModel(UserType.JOHN_SMITH));
-    identification.setStrategy(e -> e.setId(2L));
-    repository.save(ModelFactory
-        .createModel(UserType.FRED_BLOGGS));
+    Mockito
+        .when(repository.findAll(Pageable.unpaged()))
+        .thenReturn(new PageImpl<>(
+            Lists.newArrayList(ModelFactory
+                .createModel(UserType.JOHN_SMITH)
+                .setId(1L))
+        ));
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
         .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
-        .containsExactlyInAnyOrder(
-            ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L),
-            ModelFactory
-                .createModel(UserType.FRED_BLOGGS)
-                .setId(2L)
-        );
+        .containsExactly(ModelFactory
+            .createModel(UserType.JOHN_SMITH)
+            .setId(1L));
   }
 
 }
