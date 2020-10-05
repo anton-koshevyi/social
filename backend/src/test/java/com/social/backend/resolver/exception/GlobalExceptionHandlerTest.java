@@ -24,8 +24,7 @@ import com.social.backend.exception.LocalizedException;
 @ExtendWith(MockitoExtension.class)
 public class GlobalExceptionHandlerTest {
 
-  @Mock
-  private MessageSource messageSource;
+  private @Mock MessageSource messageSource;
 
   @BeforeEach
   public void setUp() {

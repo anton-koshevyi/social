@@ -46,8 +46,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 @ExtendWith(MockitoExtension.class)
 public class LocalizedHandlerExceptionResolverTest {
 
-  @Mock
-  private MessageSource messageSource;
+  private @Mock MessageSource messageSource;
 
   @BeforeEach
   public void setUp() {
@@ -471,19 +470,20 @@ public class LocalizedHandlerExceptionResolverTest {
       return ResponseEntity.ok("Target valid: " + target);
     }
 
-  }
 
-  private static class Target {
+    private static class Target {
 
-    @NotBlank
-    private String notBlank;
+      @NotBlank
+      private String notBlank;
 
-    private String getNotBlank() {
-      return notBlank;
-    }
+      private String getNotBlank() {
+        return notBlank;
+      }
 
-    private void setNotBlank(String notBlank) {
-      this.notBlank = notBlank;
+      private void setNotBlank(String notBlank) {
+        this.notBlank = notBlank;
+      }
+
     }
 
   }
