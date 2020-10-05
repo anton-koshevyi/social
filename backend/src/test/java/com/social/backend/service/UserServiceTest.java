@@ -483,7 +483,7 @@ public class UserServiceTest {
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
+        .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
             .createModel(UserType.FRED_BLOGGS)
             .setId(2L));
@@ -526,7 +526,7 @@ public class UserServiceTest {
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
+        .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
             .createModel(UserType.JOHN_SMITH)
             .setId(1L));

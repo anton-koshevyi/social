@@ -732,7 +732,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(User.class), User.class)
+        .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactlyInAnyOrder(
             ModelFactory
                 .createModel(UserType.JOHN_SMITH)
@@ -803,7 +803,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThat(service.findAll(member, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(Chat.class), Chat.class)
+        .usingElementComparator(ComparatorFactory.getComparator(Chat.class))
         .containsExactly(ModelFactory
             .createModel(GroupChatType.CLASSMATES)
             .setOwner(ModelFactory
