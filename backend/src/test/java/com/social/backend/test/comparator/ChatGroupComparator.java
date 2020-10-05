@@ -2,7 +2,7 @@ package com.social.backend.test.comparator;
 
 import java.util.Comparator;
 
-import com.google.common.collect.ComparisonChain;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.User;
@@ -18,16 +18,11 @@ class ChatGroupComparator extends ChatComparator<GroupChat> {
 
   @Override
   public int compare(GroupChat left, GroupChat right) {
-    int superCompare = super.compare(left, right);
-
-    if (superCompare != 0) {
-      return superCompare;
-    }
-
-    return ComparisonChain.start()
-        .compare(left.getName(), right.getName())
-        .compare(left.getOwner(), right.getOwner(), userComparator)
-        .result();
+    return new CompareToBuilder()
+        .appendSuper(super.compare(left, right))
+        .append(left.getName(), right.getName())
+        .append(left.getOwner(), right.getOwner(), userComparator)
+        .toComparison();
   }
 
 }
