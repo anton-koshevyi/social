@@ -51,6 +51,7 @@ public class PostServiceTest {
         .assertThat(service.create(
             author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(new Post()
             .setId(1L)
             .setTitle("Favorite books")
@@ -93,7 +94,8 @@ public class PostServiceTest {
         .assertThat(service.update(
             1L, author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
-        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
+        .usingComparatorForFields(
+            NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
         .isEqualTo(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
@@ -161,6 +163,7 @@ public class PostServiceTest {
     Assertions
         .assertThat(service.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
@@ -185,7 +188,9 @@ public class PostServiceTest {
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
+        .usingElementComparator(ComparatorFactory.getComparator(Post.class))
+        .usingComparatorForElementFieldsWithNames(
+            NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)
@@ -210,7 +215,9 @@ public class PostServiceTest {
 
     Assertions
         .assertThat(service.findAll(author, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(Post.class), Post.class)
+        .usingElementComparator(ComparatorFactory.getComparator(Post.class))
+        .usingComparatorForElementFieldsWithNames(
+            NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly(ModelFactory
             .createModel(PostType.COOKING)
             .setId(1L)

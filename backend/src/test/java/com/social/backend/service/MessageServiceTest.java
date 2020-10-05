@@ -57,6 +57,7 @@ public class MessageServiceTest {
     Assertions
         .assertThat(service.create(chat, author, "How are you?"))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(new Message()
             .setChat(ModelFactory
                 .createModel(PrivateChatType.RAW)
@@ -112,7 +113,8 @@ public class MessageServiceTest {
     Assertions
         .assertThat(service.update(1L, author, "How are you?"))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
-        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
+        .usingComparatorForFields(
+            NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
         .isEqualTo(ModelFactory
             .createModel(MessageType.MEETING)
             .setChat(ModelFactory
@@ -191,7 +193,9 @@ public class MessageServiceTest {
 
     Assertions
         .assertThat(service.findAll(chat, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(Message.class), Message.class)
+        .usingElementComparator(ComparatorFactory.getComparator(Message.class))
+        .usingComparatorForElementFieldsWithNames(
+            NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly((Message) ModelFactory
             .createModel(MessageType.WHATS_UP)
             .setChat(ModelFactory

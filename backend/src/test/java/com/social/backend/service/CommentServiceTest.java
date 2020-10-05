@@ -102,6 +102,7 @@ public class CommentServiceTest {
     Assertions
         .assertThat(service.create(post, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(new Comment()
             .setPost(ModelFactory
                 .createModel(PostType.READING)
@@ -142,6 +143,7 @@ public class CommentServiceTest {
     Assertions
         .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(new Comment()
             .setPost(ModelFactory
                 .createModel(PostType.READING)
@@ -181,6 +183,7 @@ public class CommentServiceTest {
     Assertions
         .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(new Comment()
             .setPost(ModelFactory
                 .createModel(PostType.READING)
@@ -234,7 +237,8 @@ public class CommentServiceTest {
     Assertions
         .assertThat(service.update(1L, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
-        .usingComparatorForFields(NotNullComparator.leftNotNull(), "updatedAt")
+        .usingComparatorForFields(
+            NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
         .isEqualTo(ModelFactory
             .createModel(CommentType.BADLY)
             .setPost(ModelFactory
@@ -310,7 +314,9 @@ public class CommentServiceTest {
 
     Assertions
         .assertThat(service.findAll(post, Pageable.unpaged()))
-        .usingComparatorForType(ComparatorFactory.getComparator(Comment.class), Comment.class)
+        .usingElementComparator(ComparatorFactory.getComparator(Comment.class))
+        .usingComparatorForElementFieldsWithNames(
+            NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly((Comment) ModelFactory
             .createModel(CommentType.LIKE)
             .setPost(ModelFactory
