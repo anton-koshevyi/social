@@ -1,4 +1,4 @@
-package com.social.backend.test.model;
+package com.social.backend.test.model.type;
 
 public interface ModelType<T> {
 

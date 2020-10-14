@@ -1,7 +1,6 @@
-package com.social.backend.test.model.user;
+package com.social.backend.test.model.type;
 
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.ModelType;
 
 public enum UserType implements ModelType<User> {
 

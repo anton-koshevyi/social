@@ -1,7 +1,6 @@
-package com.social.backend.test.model.message;
+package com.social.backend.test.model.type;
 
 import com.social.backend.model.chat.Message;
-import com.social.backend.test.model.ModelType;
 
 public enum MessageType implements ModelType<Message> {
 

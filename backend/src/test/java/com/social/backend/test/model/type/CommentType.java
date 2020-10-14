@@ -1,7 +1,6 @@
-package com.social.backend.test.model.comment;
+package com.social.backend.test.model.type;
 
 import com.social.backend.model.post.Comment;
-import com.social.backend.test.model.ModelType;
 
 public enum CommentType implements ModelType<Comment> {
 

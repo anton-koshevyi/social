@@ -1,7 +1,6 @@
-package com.social.backend.test.model.post;
+package com.social.backend.test.model.type;
 
 import com.social.backend.model.post.Post;
-import com.social.backend.test.model.ModelType;
 
 public enum PostType implements ModelType<Post> {
 
