@@ -28,8 +28,8 @@ import com.social.backend.repository.UserRepository;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.type.UserType;
 import com.social.backend.validator.EmailValidator;
 import com.social.backend.validator.UsernameValidator;
 

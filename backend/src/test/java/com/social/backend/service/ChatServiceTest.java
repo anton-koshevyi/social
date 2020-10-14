@@ -26,10 +26,10 @@ import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.ChatRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.chat.GroupChatType;
-import com.social.backend.test.model.chat.PrivateChatType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.type.GroupChatType;
+import com.social.backend.test.model.type.PrivateChatType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatServiceTest {

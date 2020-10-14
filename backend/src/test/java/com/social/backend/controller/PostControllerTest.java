@@ -37,9 +37,9 @@ import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.post.PostType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.type.PostType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {

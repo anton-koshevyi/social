@@ -21,10 +21,10 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.MessageRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.chat.PrivateChatType;
-import com.social.backend.test.model.message.MessageType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.type.MessageType;
+import com.social.backend.test.model.type.PrivateChatType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class MessageServiceTest {

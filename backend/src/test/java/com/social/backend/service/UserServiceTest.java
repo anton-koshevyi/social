@@ -23,8 +23,8 @@ import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.repository.UserRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.type.UserType;
 import com.social.backend.test.stub.PasswordEncoderStub;
 
 @ExtendWith(MockitoExtension.class)
