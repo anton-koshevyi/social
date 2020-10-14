@@ -1,4 +1,4 @@
-package com.social.backend.test.model;
+package com.social.backend.test.model.factory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,12 +9,6 @@ import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.test.model.chat.GroupChatFactory;
-import com.social.backend.test.model.chat.PrivateChatFactory;
-import com.social.backend.test.model.comment.CommentFactory;
-import com.social.backend.test.model.message.MessageFactory;
-import com.social.backend.test.model.post.PostFactory;
-import com.social.backend.test.model.user.UserFactory;
 
 final class FactoryProducer {
 
