@@ -6,7 +6,6 @@ import com.social.backend.test.model.wrapper.AbstractWrapper;
 
 abstract class UserWrapper extends AbstractWrapper<User> {
 
-  @SuppressWarnings("checkstyle:ParameterNumber")
   UserWrapper(Long id,
               String email,
               String username,

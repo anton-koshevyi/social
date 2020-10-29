@@ -17,7 +17,6 @@ final class FactoryProducer {
   private FactoryProducer() {
   }
 
-  @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
   static <T> AbstractFactory<T> getFactory(Class<T> type) {
     String typeName = type.getName();
 

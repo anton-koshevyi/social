@@ -19,7 +19,6 @@ public final class ComparatorFactory {
   private ComparatorFactory() {
   }
 
-  @SuppressWarnings({"checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS"})
   public static <T> Comparator<T> getComparator(Class<T> type) {
     String typeName = type.getName();
 
