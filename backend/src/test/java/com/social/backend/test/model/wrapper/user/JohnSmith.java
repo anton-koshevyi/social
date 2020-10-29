@@ -1,11 +1,12 @@
-package com.social.backend.test.model.user;
+package com.social.backend.test.model.wrapper.user;
 
 import com.social.backend.model.user.Publicity;
 
-class JohnSmith extends UserWrapper {
+public class JohnSmith extends UserWrapper {
 
-  JohnSmith() {
+  public JohnSmith() {
     super(
+        1L,
         "johnsmith@example.com",
         "johnsmith",
         "John",
