@@ -3,7 +3,6 @@ package com.social.backend.controller;
 import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.collect.Sets;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.util.Lists;
 import org.json.JSONException;
@@ -31,7 +30,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.config.SecurityConfig.Authority;
-import com.social.backend.model.chat.PrivateChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
@@ -40,6 +38,9 @@ import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.ChatMutators;
+import com.social.backend.test.model.mutator.PostMutators;
+import com.social.backend.test.model.mutator.UserMutators;
 import com.social.backend.test.model.type.PostType;
 import com.social.backend.test.model.type.PrivateChatType;
 import com.social.backend.test.model.type.UserType;
@@ -80,8 +81,7 @@ public class UserControllerTest {
         .when(userService.findAll(PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L))
+                .createModel(UserType.JOHN_SMITH))
         ));
 
     String response = RestAssuredMockMvc
@@ -116,8 +116,7 @@ public class UserControllerTest {
     Mockito
         .when(userService.find(1L))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(1L));
+            .createModel(UserType.JOHN_SMITH));
 
     String actual = RestAssuredMockMvc
         .given()
@@ -146,13 +145,12 @@ public class UserControllerTest {
   @Test
   public void updateRole() throws JSONException {
     Mockito
-        .when(userService.updateRole(2L, true))
+        .when(userService.updateRole(1L, true))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(2L)
-            .setModer(true));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.moder(true)));
     SecurityManager.setUser(new IdentifiedUserDetails(
-        1L,
+        2L,
         "fredbloggs",
         "password",
         SecurityManager.createAuthorities(Authority.ADMIN)
@@ -164,14 +162,14 @@ public class UserControllerTest {
         .header("Content-Type", "application/json")
         .body("{ \"moder\": true }")
         .when()
-        .patch("/users/{id}/roles", 2)
+        .patch("/users/{id}/roles", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
         .asString();
 
     String expected = "{"
-        + "id: 2,"
+        + "id: 1,"
         + "email: 'johnsmith@example.com',"
         + "username: 'johnsmith',"
         + "firstName: 'John',"
@@ -190,8 +188,7 @@ public class UserControllerTest {
         .when(userService.getFriends(2L, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L))
+                .createModel(UserType.JOHN_SMITH))
         ));
 
     String response = RestAssuredMockMvc
@@ -254,8 +251,7 @@ public class UserControllerTest {
   @Test
   public void getPosts() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
@@ -263,9 +259,8 @@ public class UserControllerTest {
         .when(postService.findAll(author, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(author))
+                .createModelMutating(PostType.READING,
+                    PostMutators.author(author)))
         ));
 
     String response = RestAssuredMockMvc
@@ -308,12 +303,10 @@ public class UserControllerTest {
   @Test
   public void createPrivateChat() throws JSONException {
     User user = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     User target = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L)
-        .setPublicity(Publicity.PUBLIC);
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.publicity(Publicity.PUBLIC));
     Mockito
         .when(userService.find(1L))
         .thenReturn(user);
@@ -322,10 +315,9 @@ public class UserControllerTest {
         .thenReturn(target);
     Mockito
         .when(chatService.createPrivate(user, target))
-        .thenReturn((PrivateChat) ModelFactory
-            .createModel(PrivateChatType.RAW)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(user, target)));
+        .thenReturn(ModelFactory
+            .createModelMutating(PrivateChatType.DEFAULT,
+                ChatMutators.members(user, target)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 

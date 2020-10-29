@@ -20,6 +20,7 @@ import com.social.backend.repository.PostRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
 import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.PostMutators;
 import com.social.backend.test.model.type.PostType;
 import com.social.backend.test.model.type.UserType;
 
@@ -37,13 +38,12 @@ public class PostServiceTest {
   @Test
   public void create() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> {
           Post entity = i.getArgument(0);
-          entity.setId(1L);
+          PostMutators.id(1L).accept(entity);
           return entity;
         });
 
@@ -52,20 +52,20 @@ public class PostServiceTest {
             author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
-        .isEqualTo(new Post()
-            .setId(1L)
-            .setTitle("Favorite books")
-            .setBody("My personal must-read fiction")
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+        .isEqualTo(ModelFactory
+            .createModelMutating(PostType.RAW,
+                PostMutators.id(1L),
+                PostMutators.title("Favorite books"),
+                PostMutators.body("My personal must-read fiction"),
+                PostMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH))
+            ));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
 
     Assertions
         .assertThatThrownBy(() ->
@@ -78,39 +78,36 @@ public class PostServiceTest {
   @Test
   public void update() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findByIdAndAuthor(1L, author))
+        .when(repository.findByIdAndAuthor(2L, author))
         .thenReturn(Optional.of(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setAuthor(author)));
+            .createModelMutating(PostType.COOKING,
+                PostMutators.author(author))
+        ));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.update(
-            1L, author, "Favorite books", "My personal must-read fiction"))
+            2L, author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(
             NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
         .isEqualTo(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setTitle("Favorite books")
-            .setBody("My personal must-read fiction")
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+            .createModelMutating(PostType.COOKING,
+                PostMutators.title("Favorite books"),
+                PostMutators.body("My personal must-read fiction"),
+                PostMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH))
+            ));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
 
     Assertions
         .assertThatThrownBy(() -> service.delete(0L, author))
@@ -122,12 +119,10 @@ public class PostServiceTest {
   @Test
   public void delete() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post entity = ModelFactory
-        .createModel(PostType.COOKING)
-        .setId(1L)
-        .setAuthor(author);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
         .when(repository.findByIdAndAuthor(1L, author))
         .thenReturn(Optional.of(entity));
@@ -151,39 +146,35 @@ public class PostServiceTest {
   @Test
   public void find_byId() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setAuthor(author)));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(author))
+        ));
 
     Assertions
         .assertThat(service.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH))
+            ));
   }
 
   @Test
   public void findAll() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(repository.findAll(Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(PostType.COOKING)
-                .setId(1L)
-                .setAuthor(author))
+                .createModelMutating(PostType.READING,
+                    PostMutators.author(author)))
         ));
 
     Assertions
@@ -192,25 +183,22 @@ public class PostServiceTest {
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH))
+            ));
   }
 
   @Test
   public void findAll_byAuthor() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(repository.findAllByAuthor(author, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(PostType.COOKING)
-                .setId(1L)
-                .setAuthor(author))
+                .createModelMutating(PostType.READING,
+                    PostMutators.author(author)))
         ));
 
     Assertions
@@ -219,11 +207,10 @@ public class PostServiceTest {
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")
         .containsExactly(ModelFactory
-            .createModel(PostType.COOKING)
-            .setId(1L)
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH))
+            ));
   }
 
 }

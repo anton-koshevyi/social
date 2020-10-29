@@ -3,7 +3,6 @@ package com.social.backend.controller;
 import java.util.Collections;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.collect.Sets;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
@@ -34,7 +33,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.model.chat.Chat;
-import com.social.backend.model.chat.Message;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
 import com.social.backend.service.MessageService;
@@ -42,6 +40,8 @@ import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.ChatMutators;
+import com.social.backend.test.model.mutator.MessageMutators;
 import com.social.backend.test.model.type.MessageType;
 import com.social.backend.test.model.type.PrivateChatType;
 import com.social.backend.test.model.type.UserType;
@@ -84,12 +84,10 @@ public class MessageControllerTest {
   @Test
   public void getAll() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Chat chat = ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setId(1L)
-        .setMembers(Sets.newHashSet(author));
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
@@ -99,11 +97,10 @@ public class MessageControllerTest {
     Mockito
         .when(messageService.findAll(chat, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
-            Lists.newArrayList((Message) ModelFactory
-                .createModel(MessageType.WHATS_UP)
-                .setChat(chat)
-                .setId(1L)
-                .setAuthor(author))
+            Lists.newArrayList(ModelFactory
+                .createModelMutating(MessageType.WHATS_UP,
+                    MessageMutators.author(author),
+                    MessageMutators.chat(chat)))
         ));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
@@ -174,12 +171,10 @@ public class MessageControllerTest {
   @Test
   public void create() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Chat chat = ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setId(1L)
-        .setMembers(Sets.newHashSet(author));
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
@@ -188,11 +183,10 @@ public class MessageControllerTest {
         .thenReturn(chat);
     Mockito
         .when(messageService.create(chat, author, "How are you?"))
-        .thenReturn((Message) ModelFactory
-            .createModel(MessageType.WHATS_UP)
-            .setChat(chat)
-            .setId(1L)
-            .setAuthor(author));
+        .thenReturn(ModelFactory
+            .createModelMutating(MessageType.WHATS_UP,
+                MessageMutators.author(author),
+                MessageMutators.chat(chat)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -262,22 +256,19 @@ public class MessageControllerTest {
   @Test
   public void update() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Chat chat = ModelFactory
-        .createModel(PrivateChatType.RAW)
-        .setId(1L)
-        .setMembers(Sets.newHashSet(author));
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
         .when(messageService.update(1L, author, "How are you?"))
-        .thenReturn((Message) ModelFactory
-            .createModel(MessageType.WHATS_UP)
-            .setChat(chat)
-            .setId(1L)
-            .setAuthor(author));
+        .thenReturn(ModelFactory
+            .createModelMutating(MessageType.WHATS_UP,
+                MessageMutators.author(author),
+                MessageMutators.chat(chat)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -333,8 +324,7 @@ public class MessageControllerTest {
   @Test
   public void delete() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);

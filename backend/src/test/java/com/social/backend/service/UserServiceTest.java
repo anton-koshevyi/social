@@ -58,16 +58,22 @@ public class UserServiceTest {
         ))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel());
+            .createModelMutating(UserType.RAW,
+                UserMutators.id(1L),
+                UserMutators.email("johnsmith@example.com"),
+                UserMutators.username("johnsmith"),
+                UserMutators.firstName("John"),
+                UserMutators.lastName("Smith"),
+                UserMutators.publicity(Publicity.PRIVATE),
+                UserMutators.password("{encoded}password")
+            ));
   }
 
   @Test
   public void update_whenNoEntityWithId_expectException() {
     Assertions
         .assertThatThrownBy(() -> service.update(
-            1L,
+            2L,
             "johnsmith@example.com",
             "johnsmith",
             "John",
@@ -76,24 +82,28 @@ public class UserServiceTest {
         ))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
-        .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
+        .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
   }
 
   @Test
   public void update() {
     Mockito
-        .when(repository.findById(1L))
+        .when(repository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModelMutating(UserType.FRED_BLOGGS,
+                UserMutators.email("fredbloggs@example.com"),
+                UserMutators.username("fredbloggs"),
+                UserMutators.firstName("Fred"),
+                UserMutators.lastName("Bloggs"),
+                UserMutators.publicity(Publicity.PRIVATE))
+        ));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
         .assertThat(service.update(
-            1L,
+            2L,
             "johnsmith@example.com",
             "johnsmith",
             "John",
@@ -102,20 +112,19 @@ public class UserServiceTest {
         ))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.email("johnsmith@example.com"))
-            .with(UserMutators.username("johnsmith"))
-            .with(UserMutators.firstName("John"))
-            .with(UserMutators.lastName("Smith"))
-            .with(UserMutators.publicity(Publicity.PUBLIC))
-            .getModel());
+            .createModelMutating(UserType.FRED_BLOGGS,
+                UserMutators.email("johnsmith@example.com"),
+                UserMutators.username("johnsmith"),
+                UserMutators.firstName("John"),
+                UserMutators.lastName("Smith"),
+                UserMutators.publicity(Publicity.PUBLIC)
+            ));
   }
 
   @Test
   public void updateRole_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.updateRole(1L, false))
+        .assertThatThrownBy(() -> service.updateRole(1L, true))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -126,10 +135,9 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.moder(false))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.moder(false))
+        ));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
@@ -138,10 +146,9 @@ public class UserServiceTest {
         .assertThat(service.updateRole(1L, true))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.moder(true))
-            .getModel());
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.moder(true)
+            ));
   }
 
   @Test
@@ -158,10 +165,9 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.password("{encoded}actual"))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.password("{encoded}actual"))
+        ));
 
     Assertions
         .assertThatThrownBy(() -> service.changePassword(1L, "wrong", "change"))
@@ -174,20 +180,18 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.password("{encoded}actual"))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.password("{encoded}actual"))
+        ));
 
     service.changePassword(1L, "actual", "change");
 
     Mockito
         .verify(repository)
         .save(Mockito.refEq(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.password("{encoded}change"))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.password("{encoded}change"))
+        ));
   }
 
   @Test
@@ -204,10 +208,9 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.password("{encoded}password"))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.password("{encoded}password"))
+        ));
 
     Assertions
         .assertThatThrownBy(() -> service.delete(1L, "wrong"))
@@ -218,10 +221,8 @@ public class UserServiceTest {
   @Test
   public void delete() {
     User entity = ModelFactory
-        .createWrapper(UserType.JOHN_SMITH)
-        .with(UserMutators.id(1L))
-        .with(UserMutators.password("{encoded}password"))
-        .getModel();
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.password("{encoded}password"));
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(entity));
@@ -256,9 +257,7 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModel(UserType.JOHN_SMITH)));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -272,16 +271,12 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModel(UserType.JOHN_SMITH)));
     Mockito
         .when(repository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(2L))
-            .with(UserMutators.publicity(Publicity.PRIVATE))
-            .getModel()));
+            .createModelMutating(UserType.FRED_BLOGGS,
+                UserMutators.publicity(Publicity.PRIVATE))));
 
     Assertions
         .assertThatThrownBy(() -> service.addFriend(1L, 2L))
@@ -294,16 +289,12 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenFriendAlreadyPresent_expectException() {
     User user = ModelFactory
-        .createWrapper(UserType.JOHN_SMITH)
-        .with(UserMutators.id(1L))
-        .with(UserMutators.publicity(Publicity.PRIVATE))
-        .getModel();
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.PRIVATE));
     User target = ModelFactory
-        .createWrapper(UserType.FRED_BLOGGS)
-        .with(UserMutators.id(2L))
-        .with(UserMutators.publicity(Publicity.PUBLIC))
-        .with(UserMutators.friends(user))
-        .getModel();
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.publicity(Publicity.PUBLIC),
+            UserMutators.friends(user));
     UserMutators.friends(target).accept(user);
     Mockito
         .when(repository.findById(1L))
@@ -323,15 +314,11 @@ public class UserServiceTest {
   @Test
   public void addFriend() {
     User user = ModelFactory
-        .createWrapper(UserType.JOHN_SMITH)
-        .with(UserMutators.id(1L))
-        .with(UserMutators.publicity(Publicity.PRIVATE))
-        .getModel();
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.PRIVATE));
     User target = ModelFactory
-        .createWrapper(UserType.FRED_BLOGGS)
-        .with(UserMutators.id(2L))
-        .with(UserMutators.publicity(Publicity.PUBLIC))
-        .getModel();
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.publicity(Publicity.PUBLIC));
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(user));
@@ -356,15 +343,12 @@ public class UserServiceTest {
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.publicity(Publicity.PRIVATE))
-            .with(UserMutators.friends(ModelFactory
-                .createWrapper(UserType.FRED_BLOGGS)
-                .with(UserMutators.id(2L))
-                .with(UserMutators.publicity(Publicity.PUBLIC))
-                .getModel()))
-            .getModel());
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.publicity(Publicity.PRIVATE),
+                UserMutators.friends(ModelFactory
+                    .createModelMutating(UserType.FRED_BLOGGS,
+                        UserMutators.publicity(Publicity.PUBLIC)))
+            ));
     Assertions
         .assertThat(captures.get(1))
         .describedAs("Should add entity to target friends")
@@ -372,15 +356,12 @@ public class UserServiceTest {
         .ignoringAllOverriddenEquals()
         .ignoringFields("friends.friends", "friendFor")
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(2L))
-            .with(UserMutators.publicity(Publicity.PUBLIC))
-            .with(UserMutators.friends(ModelFactory
-                .createWrapper(UserType.JOHN_SMITH)
-                .with(UserMutators.id(1L))
-                .with(UserMutators.publicity(Publicity.PRIVATE))
-                .getModel()))
-            .getModel());
+            .createModelMutating(UserType.FRED_BLOGGS,
+                UserMutators.publicity(Publicity.PUBLIC),
+                UserMutators.friends(ModelFactory
+                    .createModelMutating(UserType.JOHN_SMITH,
+                        UserMutators.publicity(Publicity.PRIVATE)))
+            ));
   }
 
   @Test
@@ -406,9 +387,7 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModel(UserType.JOHN_SMITH)));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -422,15 +401,11 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModel(UserType.JOHN_SMITH)));
     Mockito
         .when(repository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(2L))
-            .getModel()));
+            .createModel(UserType.FRED_BLOGGS)));
 
     Assertions
         .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
@@ -443,14 +418,10 @@ public class UserServiceTest {
   @Test
   public void removeFriend() {
     User user = ModelFactory
-        .createWrapper(UserType.JOHN_SMITH)
-        .with(UserMutators.id(1L))
-        .getModel();
+        .createModel(UserType.JOHN_SMITH);
     User target = ModelFactory
-        .createWrapper(UserType.FRED_BLOGGS)
-        .with(UserMutators.id(2L))
-        .with(UserMutators.friends(user))
-        .getModel();
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.friends(user));
     UserMutators.friends(target).accept(user);
     Mockito
         .when(repository.findById(1L))
@@ -475,18 +446,14 @@ public class UserServiceTest {
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel());
+            .createModel(UserType.JOHN_SMITH));
     Assertions
         .assertThat(captures.get(1))
         .describedAs("Should remove entity from target friends")
         .usingRecursiveComparison()
         .ignoringAllOverriddenEquals()
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(2L))
-            .getModel());
+            .createModel(UserType.FRED_BLOGGS));
   }
 
   @Test
@@ -494,21 +461,16 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .with(UserMutators.friends(ModelFactory
-                .createWrapper(UserType.FRED_BLOGGS)
-                .with(UserMutators.id(2L))
-                .getModel()))
-            .getModel()));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.friends(ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)))
+        ));
 
     Assertions
         .assertThat(service.getFriends(1L, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
-            .createWrapper(UserType.FRED_BLOGGS)
-            .with(UserMutators.id(2L))
-            .getModel());
+            .createModel(UserType.FRED_BLOGGS));
   }
 
   @Test
@@ -525,17 +487,13 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel()));
+            .createModel(UserType.JOHN_SMITH)));
 
     Assertions
         .assertThat(service.find(1L))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel());
+            .createModel(UserType.JOHN_SMITH));
   }
 
   @Test
@@ -544,18 +502,14 @@ public class UserServiceTest {
         .when(repository.findAll(Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createWrapper(UserType.JOHN_SMITH)
-                .with(UserMutators.id(1L))
-                .getModel())
+                .createModel(UserType.JOHN_SMITH))
         ));
 
     Assertions
         .assertThat(service.findAll(Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
-            .createWrapper(UserType.JOHN_SMITH)
-            .with(UserMutators.id(1L))
-            .getModel());
+            .createModel(UserType.JOHN_SMITH));
   }
 
 }
