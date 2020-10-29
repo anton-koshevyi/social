@@ -4,9 +4,10 @@ import com.social.backend.model.chat.GroupChat;
 
 public enum GroupChatType implements ModelType<GroupChat> {
 
+  RAW,
   CLASSMATES,
-  PARENTS,
-  SCIENTISTS;
+  SCIENTISTS,
+  PARENTS;
 
   @Override
   public Class<GroupChat> modelClass() {

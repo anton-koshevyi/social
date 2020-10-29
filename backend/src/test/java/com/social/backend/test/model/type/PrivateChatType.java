@@ -4,7 +4,8 @@ import com.social.backend.model.chat.PrivateChat;
 
 public enum PrivateChatType implements ModelType<PrivateChat> {
 
-  RAW;
+  RAW,
+  DEFAULT;
 
   @Override
   public Class<PrivateChat> modelClass() {

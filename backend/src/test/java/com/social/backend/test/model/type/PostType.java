@@ -4,9 +4,10 @@ import com.social.backend.model.post.Post;
 
 public enum PostType implements ModelType<Post> {
 
+  RAW,
+  READING,
   COOKING,
-  GAMING,
-  READING;
+  GAMING;
 
   @Override
   public Class<Post> modelClass() {

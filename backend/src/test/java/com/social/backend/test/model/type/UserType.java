@@ -4,9 +4,10 @@ import com.social.backend.model.user.User;
 
 public enum UserType implements ModelType<User> {
 
+  RAW,
+  JOHN_SMITH,
   FRED_BLOGGS,
-  JANE_DOE,
-  JOHN_SMITH;
+  JANE_DOE;
 
   @Override
   public Class<User> modelClass() {

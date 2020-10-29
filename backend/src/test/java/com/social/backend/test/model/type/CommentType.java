@@ -4,8 +4,9 @@ import com.social.backend.model.post.Comment;
 
 public enum CommentType implements ModelType<Comment> {
 
-  BADLY,
+  RAW,
   LIKE,
+  BADLY,
   USEFUL;
 
   @Override

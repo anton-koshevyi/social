@@ -4,9 +4,10 @@ import com.social.backend.model.chat.Message;
 
 public enum MessageType implements ModelType<Message> {
 
+  RAW,
+  WHATS_UP,
   MEETING,
-  OK,
-  WHATS_UP;
+  OK;
 
   @Override
   public Class<Message> modelClass() {
