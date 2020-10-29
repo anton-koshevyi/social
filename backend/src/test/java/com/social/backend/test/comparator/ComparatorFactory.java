@@ -44,11 +44,15 @@ public final class ComparatorFactory {
       if (Chat.class.isAssignableFrom(type)) {
         if (PrivateChat.class.equals(type)) {
           typeComparators.put(typeName, new ChatPrivateComparator(
-              ComparatorFactory.getComparator(User.class)
+              new CollectionComparatorAdapter<>(
+                  ComparatorFactory.getComparator(User.class)
+              )
           ));
         } else if (GroupChat.class.equals(type)) {
+          Comparator<User> userComparator = ComparatorFactory.getComparator(User.class);
           typeComparators.put(typeName, new ChatGroupComparator(
-              ComparatorFactory.getComparator(User.class)
+              new CollectionComparatorAdapter<>(userComparator),
+              userComparator
           ));
         } else {
           typeComparators.put(typeName, new ChatCompositeComparator(
