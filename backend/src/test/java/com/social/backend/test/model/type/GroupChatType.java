@@ -6,8 +6,7 @@ public enum GroupChatType implements ModelType<GroupChat> {
 
   RAW,
   CLASSMATES,
-  SCIENTISTS,
-  PARENTS;
+  SCIENTISTS;
 
   @Override
   public Class<GroupChat> modelClass() {

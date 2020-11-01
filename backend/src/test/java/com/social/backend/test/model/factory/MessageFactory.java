@@ -6,7 +6,6 @@ import com.social.backend.test.model.type.ModelType;
 import com.social.backend.test.model.wrapper.AbstractWrapper;
 import com.social.backend.test.model.wrapper.ModelWrapper;
 import com.social.backend.test.model.wrapper.message.Meeting;
-import com.social.backend.test.model.wrapper.message.Ok;
 import com.social.backend.test.model.wrapper.message.WhatsUp;
 
 class MessageFactory extends AbstractFactory<Message> {
@@ -18,8 +17,6 @@ class MessageFactory extends AbstractFactory<Message> {
         return new AbstractWrapper<Message>(new Message()) {};
       case MEETING:
         return new Meeting();
-      case OK:
-        return new Ok();
       case WHATS_UP:
         return new WhatsUp();
       default:

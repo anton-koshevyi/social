@@ -7,7 +7,6 @@ import com.social.backend.test.model.wrapper.AbstractWrapper;
 import com.social.backend.test.model.wrapper.ModelWrapper;
 import com.social.backend.test.model.wrapper.comment.Badly;
 import com.social.backend.test.model.wrapper.comment.Like;
-import com.social.backend.test.model.wrapper.comment.Useful;
 
 class CommentFactory extends AbstractFactory<Comment> {
 
@@ -20,8 +19,6 @@ class CommentFactory extends AbstractFactory<Comment> {
         return new Badly();
       case LIKE:
         return new Like();
-      case USEFUL:
-        return new Useful();
       default:
         return null;
     }

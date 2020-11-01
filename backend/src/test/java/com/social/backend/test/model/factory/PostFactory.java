@@ -6,7 +6,6 @@ import com.social.backend.test.model.type.PostType;
 import com.social.backend.test.model.wrapper.AbstractWrapper;
 import com.social.backend.test.model.wrapper.ModelWrapper;
 import com.social.backend.test.model.wrapper.post.Cooking;
-import com.social.backend.test.model.wrapper.post.Gaming;
 import com.social.backend.test.model.wrapper.post.Reading;
 
 class PostFactory extends AbstractFactory<Post> {
@@ -18,8 +17,6 @@ class PostFactory extends AbstractFactory<Post> {
         return new AbstractWrapper<Post>(new Post()) {};
       case COOKING:
         return new Cooking();
-      case GAMING:
-        return new Gaming();
       case READING:
         return new Reading();
       default:

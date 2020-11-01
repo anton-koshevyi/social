@@ -6,8 +6,7 @@ public enum MessageType implements ModelType<Message> {
 
   RAW,
   WHATS_UP,
-  MEETING,
-  OK;
+  MEETING;
 
   @Override
   public Class<Message> modelClass() {

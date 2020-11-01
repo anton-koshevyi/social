@@ -13,5 +13,4 @@ abstract class MessageWrapper extends AbstractWrapper<Message> {
         .with(MessageMutators.body(body));
   }
 
-
 }

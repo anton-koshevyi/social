@@ -6,8 +6,7 @@ public enum PostType implements ModelType<Post> {
 
   RAW,
   READING,
-  COOKING,
-  GAMING;
+  COOKING;
 
   @Override
   public Class<Post> modelClass() {

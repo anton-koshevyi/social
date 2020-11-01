@@ -6,7 +6,6 @@ import com.social.backend.test.model.type.ModelType;
 import com.social.backend.test.model.wrapper.AbstractWrapper;
 import com.social.backend.test.model.wrapper.ModelWrapper;
 import com.social.backend.test.model.wrapper.chat.group.Classmates;
-import com.social.backend.test.model.wrapper.chat.group.Parents;
 import com.social.backend.test.model.wrapper.chat.group.Scientists;
 
 class GroupChatFactory extends AbstractFactory<GroupChat> {
@@ -18,8 +17,6 @@ class GroupChatFactory extends AbstractFactory<GroupChat> {
         return new AbstractWrapper<GroupChat>(new GroupChat()) {};
       case CLASSMATES:
         return new Classmates();
-      case PARENTS:
-        return new Parents();
       case SCIENTISTS:
         return new Scientists();
       default:

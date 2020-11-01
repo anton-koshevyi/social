@@ -6,8 +6,7 @@ public enum UserType implements ModelType<User> {
 
   RAW,
   JOHN_SMITH,
-  FRED_BLOGGS,
-  JANE_DOE;
+  FRED_BLOGGS;
 
   @Override
   public Class<User> modelClass() {

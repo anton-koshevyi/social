@@ -6,7 +6,6 @@ import com.social.backend.test.model.type.UserType;
 import com.social.backend.test.model.wrapper.AbstractWrapper;
 import com.social.backend.test.model.wrapper.ModelWrapper;
 import com.social.backend.test.model.wrapper.user.FredBloggs;
-import com.social.backend.test.model.wrapper.user.JaneDoe;
 import com.social.backend.test.model.wrapper.user.JohnSmith;
 
 class UserFactory extends AbstractFactory<User> {
@@ -18,8 +17,6 @@ class UserFactory extends AbstractFactory<User> {
         return new AbstractWrapper<User>(new User()) {};
       case JOHN_SMITH:
         return new JohnSmith();
-      case JANE_DOE:
-        return new JaneDoe();
       case FRED_BLOGGS:
         return new FredBloggs();
       default:
