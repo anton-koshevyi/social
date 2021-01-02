@@ -36,7 +36,6 @@ import com.social.backend.service.ChatService;
 import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
-import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
 import com.social.backend.test.model.mutator.ChatMutators;
 import com.social.backend.test.model.mutator.PostMutators;

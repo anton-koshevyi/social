@@ -13,7 +13,6 @@ import com.social.backend.config.SecurityConfig.Authority;
 import com.social.backend.dto.user.UserDto;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
-import com.social.backend.test.SecurityManager;
 
 public class UserMapperTest {
 

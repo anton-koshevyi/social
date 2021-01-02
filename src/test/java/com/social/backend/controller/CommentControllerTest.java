@@ -32,32 +32,31 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
-import com.social.backend.model.chat.Chat;
+import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
-import com.social.backend.service.ChatService;
-import com.social.backend.service.MessageService;
+import com.social.backend.service.CommentService;
+import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
-import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
-import com.social.backend.test.model.mutator.ChatMutators;
-import com.social.backend.test.model.mutator.MessageMutators;
-import com.social.backend.test.model.type.MessageType;
-import com.social.backend.test.model.type.PrivateChatType;
+import com.social.backend.test.model.mutator.CommentMutators;
+import com.social.backend.test.model.mutator.PostMutators;
+import com.social.backend.test.model.type.CommentType;
+import com.social.backend.test.model.type.PostType;
 import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
-public class MessageControllerTest {
+public class CommentControllerTest {
 
-  private @Mock MessageService messageService;
-  private @Mock ChatService chatService;
+  private @Mock CommentService commentService;
+  private @Mock PostService postService;
   private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(MessageService.class, () -> messageService);
-    appContext.registerBean(ChatService.class, () -> chatService);
+    appContext.registerBean(CommentService.class, () -> commentService);
+    appContext.registerBean(PostService.class, () -> postService);
     appContext.registerBean(UserService.class, () -> userService);
     appContext.refresh();
 
@@ -67,7 +66,7 @@ public class MessageControllerTest {
     webContext.addBeanFactoryPostProcessor(new LazyInitBeanFactoryPostProcessor());
     webContext.setServletContext(new MockServletContext());
     webContext.register(TestConfig.class);
-    webContext.register(MessageController.class);
+    webContext.register(CommentController.class);
     webContext.refresh();
 
     RestAssuredMockMvc.mockMvc(MockMvcBuilders
@@ -85,30 +84,26 @@ public class MessageControllerTest {
   public void getAll() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
-    Chat chat = ModelFactory
-        .createModelMutating(PrivateChatType.DEFAULT,
-            ChatMutators.members(author));
+    Post post = ModelFactory
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
-        .when(userService.find(1L))
-        .thenReturn(author);
+        .when(postService.find(1L))
+        .thenReturn(post);
     Mockito
-        .when(chatService.find(1L, author))
-        .thenReturn(chat);
-    Mockito
-        .when(messageService.findAll(chat, PageRequest.of(0, 20, Sort.unsorted())))
+        .when(commentService.findAll(post, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModelMutating(MessageType.WHATS_UP,
-                    MessageMutators.author(author),
-                    MessageMutators.chat(chat)))
+                .createModelMutating(CommentType.LIKE,
+                    CommentMutators.post(post),
+                    CommentMutators.author(author)))
         ));
-    SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "johnsmith", "password", Collections.emptySet()));
 
     String response = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
-        .get("/chats/{chatId}/messages", 1)
+        .when()
+        .get("/posts/{postId}/comments", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -121,10 +116,10 @@ public class MessageControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: null,"
-        + "body: 'How are you?',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
-        + "  email: 'johnsmith@example.com',"
+        + "  email: null,"
         + "  username: 'johnsmith',"
         + "  firstName: 'John',"
         + "  lastName: 'Smith',"
@@ -132,24 +127,29 @@ public class MessageControllerTest {
         + "  moder: false,"
         + "  admin: false"
         + "},"
-        + "chat: {"
+        + "post: {"
         + "  id: 1,"
-        + "  type: 'private',"
-        + "  members: [{"
+        + "  createdAt: (customized),"
+        + "  updatedAt: null,"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
+        + "  comments: (customized),"
+        + "  author: {"
         + "    id: 1,"
-        + "    email: 'johnsmith@example.com',"
+        + "    email: null,"
         + "    username: 'johnsmith',"
         + "    firstName: 'John',"
         + "    lastName: 'Smith',"
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
-        + "  }]"
+        + "  }"
         + "}"
         + "}]";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("[*].createdAt", (act, exp) -> act != null)
+            new Customization("**.createdAt", (act, exp) -> act != null),
+            new Customization("[*].post.comments", (act, exp) -> true)
         ));
   }
 
@@ -160,7 +160,7 @@ public class MessageControllerTest {
         .header("Content-Type", "application/json")
         .body("{}")
         .when()
-        .post("/chats/{chatId}/messages", 1)
+        .post("/posts/{postId}/comments", 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .expect(result -> Assertions
@@ -172,21 +172,21 @@ public class MessageControllerTest {
   public void create() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
-    Chat chat = ModelFactory
-        .createModelMutating(PrivateChatType.DEFAULT,
-            ChatMutators.members(author));
+    Post post = ModelFactory
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
+    Mockito
+        .when(postService.find(1L))
+        .thenReturn(post);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
-        .when(chatService.find(1L, author))
-        .thenReturn(chat);
-    Mockito
-        .when(messageService.create(chat, author, "How are you?"))
+        .when(commentService.create(post, author, "Like"))
         .thenReturn(ModelFactory
-            .createModelMutating(MessageType.WHATS_UP,
-                MessageMutators.author(author),
-                MessageMutators.chat(chat)));
+            .createModelMutating(CommentType.LIKE,
+                CommentMutators.post(post),
+                CommentMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -194,9 +194,9 @@ public class MessageControllerTest {
         .given()
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"How are you?\" }")
+        .body("{ \"body\": \"Like\" }")
         .when()
-        .post("/chats/{chatId}/messages", 1)
+        .post("/posts/{postId}/comments", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -206,7 +206,7 @@ public class MessageControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: null,"
-        + "body: 'How are you?',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -217,10 +217,14 @@ public class MessageControllerTest {
         + "  moder: false,"
         + "  admin: false"
         + "},"
-        + "chat: {"
+        + "post: {"
         + "  id: 1,"
-        + "  type: 'private',"
-        + "  members: [{"
+        + "  createdAt: (customized),"
+        + "  updatedAt: null,"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
+        + "  comments: (customized),"
+        + "  author: {"
         + "    id: 1,"
         + "    email: 'johnsmith@example.com',"
         + "    username: 'johnsmith',"
@@ -229,12 +233,13 @@ public class MessageControllerTest {
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
-        + "  }]"
+        + "  }"
         + "}"
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> act != null)
+            new Customization("**.createdAt", (act, exp) -> act != null),
+            new Customization("post.comments", (act, exp) -> true)
         ));
   }
 
@@ -245,7 +250,7 @@ public class MessageControllerTest {
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
         .when()
-        .patch("/chats/{chatId}/messages/{id}", 1, 1)
+        .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .expect(result -> Assertions
@@ -257,18 +262,18 @@ public class MessageControllerTest {
   public void update() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
-    Chat chat = ModelFactory
-        .createModelMutating(PrivateChatType.DEFAULT,
-            ChatMutators.members(author));
+    Post post = ModelFactory
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
-        .when(messageService.update(1L, author, "How are you?"))
+        .when(commentService.update(1L, author, "Like"))
         .thenReturn(ModelFactory
-            .createModelMutating(MessageType.WHATS_UP,
-                MessageMutators.author(author),
-                MessageMutators.chat(chat)));
+            .createModelMutating(CommentType.LIKE,
+                CommentMutators.post(post),
+                CommentMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -276,9 +281,9 @@ public class MessageControllerTest {
         .given()
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{ \"body\": \"How are you?\" }")
+        .body("{ \"body\": \"Like\" }")
         .when()
-        .patch("/chats/{chatId}/messages/{id}", 1, 1)
+        .patch("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -288,7 +293,7 @@ public class MessageControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "body: 'How are you?',"
+        + "body: 'Like',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -299,10 +304,14 @@ public class MessageControllerTest {
         + "  moder: false,"
         + "  admin: false"
         + "},"
-        + "chat: {"
+        + "post: {"
         + "  id: 1,"
-        + "  type: 'private',"
-        + "  members: [{"
+        + "  createdAt: (customized),"
+        + "  updatedAt: null,"
+        + "  title: 'Favorite books',"
+        + "  body: 'My personal must-read fiction',"
+        + "  comments: (customized),"
+        + "  author: {"
         + "    id: 1,"
         + "    email: 'johnsmith@example.com',"
         + "    username: 'johnsmith',"
@@ -311,34 +320,34 @@ public class MessageControllerTest {
         + "    publicity: 10,"
         + "    moder: false,"
         + "    admin: false"
-        + "  }]"
+        + "  }"
         + "}"
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> act != null),
-            new Customization("updatedAt", (act, exp) -> act != null)
+            new Customization("**.createdAt", (act, exp) -> act != null),
+            new Customization("updatedAt", (act, exp) -> act != null),
+            new Customization("post.comments", (act, exp) -> true)
         ));
   }
 
   @Test
   public void delete() {
-    User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
-        .thenReturn(author);
+        .thenReturn(ModelFactory
+            .createModel(UserType.JOHN_SMITH));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
     RestAssuredMockMvc
-        .delete("/chats/{chatId}/messages/{id}", 1, 1)
+        .delete("/posts/{postId}/comments/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
 
     Mockito
-        .verify(messageService)
-        .delete(1L, author);
+        .verify(commentService)
+        .delete(Mockito.eq(1L), Mockito.any());
   }
 
 

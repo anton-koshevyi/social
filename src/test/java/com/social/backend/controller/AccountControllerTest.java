@@ -27,7 +27,6 @@ import com.social.backend.common.IdentifiedUserDetails;
 import com.social.backend.repository.UserRepository;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
-import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
 import com.social.backend.test.model.mutator.UserMutators;
 import com.social.backend.test.model.type.UserType;

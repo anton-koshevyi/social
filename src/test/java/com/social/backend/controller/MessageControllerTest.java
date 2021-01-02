@@ -32,26 +32,31 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
+import com.social.backend.model.chat.Chat;
 import com.social.backend.model.user.User;
-import com.social.backend.service.PostService;
+import com.social.backend.service.ChatService;
+import com.social.backend.service.MessageService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
-import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
-import com.social.backend.test.model.mutator.PostMutators;
-import com.social.backend.test.model.type.PostType;
+import com.social.backend.test.model.mutator.ChatMutators;
+import com.social.backend.test.model.mutator.MessageMutators;
+import com.social.backend.test.model.type.MessageType;
+import com.social.backend.test.model.type.PrivateChatType;
 import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
-public class PostControllerTest {
+public class MessageControllerTest {
 
-  private @Mock PostService postService;
+  private @Mock MessageService messageService;
+  private @Mock ChatService chatService;
   private @Mock UserService userService;
 
   @BeforeEach
   public void setUp() {
     GenericApplicationContext appContext = new GenericApplicationContext();
-    appContext.registerBean(PostService.class, () -> postService);
+    appContext.registerBean(MessageService.class, () -> messageService);
+    appContext.registerBean(ChatService.class, () -> chatService);
     appContext.registerBean(UserService.class, () -> userService);
     appContext.refresh();
 
@@ -61,7 +66,7 @@ public class PostControllerTest {
     webContext.addBeanFactoryPostProcessor(new LazyInitBeanFactoryPostProcessor());
     webContext.setServletContext(new MockServletContext());
     webContext.register(TestConfig.class);
-    webContext.register(PostController.class);
+    webContext.register(MessageController.class);
     webContext.refresh();
 
     RestAssuredMockMvc.mockMvc(MockMvcBuilders
@@ -79,19 +84,30 @@ public class PostControllerTest {
   public void getAll() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
+    Chat chat = ModelFactory
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
-        .when(postService.findAll(PageRequest.of(0, 20, Sort.unsorted())))
+        .when(userService.find(1L))
+        .thenReturn(author);
+    Mockito
+        .when(chatService.find(1L, author))
+        .thenReturn(chat);
+    Mockito
+        .when(messageService.findAll(chat, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModelMutating(PostType.READING,
-                    PostMutators.author(author)))
+                .createModelMutating(MessageType.WHATS_UP,
+                    MessageMutators.author(author),
+                    MessageMutators.chat(chat)))
         ));
+    SecurityManager.setUser(new IdentifiedUserDetails(
+        1L, "johnsmith", "password", Collections.emptySet()));
 
     String response = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
-        .when()
-        .get("/posts")
+        .get("/chats/{chatId}/messages", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -104,18 +120,30 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: null,"
-        + "title: 'Favorite books',"
-        + "body: 'My personal must-read fiction',"
-        + "comments: 0,"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
-        + "  email: null,"
+        + "  email: 'johnsmith@example.com',"
         + "  username: 'johnsmith',"
         + "  firstName: 'John',"
         + "  lastName: 'Smith',"
         + "  publicity: 10,"
         + "  moder: false,"
         + "  admin: false"
+        + "},"
+        + "chat: {"
+        + "  id: 1,"
+        + "  type: 'private',"
+        + "  members: [{"
+        + "    id: 1,"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
+        + "    publicity: 10,"
+        + "    moder: false,"
+        + "    admin: false"
+        + "  }]"
         + "}"
         + "}]";
     JSONAssert
@@ -131,7 +159,7 @@ public class PostControllerTest {
         .header("Content-Type", "application/json")
         .body("{}")
         .when()
-        .post("/posts")
+        .post("/chats/{chatId}/messages", 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .expect(result -> Assertions
@@ -143,18 +171,21 @@ public class PostControllerTest {
   public void create() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
+    Chat chat = ModelFactory
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
-        .when(postService.create(
-            author,
-            "Favorite books",
-            "My personal must-read fiction"
-        ))
+        .when(chatService.find(1L, author))
+        .thenReturn(chat);
+    Mockito
+        .when(messageService.create(chat, author, "How are you?"))
         .thenReturn(ModelFactory
-            .createModelMutating(PostType.READING,
-                PostMutators.author(author)));
+            .createModelMutating(MessageType.WHATS_UP,
+                MessageMutators.author(author),
+                MessageMutators.chat(chat)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -162,11 +193,9 @@ public class PostControllerTest {
         .given()
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{"
-            + "\"title\": \"Favorite books\","
-            + "\"body\": \"My personal must-read fiction\""
-            + "}")
-        .post("/posts")
+        .body("{ \"body\": \"How are you?\" }")
+        .when()
+        .post("/chats/{chatId}/messages", 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -176,8 +205,7 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: null,"
-        + "title: 'Favorite books',"
-        + "body: 'My personal must-read fiction',"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -188,51 +216,20 @@ public class PostControllerTest {
         + "  moder: false,"
         + "  admin: false"
         + "},"
-        + "comments: 0"
-        + "}";
-    JSONAssert
-        .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
-            new Customization("createdAt", (act, exp) -> act != null)
-        ));
-  }
-
-  @Test
-  public void get() throws JSONException {
-    User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH);
-    Mockito
-        .when(postService.find(1L))
-        .thenReturn(ModelFactory
-            .createModelMutating(PostType.READING,
-                PostMutators.author(author)));
-
-    String actual = RestAssuredMockMvc
-        .given()
-        .header("Accept", "application/json")
-        .when()
-        .get("/posts/{id}", 1)
-        .then()
-        .statusCode(HttpServletResponse.SC_OK)
-        .extract()
-        .asString();
-
-    String expected = "{"
-        + "id: 1,"
-        + "createdAt: (customized),"
-        + "updatedAt: null,"
-        + "title: 'Favorite books',"
-        + "body: 'My personal must-read fiction',"
-        + "author: {"
+        + "chat: {"
         + "  id: 1,"
-        + "  email: null,"
-        + "  username: 'johnsmith',"
-        + "  firstName: 'John',"
-        + "  lastName: 'Smith',"
-        + "  publicity: 10,"
-        + "  moder: false,"
-        + "  admin: false"
-        + "},"
-        + "comments: 0"
+        + "  type: 'private',"
+        + "  members: [{"
+        + "    id: 1,"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
+        + "    publicity: 10,"
+        + "    moder: false,"
+        + "    admin: false"
+        + "  }]"
+        + "}"
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
@@ -247,7 +244,7 @@ public class PostControllerTest {
         .header("Content-Type", "application/json")
         .body("{ \"body\": \"\" }")
         .when()
-        .patch("/posts/{id}", 1)
+        .patch("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_BAD_REQUEST)
         .expect(result -> Assertions
@@ -259,19 +256,18 @@ public class PostControllerTest {
   public void update() throws JSONException {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
+    Chat chat = ModelFactory
+        .createModelMutating(PrivateChatType.DEFAULT,
+            ChatMutators.members(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
-        .when(postService.update(
-            1L,
-            author,
-            "Favorite books",
-            "My personal must-read fiction"
-        ))
+        .when(messageService.update(1L, author, "How are you?"))
         .thenReturn(ModelFactory
-            .createModelMutating(PostType.READING,
-                PostMutators.author(author)));
+            .createModelMutating(MessageType.WHATS_UP,
+                MessageMutators.author(author),
+                MessageMutators.chat(chat)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -279,12 +275,9 @@ public class PostControllerTest {
         .given()
         .header("Accept", "application/json")
         .header("Content-Type", "application/json")
-        .body("{"
-            + "\"title\": \"Favorite books\","
-            + "\"body\": \"My personal must-read fiction\""
-            + "}")
+        .body("{ \"body\": \"How are you?\" }")
         .when()
-        .patch("/posts/{id}", 1)
+        .patch("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -294,8 +287,7 @@ public class PostControllerTest {
         + "id: 1,"
         + "createdAt: (customized),"
         + "updatedAt: (customized),"
-        + "title: 'Favorite books',"
-        + "body: 'My personal must-read fiction',"
+        + "body: 'How are you?',"
         + "author: {"
         + "  id: 1,"
         + "  email: 'johnsmith@example.com',"
@@ -306,7 +298,20 @@ public class PostControllerTest {
         + "  moder: false,"
         + "  admin: false"
         + "},"
-        + "comments: 0"
+        + "chat: {"
+        + "  id: 1,"
+        + "  type: 'private',"
+        + "  members: [{"
+        + "    id: 1,"
+        + "    email: 'johnsmith@example.com',"
+        + "    username: 'johnsmith',"
+        + "    firstName: 'John',"
+        + "    lastName: 'Smith',"
+        + "    publicity: 10,"
+        + "    moder: false,"
+        + "    admin: false"
+        + "  }]"
+        + "}"
         + "}";
     JSONAssert
         .assertEquals(expected, actual, new CustomComparator(JSONCompareMode.NON_EXTENSIBLE,
@@ -326,12 +331,12 @@ public class PostControllerTest {
         1L, "johnsmith", "password", Collections.emptySet()));
 
     RestAssuredMockMvc
-        .delete("/posts/{id}", 1)
+        .delete("/chats/{chatId}/messages/{id}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK);
 
     Mockito
-        .verify(postService)
+        .verify(messageService)
         .delete(1L, author);
   }
 
