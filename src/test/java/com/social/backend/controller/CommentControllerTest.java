@@ -38,6 +38,7 @@ import com.social.backend.service.CommentService;
 import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
+import com.social.backend.test.SecurityManager;
 import com.social.backend.test.model.factory.ModelFactory;
 import com.social.backend.test.model.mutator.CommentMutators;
 import com.social.backend.test.model.mutator.PostMutators;
