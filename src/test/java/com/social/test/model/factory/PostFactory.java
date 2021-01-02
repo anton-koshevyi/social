@@ -14,8 +14,7 @@ class PostFactory extends AbstractFactory<Post> {
   ModelWrapper<Post> createWrapper(ModelType<Post> type) {
     switch (Enum.valueOf(PostType.class, type.name())) {
       case RAW:
-        return new AbstractWrapper<Post>(new Post()) {
-        };
+        return new AbstractWrapper<Post>(new Post()) {};
       case COOKING:
         return new Cooking();
       case READING:

@@ -14,8 +14,7 @@ class UserFactory extends AbstractFactory<User> {
   ModelWrapper<User> createWrapper(ModelType<User> type) {
     switch (Enum.valueOf(UserType.class, type.name())) {
       case RAW:
-        return new AbstractWrapper<User>(new User()) {
-        };
+        return new AbstractWrapper<User>(new User()) {};
       case JOHN_SMITH:
         return new JohnSmith();
       case FRED_BLOGGS:

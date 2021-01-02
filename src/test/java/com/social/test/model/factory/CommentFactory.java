@@ -14,8 +14,7 @@ class CommentFactory extends AbstractFactory<Comment> {
   ModelWrapper<Comment> createWrapper(ModelType<Comment> type) {
     switch (Enum.valueOf(CommentType.class, type.name())) {
       case RAW:
-        return new AbstractWrapper<Comment>(new Comment()) {
-        };
+        return new AbstractWrapper<Comment>(new Comment()) {};
       case BADLY:
         return new Badly();
       case LIKE:

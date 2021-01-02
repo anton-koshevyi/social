@@ -14,8 +14,7 @@ class GroupChatFactory extends AbstractFactory<GroupChat> {
   ModelWrapper<GroupChat> createWrapper(ModelType<GroupChat> type) {
     switch (Enum.valueOf(GroupChatType.class, type.name())) {
       case RAW:
-        return new AbstractWrapper<GroupChat>(new GroupChat()) {
-        };
+        return new AbstractWrapper<GroupChat>(new GroupChat()) {};
       case CLASSMATES:
         return new Classmates();
       case SCIENTISTS:

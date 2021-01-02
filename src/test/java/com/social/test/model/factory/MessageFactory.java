@@ -14,8 +14,7 @@ class MessageFactory extends AbstractFactory<Message> {
   ModelWrapper<Message> createWrapper(ModelType<Message> type) {
     switch (Enum.valueOf(MessageType.class, type.name())) {
       case RAW:
-        return new AbstractWrapper<Message>(new Message()) {
-        };
+        return new AbstractWrapper<Message>(new Message()) {};
       case MEETING:
         return new Meeting();
       case WHATS_UP:
