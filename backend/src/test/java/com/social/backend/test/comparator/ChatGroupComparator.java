@@ -1,6 +1,7 @@
 package com.social.backend.test.comparator;
 
 import java.util.Comparator;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.CompareToBuilder;
 
@@ -11,8 +12,9 @@ class ChatGroupComparator extends ChatComparator<GroupChat> {
 
   private final Comparator<User> userComparator;
 
-  ChatGroupComparator(Comparator<User> userComparator) {
-    super(userComparator);
+  protected ChatGroupComparator(Comparator<Set<User>> membersComparator,
+                                Comparator<User> userComparator) {
+    super(membersComparator);
     this.userComparator = userComparator;
   }
 

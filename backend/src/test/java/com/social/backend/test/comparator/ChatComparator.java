@@ -12,8 +12,8 @@ abstract class ChatComparator<T extends Chat> implements Comparator<T> {
 
   private final Comparator<Set<User>> membersComparator;
 
-  protected ChatComparator(Comparator<User> userComparator) {
-    this.membersComparator = new CollectionComparatorAdapter<>(userComparator);
+  protected ChatComparator(Comparator<Set<User>> membersComparator) {
+    this.membersComparator = membersComparator;
   }
 
   @Override

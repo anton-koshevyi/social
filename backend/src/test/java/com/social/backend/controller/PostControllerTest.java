@@ -37,9 +37,10 @@ import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.post.PostType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.PostMutators;
+import com.social.backend.test.model.type.PostType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class PostControllerTest {
@@ -77,15 +78,13 @@ public class PostControllerTest {
   @Test
   public void getAll() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(postService.findAll(PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(author))
+                .createModelMutating(PostType.READING,
+                    PostMutators.author(author)))
         ));
 
     String response = RestAssuredMockMvc
@@ -143,8 +142,7 @@ public class PostControllerTest {
   @Test
   public void create() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
@@ -155,9 +153,8 @@ public class PostControllerTest {
             "My personal must-read fiction"
         ))
         .thenReturn(ModelFactory
-            .createModel(PostType.READING)
-            .setId(1L)
-            .setAuthor(author));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -202,14 +199,12 @@ public class PostControllerTest {
   @Test
   public void get() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(postService.find(1L))
         .thenReturn(ModelFactory
-            .createModel(PostType.READING)
-            .setId(1L)
-            .setAuthor(author));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(author)));
 
     String actual = RestAssuredMockMvc
         .given()
@@ -263,8 +258,7 @@ public class PostControllerTest {
   @Test
   public void update() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
@@ -276,9 +270,8 @@ public class PostControllerTest {
             "My personal must-read fiction"
         ))
         .thenReturn(ModelFactory
-            .createModel(PostType.READING)
-            .setId(1L)
-            .setAuthor(author));
+            .createModelMutating(PostType.READING,
+                PostMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -325,8 +318,7 @@ public class PostControllerTest {
   @Test
   public void delete() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);

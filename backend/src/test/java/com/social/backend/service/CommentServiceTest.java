@@ -2,7 +2,6 @@ package com.social.backend.service;
 
 import java.util.Optional;
 
-import com.google.common.collect.Sets;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,10 +22,13 @@ import com.social.backend.model.user.User;
 import com.social.backend.repository.CommentRepository;
 import com.social.backend.test.comparator.ComparatorFactory;
 import com.social.backend.test.comparator.NotNullComparator;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.comment.CommentType;
-import com.social.backend.test.model.post.PostType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.CommentMutators;
+import com.social.backend.test.model.mutator.PostMutators;
+import com.social.backend.test.model.mutator.UserMutators;
+import com.social.backend.test.model.type.CommentType;
+import com.social.backend.test.model.type.PostType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
@@ -42,16 +44,13 @@ public class CommentServiceTest {
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentNotOfPostAuthor_expectException() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.PRIVATE));
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     User author = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L);
+        .createModel(UserType.FRED_BLOGGS);
 
     Assertions
         .assertThatThrownBy(() -> service.create(post, author, "Like"))
@@ -63,16 +62,13 @@ public class CommentServiceTest {
   @Test
   public void create_whenPostOfInternalAuthor_andCommentNotOfFriend_expectException() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L)
-        .setPublicity(Publicity.INTERNAL);
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.INTERNAL));
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     User author = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L);
+        .createModel(UserType.FRED_BLOGGS);
 
     Assertions
         .assertThatThrownBy(() -> service.create(post, author, "Like"))
@@ -84,18 +80,16 @@ public class CommentServiceTest {
   @Test
   public void create_whenPostOfPrivateAuthor_andCommentOfPostAuthor() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L)
-        .setPublicity(Publicity.PRIVATE);
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.PRIVATE));
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
-          entity.setId(1L);
+          CommentMutators.id(1L).accept(entity);
           return entity;
         });
 
@@ -103,40 +97,38 @@ public class CommentServiceTest {
         .assertThat(service.create(post, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
-        .isEqualTo(new Comment()
-            .setPost(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(ModelFactory
-                    .createModel(UserType.JOHN_SMITH)
-                    .setId(1L)))
-            .setId(1L)
-            .setBody("Like")
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+        .isEqualTo(ModelFactory
+            .createModelMutating(CommentType.RAW,
+                CommentMutators.id(1L),
+                CommentMutators.body("Like"),
+                CommentMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)),
+                CommentMutators.post(ModelFactory
+                    .createModelMutating(PostType.READING,
+                        PostMutators.author(ModelFactory
+                            .createModelMutating(UserType.JOHN_SMITH,
+                                UserMutators.publicity(Publicity.PRIVATE)))
+                    ))
+            ));
   }
 
   @Test
   public void create_whenPostOfInternalAuthor_andCommentOfFriend() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L)
-        .setPublicity(Publicity.INTERNAL);
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.INTERNAL));
     User author = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L)
-        .setFriends(Sets.newHashSet(postAuthor));
-    postAuthor.setFriends(Sets.newHashSet(author));
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.friends(postAuthor));
+    UserMutators.friends(author).accept(postAuthor);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
-          entity.setId(1L);
+          CommentMutators.id(1L).accept(entity);
           return entity;
         });
 
@@ -144,39 +136,36 @@ public class CommentServiceTest {
         .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
-        .isEqualTo(new Comment()
-            .setPost(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(ModelFactory
-                    .createModel(UserType.JOHN_SMITH)
-                    .setId(1L)
-                    .setPublicity(Publicity.INTERNAL)))
-            .setId(1L)
-            .setBody("Like")
-            .setAuthor(ModelFactory
-                .createModel(UserType.FRED_BLOGGS)
-                .setId(2L)));
+        .isEqualTo(ModelFactory
+            .createModelMutating(CommentType.RAW,
+                CommentMutators.id(1L),
+                CommentMutators.body("Like"),
+                CommentMutators.author(ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)),
+                CommentMutators.post(ModelFactory
+                    .createModelMutating(PostType.READING,
+                        PostMutators.author(ModelFactory
+                            .createModelMutating(UserType.JOHN_SMITH,
+                                UserMutators.publicity(Publicity.INTERNAL)))
+                    ))
+            ));
   }
 
   @Test
   public void create_whenPostOfPublicAuthor() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L)
-        .setPublicity(Publicity.PUBLIC);
+        .createModelMutating(UserType.JOHN_SMITH,
+            UserMutators.publicity(Publicity.PUBLIC));
     User author = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L);
+        .createModel(UserType.FRED_BLOGGS);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
-          entity.setId(1L);
+          CommentMutators.id(1L).accept(entity);
           return entity;
         });
 
@@ -184,26 +173,25 @@ public class CommentServiceTest {
         .assertThat(service.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
-        .isEqualTo(new Comment()
-            .setPost(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(ModelFactory
-                    .createModel(UserType.JOHN_SMITH)
-                    .setId(1L)
-                    .setPublicity(Publicity.PUBLIC)))
-            .setId(1L)
-            .setBody("Like")
-            .setAuthor(ModelFactory
-                .createModel(UserType.FRED_BLOGGS)
-                .setId(2L)));
+        .isEqualTo(ModelFactory
+            .createModelMutating(CommentType.RAW,
+                CommentMutators.id(1L),
+                CommentMutators.body("Like"),
+                CommentMutators.author(ModelFactory
+                    .createModel(UserType.FRED_BLOGGS)),
+                CommentMutators.post(ModelFactory
+                    .createModelMutating(PostType.READING,
+                        PostMutators.author(ModelFactory
+                            .createModelMutating(UserType.JOHN_SMITH,
+                                UserMutators.publicity(Publicity.PUBLIC)))
+                    ))
+            ));
   }
 
   @Test
   public void update_whenNoEntityWithIdAndAuthor_expectException() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
 
     Assertions
         .assertThatThrownBy(() -> service.update(0L, author, "Like"))
@@ -216,49 +204,43 @@ public class CommentServiceTest {
   @Test
   public void update() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     Mockito
-        .when(repository.findByIdAndAuthor(1L, postAuthor))
-        .thenReturn(Optional.of((Comment) ModelFactory
-            .createModel(CommentType.BADLY)
-            .setPost(post)
-            .setId(1L)
-            .setBody("Badly")
-            .setAuthor(postAuthor)));
+        .when(repository.findByIdAndAuthor(2L, postAuthor))
+        .thenReturn(Optional.of(ModelFactory
+            .createModelMutating(CommentType.BADLY,
+                CommentMutators.author(postAuthor),
+                CommentMutators.post(post))
+        ));
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.update(1L, postAuthor, "Like"))
+        .assertThat(service.update(2L, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(
             NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
         .isEqualTo(ModelFactory
-            .createModel(CommentType.BADLY)
-            .setPost(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(ModelFactory
-                    .createModel(UserType.JOHN_SMITH)
-                    .setId(1L)))
-            .setId(1L)
-            .setBody("Like")
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+            .createModelMutating(CommentType.BADLY,
+                CommentMutators.body("Like"),
+                CommentMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)),
+                CommentMutators.post(ModelFactory
+                    .createModelMutating(PostType.READING,
+                        PostMutators.author(ModelFactory
+                            .createModel(UserType.JOHN_SMITH))
+                    ))
+            ));
   }
 
   @Test
   public void delete_whenNoEntityWithIdAndAuthor_expectException() {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
 
     Assertions
         .assertThatThrownBy(() -> service.delete(0L, author))
@@ -271,17 +253,14 @@ public class CommentServiceTest {
   @Test
   public void delete() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
-    Comment entity = (Comment) ModelFactory
-        .createModel(CommentType.LIKE)
-        .setPost(post)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
+    Comment entity = ModelFactory
+        .createModelMutating(CommentType.LIKE,
+            CommentMutators.author(postAuthor),
+            CommentMutators.post(post));
     Mockito
         .when(repository.findByIdAndAuthor(1L, postAuthor))
         .thenReturn(Optional.of(entity));
@@ -296,20 +275,17 @@ public class CommentServiceTest {
   @Test
   public void findAll_byPost() {
     User postAuthor = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(postAuthor);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(postAuthor));
     Mockito
         .when(repository.findAllByPost(post, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
-            Lists.newArrayList((Comment) ModelFactory
-                .createModel(CommentType.LIKE)
-                .setPost(post)
-                .setId(1L)
-                .setAuthor(postAuthor))
+            Lists.newArrayList(ModelFactory
+                .createModelMutating(CommentType.LIKE,
+                    CommentMutators.author(postAuthor),
+                    CommentMutators.post(post)))
         ));
 
     Assertions
@@ -317,18 +293,16 @@ public class CommentServiceTest {
         .usingElementComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")
-        .containsExactly((Comment) ModelFactory
-            .createModel(CommentType.LIKE)
-            .setPost(ModelFactory
-                .createModel(PostType.READING)
-                .setId(1L)
-                .setAuthor(ModelFactory
-                    .createModel(UserType.JOHN_SMITH)
-                    .setId(1L)))
-            .setId(1L)
-            .setAuthor(ModelFactory
-                .createModel(UserType.JOHN_SMITH)
-                .setId(1L)));
+        .containsExactly(ModelFactory
+            .createModelMutating(CommentType.LIKE,
+                CommentMutators.author(ModelFactory
+                    .createModel(UserType.JOHN_SMITH)),
+                CommentMutators.post(ModelFactory
+                    .createModelMutating(PostType.READING,
+                        PostMutators.author(ModelFactory
+                            .createModel(UserType.JOHN_SMITH))
+                    ))
+            ));
   }
 
 }

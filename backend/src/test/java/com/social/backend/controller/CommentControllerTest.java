@@ -32,7 +32,6 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
-import com.social.backend.model.post.Comment;
 import com.social.backend.model.post.Post;
 import com.social.backend.model.user.User;
 import com.social.backend.service.CommentService;
@@ -40,10 +39,12 @@ import com.social.backend.service.PostService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.comment.CommentType;
-import com.social.backend.test.model.post.PostType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.CommentMutators;
+import com.social.backend.test.model.mutator.PostMutators;
+import com.social.backend.test.model.type.CommentType;
+import com.social.backend.test.model.type.PostType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class CommentControllerTest {
@@ -83,23 +84,20 @@ public class CommentControllerTest {
   @Test
   public void getAll() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(author);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
         .when(postService.find(1L))
         .thenReturn(post);
     Mockito
         .when(commentService.findAll(post, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
-            Lists.newArrayList((Comment) ModelFactory
-                .createModel(CommentType.LIKE)
-                .setPost(post)
-                .setId(1L)
-                .setAuthor(author))
+            Lists.newArrayList(ModelFactory
+                .createModelMutating(CommentType.LIKE,
+                    CommentMutators.post(post),
+                    CommentMutators.author(author)))
         ));
 
     String response = RestAssuredMockMvc
@@ -174,12 +172,10 @@ public class CommentControllerTest {
   @Test
   public void create() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(author);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
         .when(postService.find(1L))
         .thenReturn(post);
@@ -188,11 +184,10 @@ public class CommentControllerTest {
         .thenReturn(author);
     Mockito
         .when(commentService.create(post, author, "Like"))
-        .thenReturn((Comment) ModelFactory
-            .createModel(CommentType.LIKE)
-            .setPost(post)
-            .setId(1L)
-            .setAuthor(author));
+        .thenReturn(ModelFactory
+            .createModelMutating(CommentType.LIKE,
+                CommentMutators.post(post),
+                CommentMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -267,22 +262,19 @@ public class CommentControllerTest {
   @Test
   public void update() throws JSONException {
     User author = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Post post = ModelFactory
-        .createModel(PostType.READING)
-        .setId(1L)
-        .setAuthor(author);
+        .createModelMutating(PostType.READING,
+            PostMutators.author(author));
     Mockito
         .when(userService.find(1L))
         .thenReturn(author);
     Mockito
         .when(commentService.update(1L, author, "Like"))
-        .thenReturn((Comment) ModelFactory
-            .createModel(CommentType.LIKE)
-            .setPost(post)
-            .setId(1L)
-            .setAuthor(author));
+        .thenReturn(ModelFactory
+            .createModelMutating(CommentType.LIKE,
+                CommentMutators.post(post),
+                CommentMutators.author(author)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -345,8 +337,7 @@ public class CommentControllerTest {
     Mockito
         .when(userService.find(1L))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(1L));
+            .createModel(UserType.JOHN_SMITH));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 

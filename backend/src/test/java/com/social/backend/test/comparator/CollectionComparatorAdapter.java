@@ -2,7 +2,6 @@ package com.social.backend.test.comparator;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Equator;
@@ -12,7 +11,6 @@ public class CollectionComparatorAdapter<E, T extends Collection<E>> implements 
   private final Equator<E> equator;
 
   public CollectionComparatorAdapter(Comparator<E> comparator) {
-    Objects.requireNonNull(comparator, "Comparator must not be null");
     equator = new Equator<E>() {
       @Override
       public boolean equate(E left, E right) {
@@ -21,6 +19,8 @@ public class CollectionComparatorAdapter<E, T extends Collection<E>> implements 
 
       @Override
       public int hash(E o) {
+        // Always returns 0 to trigger ::equals
+        // (by hash-based collections logic)
         return 0;
       }
     };

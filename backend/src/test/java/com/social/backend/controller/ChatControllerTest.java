@@ -31,16 +31,17 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.social.backend.common.IdentifiedUserDetails;
-import com.social.backend.model.chat.GroupChat;
 import com.social.backend.model.user.Publicity;
 import com.social.backend.model.user.User;
 import com.social.backend.service.ChatService;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.chat.GroupChatType;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.ChatMutators;
+import com.social.backend.test.model.mutator.UserMutators;
+import com.social.backend.test.model.type.GroupChatType;
+import com.social.backend.test.model.type.UserType;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatControllerTest {
@@ -78,8 +79,7 @@ public class ChatControllerTest {
   @Test
   public void getAll() throws JSONException {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
@@ -87,10 +87,9 @@ public class ChatControllerTest {
         .when(chatService.findAll(member, PageRequest.of(0, 20, Sort.unsorted())))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
-                .createModel(GroupChatType.CLASSMATES)
-                .setOwner(member)
-                .setId(1L)
-                .setMembers(Sets.newHashSet(member)))
+                .createModelMutating(GroupChatType.CLASSMATES,
+                    ChatMutators.owner(member),
+                    ChatMutators.members(member)))
         ));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
@@ -131,18 +130,16 @@ public class ChatControllerTest {
   @Test
   public void get() throws JSONException {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
     Mockito
         .when(chatService.find(1L, member))
         .thenReturn(ModelFactory
-            .createModel(GroupChatType.CLASSMATES)
-            .setOwner(member)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(member)));
+            .createModelMutating(GroupChatType.CLASSMATES,
+                ChatMutators.owner(member),
+                ChatMutators.members(member)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -179,8 +176,7 @@ public class ChatControllerTest {
   @Test
   public void getMembers() throws JSONException {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
@@ -222,8 +218,7 @@ public class ChatControllerTest {
   @Test
   public void deletePrivate() {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
@@ -258,12 +253,10 @@ public class ChatControllerTest {
   @Test
   public void createGroup() throws JSONException {
     User creator = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     User member = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(2L)
-        .setPublicity(Publicity.PUBLIC);
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.publicity(Publicity.PUBLIC));
     Mockito
         .when(userService.find(1L))
         .thenReturn(creator);
@@ -272,11 +265,10 @@ public class ChatControllerTest {
         .thenReturn(member);
     Mockito
         .when(chatService.createGroup(creator, "Classmates", Sets.newHashSet(member)))
-        .thenReturn((GroupChat) ModelFactory
-            .createModel(GroupChatType.CLASSMATES)
-            .setOwner(creator)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(creator, member)));
+        .thenReturn(ModelFactory
+            .createModelMutating(GroupChatType.CLASSMATES,
+                ChatMutators.members(creator, member),
+                ChatMutators.owner(creator)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -333,18 +325,16 @@ public class ChatControllerTest {
   @Test
   public void updateGroup() throws JSONException {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
     Mockito
         .when(chatService.updateGroup(1L, member, "Classmates"))
-        .thenReturn((GroupChat) ModelFactory
-            .createModel(GroupChatType.CLASSMATES)
-            .setOwner(member)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(member)));
+        .thenReturn(ModelFactory
+            .createModelMutating(GroupChatType.CLASSMATES,
+                ChatMutators.members(member),
+                ChatMutators.owner(member)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -383,8 +373,7 @@ public class ChatControllerTest {
   @Test
   public void leaveGroup() {
     User member = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(member);
@@ -404,8 +393,7 @@ public class ChatControllerTest {
   @Test
   public void deleteGroup() {
     User owner = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(1L))
         .thenReturn(owner);
@@ -440,12 +428,10 @@ public class ChatControllerTest {
   @Test
   public void updateGroupMembers() throws JSONException {
     User owner = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(1L);
+        .createModel(UserType.JOHN_SMITH);
     User newMember = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setPublicity(Publicity.PUBLIC)
-        .setId(2L);
+        .createModelMutating(UserType.FRED_BLOGGS,
+            UserMutators.publicity(Publicity.PUBLIC));
     Mockito
         .when(userService.find(1L))
         .thenReturn(owner);
@@ -454,11 +440,10 @@ public class ChatControllerTest {
         .thenReturn(newMember);
     Mockito
         .when(chatService.updateGroupMembers(1L, owner, Sets.newHashSet(owner, newMember)))
-        .thenReturn((GroupChat) ModelFactory
-            .createModel(GroupChatType.CLASSMATES)
-            .setOwner(owner)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(owner, newMember)));
+        .thenReturn(ModelFactory
+            .createModelMutating(GroupChatType.CLASSMATES,
+                ChatMutators.members(owner, newMember),
+                ChatMutators.owner(owner)));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -497,32 +482,29 @@ public class ChatControllerTest {
   @Test
   public void changeOwner() throws JSONException {
     User owner = ModelFactory
-        .createModel(UserType.FRED_BLOGGS)
-        .setId(1L);
+        .createModel(UserType.FRED_BLOGGS);
     User newOwner = ModelFactory
-        .createModel(UserType.JOHN_SMITH)
-        .setId(2L);
-    Mockito
-        .when(userService.find(1L))
-        .thenReturn(owner);
+        .createModel(UserType.JOHN_SMITH);
     Mockito
         .when(userService.find(2L))
+        .thenReturn(owner);
+    Mockito
+        .when(userService.find(1L))
         .thenReturn(newOwner);
     Mockito
         .when(chatService.changeOwner(1L, owner, newOwner))
-        .thenReturn((GroupChat) ModelFactory
-            .createModel(GroupChatType.CLASSMATES)
-            .setOwner(newOwner)
-            .setId(1L)
-            .setMembers(Sets.newHashSet(owner, newOwner)));
+        .thenReturn(ModelFactory
+            .createModelMutating(GroupChatType.CLASSMATES,
+                ChatMutators.members(owner, newOwner),
+                ChatMutators.owner(newOwner)));
     SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "fredbloggs", "password", Collections.emptySet()));
+        2L, "fredbloggs", "password", Collections.emptySet()));
 
     String actual = RestAssuredMockMvc
         .given()
         .header("Accept", "application/json")
         .when()
-        .put("/chats/group/{id}/members/{newOwnerId}", 1, 2)
+        .put("/chats/group/{id}/members/{newOwnerId}", 1, 1)
         .then()
         .statusCode(HttpServletResponse.SC_OK)
         .extract()
@@ -534,7 +516,7 @@ public class ChatControllerTest {
         + "name: 'Classmates',"
         + "members: 2,"
         + "owner: {"
-        + "  id: 2,"
+        + "  id: 1,"
         + "  email: null,"
         + "  username: 'johnsmith',"
         + "  firstName: 'John',"

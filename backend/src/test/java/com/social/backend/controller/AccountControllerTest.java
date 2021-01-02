@@ -28,8 +28,9 @@ import com.social.backend.repository.UserRepository;
 import com.social.backend.service.UserService;
 import com.social.backend.test.LazyInitBeanFactoryPostProcessor;
 import com.social.backend.test.SecurityManager;
-import com.social.backend.test.model.ModelFactory;
-import com.social.backend.test.model.user.UserType;
+import com.social.backend.test.model.factory.ModelFactory;
+import com.social.backend.test.model.mutator.UserMutators;
+import com.social.backend.test.model.type.UserType;
 import com.social.backend.validator.EmailValidator;
 import com.social.backend.validator.UsernameValidator;
 
@@ -72,8 +73,7 @@ public class AccountControllerTest {
     Mockito
         .when(userService.find(1L))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(1L));
+            .createModel(UserType.JOHN_SMITH));
     SecurityManager.setUser(new IdentifiedUserDetails(
         1L, "johnsmith", "password", Collections.emptySet()));
 
@@ -128,8 +128,7 @@ public class AccountControllerTest {
             "password"
         ))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(1L));
+            .createModel(UserType.JOHN_SMITH));
 
     String actual = RestAssuredMockMvc
         .given()
@@ -184,7 +183,7 @@ public class AccountControllerTest {
   public void update() throws JSONException {
     Mockito
         .when(userService.update(
-            1L,
+            2L,
             "johnsmith@example.com",
             "johnsmith",
             "John",
@@ -192,10 +191,10 @@ public class AccountControllerTest {
             10
         ))
         .thenReturn(ModelFactory
-            .createModel(UserType.JOHN_SMITH)
-            .setId(1L));
+            .createModelMutating(UserType.JOHN_SMITH,
+                UserMutators.id(2L)));
     SecurityManager.setUser(new IdentifiedUserDetails(
-        1L, "fredbloggs", "password", Collections.emptySet()));
+        2L, "fredbloggs", "password", Collections.emptySet()));
 
     String actual = RestAssuredMockMvc
         .given()
@@ -216,7 +215,7 @@ public class AccountControllerTest {
         .asString();
 
     String expected = "{"
-        + "id: 1,"
+        + "id: 2,"
         + "email: 'johnsmith@example.com',"
         + "username: 'johnsmith',"
         + "firstName: 'John',"
