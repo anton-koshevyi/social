@@ -33,7 +33,7 @@ public class ChatRepositoryImpl implements ChatRepository {
   }
 
   @Override
-  public Chat save(Chat entity) {
+  public <T extends Chat> T save(T entity) {
     return baseDelegate.save(entity);
   }
 

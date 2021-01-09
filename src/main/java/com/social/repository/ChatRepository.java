@@ -12,7 +12,7 @@ import com.social.model.user.User;
 
 public interface ChatRepository {
 
-  Chat save(Chat entity);
+  <T extends Chat> T save(T entity);
 
   Optional<Chat> findByIdAndMember(Long id, User member);
 

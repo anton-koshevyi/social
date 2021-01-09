@@ -46,7 +46,7 @@ public class ChatServiceImpl implements ChatService {
 
     PrivateChat entity = new PrivateChat();
     entity.setMembers(Sets.newHashSet(user, target));
-    return (PrivateChat) repository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -71,14 +71,14 @@ public class ChatServiceImpl implements ChatService {
     entity.setName(name);
     entity.setOwner(creator);
     entity.setMembers(finalMembers);
-    return (GroupChat) repository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
   public GroupChat updateGroup(Long id, User member, String name) {
     GroupChat entity = findGroupByIdAndMember(id, member);
     NullableUtil.set(entity::setName, name);
-    return (GroupChat) repository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -107,7 +107,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setMembers(finalMembers);
-    return (GroupChat) repository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
@@ -120,7 +120,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     entity.setOwner(newOwner);
-    return (GroupChat) repository.save(entity);
+    return repository.save(entity);
   }
 
   @Override
