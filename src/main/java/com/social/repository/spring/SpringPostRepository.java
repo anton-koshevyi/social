@@ -1,4 +1,4 @@
-package com.social.repository.jpa;
+package com.social.repository.spring;
 
 import java.util.Optional;
 
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.social.model.post.Post;
 import com.social.model.user.User;
 
-public interface PostJpaRepository extends JpaRepository<Post, Long> {
+public interface SpringPostRepository extends JpaRepository<Post, Long> {
 
   Optional<Post> findByIdAndAuthor(Long id, User author);
 

@@ -1,4 +1,4 @@
-package com.social.repository.jpa;
+package com.social.repository.spring;
 
 import java.util.Optional;
 
@@ -10,7 +10,7 @@ import com.social.model.post.Comment;
 import com.social.model.post.Post;
 import com.social.model.user.User;
 
-public interface CommentJpaRepository extends JpaRepository<Comment, Long> {
+public interface SpringCommentRepository extends JpaRepository<Comment, Long> {
 
   Optional<Comment> findByIdAndAuthor(Long id, User author);
 

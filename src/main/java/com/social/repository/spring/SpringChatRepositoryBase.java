@@ -1,4 +1,4 @@
-package com.social.repository.jpa;
+package com.social.repository.spring;
 
 import java.util.Optional;
 
@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.social.model.chat.Chat;
 import com.social.model.user.User;
 
-public interface ChatJpaRepositoryBase<T extends Chat> extends JpaRepository<T, Long> {
+public interface SpringChatRepositoryBase<T extends Chat> extends JpaRepository<T, Long> {
 
   Optional<T> findByIdAndMembersContaining(Long id, User user);
 

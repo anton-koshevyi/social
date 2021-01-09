@@ -1,4 +1,4 @@
-package com.social.repository.jpa;
+package com.social.repository.spring;
 
 import java.util.Optional;
 
@@ -10,7 +10,7 @@ import com.social.model.chat.Chat;
 import com.social.model.chat.Message;
 import com.social.model.user.User;
 
-public interface MessageJpaRepository extends JpaRepository<Message, Long> {
+public interface SpringMessageRepository extends JpaRepository<Message, Long> {
 
   Optional<Message> findByIdAndAuthor(Long id, User author);
 

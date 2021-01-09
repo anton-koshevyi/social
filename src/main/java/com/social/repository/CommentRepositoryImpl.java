@@ -10,15 +10,15 @@ import org.springframework.stereotype.Repository;
 import com.social.model.post.Comment;
 import com.social.model.post.Post;
 import com.social.model.user.User;
-import com.social.repository.jpa.CommentJpaRepository;
+import com.social.repository.spring.SpringCommentRepository;
 
 @Repository
 public class CommentRepositoryImpl implements CommentRepository {
 
-  private final CommentJpaRepository delegate;
+  private final SpringCommentRepository delegate;
 
   @Autowired
-  public CommentRepositoryImpl(CommentJpaRepository delegate) {
+  public CommentRepositoryImpl(SpringCommentRepository delegate) {
     this.delegate = delegate;
   }
 

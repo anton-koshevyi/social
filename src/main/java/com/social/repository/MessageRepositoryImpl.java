@@ -10,15 +10,15 @@ import org.springframework.stereotype.Repository;
 import com.social.model.chat.Chat;
 import com.social.model.chat.Message;
 import com.social.model.user.User;
-import com.social.repository.jpa.MessageJpaRepository;
+import com.social.repository.spring.SpringMessageRepository;
 
 @Repository
 public class MessageRepositoryImpl implements MessageRepository {
 
-  private final MessageJpaRepository delegate;
+  private final SpringMessageRepository delegate;
 
   @Autowired
-  public MessageRepositoryImpl(MessageJpaRepository delegate) {
+  public MessageRepositoryImpl(SpringMessageRepository delegate) {
     this.delegate = delegate;
   }
 

@@ -8,15 +8,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import com.social.model.user.User;
-import com.social.repository.jpa.UserJpaRepository;
+import com.social.repository.spring.SpringUserRepository;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
-  private final UserJpaRepository delegate;
+  private final SpringUserRepository delegate;
 
   @Autowired
-  public UserRepositoryImpl(UserJpaRepository delegate) {
+  public UserRepositoryImpl(SpringUserRepository delegate) {
     this.delegate = delegate;
   }
 
