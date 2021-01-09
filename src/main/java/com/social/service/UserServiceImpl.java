@@ -1,7 +1,6 @@
 package com.social.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -111,8 +110,8 @@ public class UserServiceImpl implements UserService {
       throw new IllegalActionException("illegalAction.user.addPresent", targetId);
     }
 
-    entity.setFriends(addFriend(entity, target));
-    target.setFriends(addFriend(target, entity));
+    entity.addFriend(target);
+    target.addFriend(entity);
     repository.save(entity);
     repository.save(target);
   }
@@ -130,8 +129,8 @@ public class UserServiceImpl implements UserService {
       throw new IllegalActionException("illegalAction.user.removeAbsent", targetId);
     }
 
-    entity.setFriends(removeFriend(entity, target));
-    target.setFriends(removeFriend(target, entity));
+    entity.removeFriend(target);
+    target.removeFriend(entity);
     repository.save(entity);
     repository.save(target);
   }
@@ -151,20 +150,6 @@ public class UserServiceImpl implements UserService {
   @Override
   public Page<User> findAll(Pageable pageable) {
     return repository.findAll(pageable);
-  }
-
-  @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
-  private static Set<User> addFriend(User user, User target) {
-    Set<User> friends = new HashSet<>(user.getFriends());
-    friends.add(target);
-    return friends;
-  }
-
-  @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
-  private static Set<User> removeFriend(User user, User target) {
-    Set<User> friends = new HashSet<>(user.getFriends());
-    friends.remove(target);
-    return friends;
   }
 
 }
