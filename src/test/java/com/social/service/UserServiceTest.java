@@ -14,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.social.exception.IllegalActionException;
 import com.social.exception.NotFoundException;
@@ -25,21 +26,24 @@ import com.social.test.comparator.ComparatorFactory;
 import com.social.test.model.factory.ModelFactory;
 import com.social.test.model.mutator.UserMutators;
 import com.social.test.model.type.UserType;
-import com.social.test.stub.PasswordEncoderStub;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
   private @Mock UserRepository repository;
+  private @Mock PasswordEncoder passwordEncoder;
   private UserService service;
 
   @BeforeEach
   public void setUp() {
-    service = new UserServiceImpl(repository, PasswordEncoderStub.getInstance());
+    service = new UserServiceImpl(repository, passwordEncoder);
   }
 
   @Test
   public void create() {
+    Mockito
+        .when(passwordEncoder.encode("password"))
+        .thenReturn("{encoded}password");
     Mockito
         .when(repository.save(Mockito.any()))
         .then(i -> {
@@ -183,6 +187,12 @@ public class UserServiceTest {
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.password("{encoded}actual"))
         ));
+    Mockito
+        .when(passwordEncoder.matches("actual", "{encoded}actual"))
+        .thenReturn(true);
+    Mockito
+        .when(passwordEncoder.encode("change"))
+        .thenReturn("{encoded}change");
 
     service.changePassword(1L, "actual", "change");
 
@@ -226,6 +236,9 @@ public class UserServiceTest {
     Mockito
         .when(repository.findById(1L))
         .thenReturn(Optional.of(entity));
+    Mockito
+        .when(passwordEncoder.matches("password", "{encoded}password"))
+        .thenReturn(true);
 
     service.delete(1L, "password");
 
