@@ -9,6 +9,19 @@ repositories {
   mavenCentral()
 }
 
+sourceSets {
+  create("integrationTest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+  }
+}
+
+val integrationTestImplementation: Configuration by configurations.getting {
+  extendsFrom(configurations.implementation.get())
+}
+
+configurations["integrationTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
 dependencies {
 
   // CDI
@@ -87,5 +100,15 @@ tasks {
   wrapper {
     gradleVersion = "5.6.4"
     distributionType = Wrapper.DistributionType.ALL
+  }
+
+  task<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+
+    useJUnit()
   }
 }
