@@ -11,8 +11,8 @@ repositories {
 
 sourceSets {
   create("integrationTest") {
-    compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += sourceSets.main.get().output
+    java {
+    }
   }
 }
 
