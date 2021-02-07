@@ -82,6 +82,18 @@ dependencies {
   testImplementation("io.rest-assured:rest-assured:4.3.0")
   testImplementation("io.rest-assured:spring-mock-mvc:4.3.0")
 
+
+  // Integration Test: Asserting
+  integrationTestImplementation("junit:junit:4.12")
+  integrationTestImplementation("org.assertj:assertj-core:3.16.1")
+  integrationTestImplementation("org.skyscreamer:jsonassert:1.5.0")
+
+  // Integration Test: Startup
+  integrationTestImplementation("org.testcontainers:postgresql:1.15.0")
+
+  // Integration Test: Web
+  integrationTestImplementation("io.rest-assured:rest-assured:4.3.0")
+
 }
 
 java {
