@@ -88,6 +88,11 @@ dependencies {
   integrationTestImplementation("org.assertj:assertj-core:3.16.1")
   integrationTestImplementation("org.skyscreamer:jsonassert:1.5.0")
 
+  // Integration Test: Scripting
+  integrationTestImplementation("io.cucumber:cucumber-java:6.8.0")
+  integrationTestImplementation("io.cucumber:cucumber-junit:6.8.0")
+  integrationTestImplementation("io.cucumber:cucumber-spring:6.8.0")
+
   // Integration Test: Startup
   integrationTestImplementation("org.testcontainers:postgresql:1.15.0")
 
