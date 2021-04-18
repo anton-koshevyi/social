@@ -10,7 +10,7 @@ import com.social.model.chat.Chat;
 import com.social.model.chat.Message;
 import com.social.model.user.User;
 
-public interface SpringMessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepositorySpring extends JpaRepository<Message, Long> {
 
   Optional<Message> findByIdAndAuthor(Long id, User author);
 

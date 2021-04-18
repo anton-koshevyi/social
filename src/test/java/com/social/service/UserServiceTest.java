@@ -30,13 +30,13 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
-  private @Mock UserRepository repository;
+  private @Mock UserRepository userRepository;
   private @Mock PasswordEncoder passwordEncoder;
-  private UserService service;
+  private UserService userService;
 
   @BeforeEach
   public void setUp() {
-    service = new UserServiceImpl(repository, passwordEncoder);
+    userService = new UserServiceImpl(userRepository, passwordEncoder);
   }
 
   @Test
@@ -45,7 +45,7 @@ public class UserServiceTest {
         .when(passwordEncoder.encode("password"))
         .thenReturn("{encoded}password");
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(userRepository.save(Mockito.any()))
         .then(i -> {
           User entity = i.getArgument(0);
           UserMutators.id(1L).accept(entity);
@@ -53,7 +53,7 @@ public class UserServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(
+        .assertThat(userService.create(
             "johnsmith@example.com",
             "johnsmith",
             "John",
@@ -76,7 +76,7 @@ public class UserServiceTest {
   @Test
   public void update_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.update(
+        .assertThatThrownBy(() -> userService.update(
             2L,
             "johnsmith@example.com",
             "johnsmith",
@@ -92,7 +92,7 @@ public class UserServiceTest {
   @Test
   public void update() {
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.FRED_BLOGGS,
                 UserMutators.email("fredbloggs@example.com"),
@@ -102,11 +102,11 @@ public class UserServiceTest {
                 UserMutators.publicity(Publicity.PRIVATE))
         ));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(userRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.update(
+        .assertThat(userService.update(
             2L,
             "johnsmith@example.com",
             "johnsmith",
@@ -128,7 +128,7 @@ public class UserServiceTest {
   @Test
   public void updateRole_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.updateRole(1L, true))
+        .assertThatThrownBy(() -> userService.updateRole(1L, true))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -137,17 +137,17 @@ public class UserServiceTest {
   @Test
   public void updateRole() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.moder(false))
         ));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(userRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.updateRole(1L, true))
+        .assertThat(userService.updateRole(1L, true))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
@@ -158,7 +158,7 @@ public class UserServiceTest {
   @Test
   public void changePassword_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.changePassword(1L, "actual", "change"))
+        .assertThatThrownBy(() -> userService.changePassword(1L, "actual", "change"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -167,14 +167,14 @@ public class UserServiceTest {
   @Test
   public void changePassword_whenWrongActualPassword_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.password("{encoded}actual"))
         ));
 
     Assertions
-        .assertThatThrownBy(() -> service.changePassword(1L, "wrong", "change"))
+        .assertThatThrownBy(() -> userService.changePassword(1L, "wrong", "change"))
         .isExactlyInstanceOf(WrongCredentialsException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
   }
@@ -182,7 +182,7 @@ public class UserServiceTest {
   @Test
   public void changePassword() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.password("{encoded}actual"))
@@ -194,10 +194,10 @@ public class UserServiceTest {
         .when(passwordEncoder.encode("change"))
         .thenReturn("{encoded}change");
 
-    service.changePassword(1L, "actual", "change");
+    userService.changePassword(1L, "actual", "change");
 
     Mockito
-        .verify(repository)
+        .verify(userRepository)
         .save(Mockito.refEq(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.password("{encoded}change"))
@@ -207,7 +207,7 @@ public class UserServiceTest {
   @Test
   public void delete_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.delete(1L, "password"))
+        .assertThatThrownBy(() -> userService.delete(1L, "password"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -216,14 +216,14 @@ public class UserServiceTest {
   @Test
   public void delete_whenWrongActualPassword_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.password("{encoded}password"))
         ));
 
     Assertions
-        .assertThatThrownBy(() -> service.delete(1L, "wrong"))
+        .assertThatThrownBy(() -> userService.delete(1L, "wrong"))
         .isExactlyInstanceOf(WrongCredentialsException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"wrongCredentials.password"});
   }
@@ -234,23 +234,23 @@ public class UserServiceTest {
         .createModelMutating(UserType.JOHN_SMITH,
             UserMutators.password("{encoded}password"));
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(entity));
     Mockito
         .when(passwordEncoder.matches("password", "{encoded}password"))
         .thenReturn(true);
 
-    service.delete(1L, "password");
+    userService.delete(1L, "password");
 
     Mockito
-        .verify(repository)
+        .verify(userRepository)
         .delete(entity);
   }
 
   @Test
   public void addFriend_whenEqualUserIdAndTargetId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.addFriend(1L, 1L))
+        .assertThatThrownBy(() -> userService.addFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.user.addHimself"});
@@ -259,7 +259,7 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.addFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -268,12 +268,12 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenNoTargetEntityWithId_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.JOHN_SMITH)));
 
     Assertions
-        .assertThatThrownBy(() -> service.addFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
@@ -282,17 +282,17 @@ public class UserServiceTest {
   @Test
   public void addFriend_whenPrivateTargetEntity_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.JOHN_SMITH)));
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.FRED_BLOGGS,
                 UserMutators.publicity(Publicity.PRIVATE))));
 
     Assertions
-        .assertThatThrownBy(() -> service.addFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.user.addPrivate"})
@@ -310,14 +310,14 @@ public class UserServiceTest {
             UserMutators.friends(user));
     UserMutators.friends(target).accept(user);
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(user));
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(target));
 
     Assertions
-        .assertThatThrownBy(() -> service.addFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.addFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.user.addPresent"})
@@ -333,20 +333,20 @@ public class UserServiceTest {
         .createModelMutating(UserType.FRED_BLOGGS,
             UserMutators.publicity(Publicity.PUBLIC));
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(user));
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(target));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(userRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
-    service.addFriend(1L, 2L);
+    userService.addFriend(1L, 2L);
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
     Mockito
-        .verify(repository, Mockito.times(2))
+        .verify(userRepository, Mockito.times(2))
         .save(captor.capture());
     List<User> captures = captor.getAllValues();
     Assertions
@@ -380,7 +380,7 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenEqualUserIdAndTargetId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.removeFriend(1L, 1L))
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 1L))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.user.removeHimself"});
@@ -389,7 +389,7 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -398,12 +398,12 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenNoTargetWithId_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.JOHN_SMITH)));
 
     Assertions
-        .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{2L});
@@ -412,16 +412,16 @@ public class UserServiceTest {
   @Test
   public void removeFriend_whenNoTargetInFriends_expectException() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.JOHN_SMITH)));
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.FRED_BLOGGS)));
 
     Assertions
-        .assertThatThrownBy(() -> service.removeFriend(1L, 2L))
+        .assertThatThrownBy(() -> userService.removeFriend(1L, 2L))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.user.removeAbsent"})
@@ -437,20 +437,20 @@ public class UserServiceTest {
             UserMutators.friends(user));
     UserMutators.friends(target).accept(user);
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(user));
     Mockito
-        .when(repository.findById(2L))
+        .when(userRepository.findById(2L))
         .thenReturn(Optional.of(target));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(userRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
-    service.removeFriend(1L, 2L);
+    userService.removeFriend(1L, 2L);
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
     Mockito
-        .verify(repository, Mockito.times(2))
+        .verify(userRepository, Mockito.times(2))
         .save(captor.capture());
     List<User> captures = captor.getAllValues();
     Assertions
@@ -472,7 +472,7 @@ public class UserServiceTest {
   @Test
   public void getFriends() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.JOHN_SMITH,
                 UserMutators.friends(ModelFactory
@@ -480,7 +480,7 @@ public class UserServiceTest {
         ));
 
     Assertions
-        .assertThat(service.getFriends(1L, Pageable.unpaged()))
+        .assertThat(userService.getFriends(1L, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
             .createModel(UserType.FRED_BLOGGS));
@@ -489,7 +489,7 @@ public class UserServiceTest {
   @Test
   public void find_byId_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.find(1L))
+        .assertThatThrownBy(() -> userService.find(1L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.user.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -498,12 +498,12 @@ public class UserServiceTest {
   @Test
   public void find_byId() {
     Mockito
-        .when(repository.findById(1L))
+        .when(userRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModel(UserType.JOHN_SMITH)));
 
     Assertions
-        .assertThat(service.find(1L))
+        .assertThat(userService.find(1L))
         .usingComparator(ComparatorFactory.getComparator(User.class))
         .isEqualTo(ModelFactory
             .createModel(UserType.JOHN_SMITH));
@@ -512,14 +512,14 @@ public class UserServiceTest {
   @Test
   public void findAll() {
     Mockito
-        .when(repository.findAll(Pageable.unpaged()))
+        .when(userRepository.findAll(Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModel(UserType.JOHN_SMITH))
         ));
 
     Assertions
-        .assertThat(service.findAll(Pageable.unpaged()))
+        .assertThat(userService.findAll(Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactly(ModelFactory
             .createModel(UserType.JOHN_SMITH));

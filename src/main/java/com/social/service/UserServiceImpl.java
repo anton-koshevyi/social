@@ -17,21 +17,21 @@ import com.social.exception.NotFoundException;
 import com.social.exception.WrongCredentialsException;
 import com.social.model.user.User;
 import com.social.repository.UserRepository;
-import com.social.util.NullableUtil;
+import com.social.util.NullableUtils;
 
 @Service
-@Transactional
 public class UserServiceImpl implements UserService {
 
-  private final UserRepository repository;
+  private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Autowired
-  public UserServiceImpl(UserRepository repository, PasswordEncoder passwordEncoder) {
-    this.repository = repository;
+  public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
+  @Transactional
   @Override
   public User create(String email,
                      String username,
@@ -44,9 +44,10 @@ public class UserServiceImpl implements UserService {
     entity.setFirstName(firstName);
     entity.setLastName(lastName);
     entity.setPassword(passwordEncoder.encode(password));
-    return repository.save(entity);
+    return userRepository.save(entity);
   }
 
+  @Transactional
   @Override
   public User update(Long id,
                      String email,
@@ -55,21 +56,23 @@ public class UserServiceImpl implements UserService {
                      String lastName,
                      Integer publicity) {
     User entity = this.find(id);
-    NullableUtil.set(entity::setEmail, email);
-    NullableUtil.set(entity::setUsername, username);
-    NullableUtil.set(entity::setFirstName, firstName);
-    NullableUtil.set(entity::setLastName, lastName);
-    NullableUtil.set(entity::setPublicity, publicity);
-    return repository.save(entity);
+    NullableUtils.set(entity::setEmail, email);
+    NullableUtils.set(entity::setUsername, username);
+    NullableUtils.set(entity::setFirstName, firstName);
+    NullableUtils.set(entity::setLastName, lastName);
+    NullableUtils.set(entity::setPublicity, publicity);
+    return userRepository.save(entity);
   }
 
+  @Transactional
   @Override
   public User updateRole(Long id, Boolean moder) {
     User entity = this.find(id);
-    NullableUtil.set(entity::setModer, moder);
-    return repository.save(entity);
+    NullableUtils.set(entity::setModer, moder);
+    return userRepository.save(entity);
   }
 
+  @Transactional
   @Override
   public void changePassword(Long id, String actual, String change) {
     User entity = this.find(id);
@@ -79,9 +82,10 @@ public class UserServiceImpl implements UserService {
     }
 
     entity.setPassword(passwordEncoder.encode(change));
-    repository.save(entity);
+    userRepository.save(entity);
   }
 
+  @Transactional
   @Override
   public void delete(Long id, String password) {
     User entity = this.find(id);
@@ -90,9 +94,10 @@ public class UserServiceImpl implements UserService {
       throw new WrongCredentialsException("wrongCredentials.password");
     }
 
-    repository.delete(entity);
+    userRepository.delete(entity);
   }
 
+  @Transactional
   @Override
   public void addFriend(Long id, Long targetId) {
     if (Objects.equals(id, targetId)) {
@@ -112,10 +117,11 @@ public class UserServiceImpl implements UserService {
 
     entity.addFriend(target);
     target.addFriend(entity);
-    repository.save(entity);
-    repository.save(target);
+    userRepository.save(entity);
+    userRepository.save(target);
   }
 
+  @Transactional
   @Override
   public void removeFriend(Long id, Long targetId) {
     if (Objects.equals(id, targetId)) {
@@ -131,8 +137,8 @@ public class UserServiceImpl implements UserService {
 
     entity.removeFriend(target);
     target.removeFriend(entity);
-    repository.save(entity);
-    repository.save(target);
+    userRepository.save(entity);
+    userRepository.save(target);
   }
 
   @Override
@@ -143,13 +149,13 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User find(Long id) {
-    return repository.findById(id)
+    return userRepository.findById(id)
         .orElseThrow(() -> new NotFoundException("notFound.user.byId", id));
   }
 
   @Override
   public Page<User> findAll(Pageable pageable) {
-    return repository.findAll(pageable);
+    return userRepository.findAll(pageable);
   }
 
 }

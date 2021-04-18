@@ -9,15 +9,15 @@ import org.springframework.stereotype.Repository;
 
 import com.social.model.post.Post;
 import com.social.model.user.User;
-import com.social.repository.spring.SpringPostRepository;
+import com.social.repository.spring.PostRepositorySpring;
 
 @Repository
 public class PostRepositoryImpl implements PostRepository {
 
-  private final SpringPostRepository delegate;
+  private final PostRepositorySpring delegate;
 
   @Autowired
-  public PostRepositoryImpl(SpringPostRepository delegate) {
+  public PostRepositoryImpl(PostRepositorySpring delegate) {
     this.delegate = delegate;
   }
 

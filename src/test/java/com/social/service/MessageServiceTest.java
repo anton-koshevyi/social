@@ -30,12 +30,12 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class MessageServiceTest {
 
-  private @Mock MessageRepository repository;
-  private MessageService service;
+  private @Mock MessageRepository messageRepository;
+  private MessageService messageService;
 
   @BeforeEach
   public void setUp() {
-    service = new MessageServiceImpl(repository);
+    messageService = new MessageServiceImpl(messageRepository);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class MessageServiceTest {
         .createModelMutating(PrivateChatType.DEFAULT,
             ChatMutators.members(author));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(messageRepository.save(Mockito.any()))
         .then(i -> {
           Message entity = i.getArgument(0);
           MessageMutators.id(1L).accept(entity);
@@ -54,7 +54,7 @@ public class MessageServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(chat, author, "How are you?"))
+        .assertThat(messageService.create(chat, author, "How are you?"))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
@@ -77,7 +77,7 @@ public class MessageServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.update(2L, author, "How are you?"))
+        .assertThatThrownBy(() -> messageService.update(2L, author, "How are you?"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.message.byIdAndAuthor"})
@@ -92,18 +92,18 @@ public class MessageServiceTest {
         .createModelMutating(PrivateChatType.DEFAULT,
             ChatMutators.members(author));
     Mockito
-        .when(repository.findByIdAndAuthor(2L, author))
+        .when(messageRepository.findByIdAndAuthor(2L, author))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(MessageType.MEETING,
                 MessageMutators.author(author),
                 MessageMutators.chat(chat))
         ));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(messageRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.update(2L, author, "How are you?"))
+        .assertThat(messageService.update(2L, author, "How are you?"))
         .usingComparator(ComparatorFactory.getComparator(Message.class))
         .usingComparatorForFields(
             NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
@@ -126,7 +126,7 @@ public class MessageServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.delete(0L, author))
+        .assertThatThrownBy(() -> messageService.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.message.byIdAndAuthor"})
@@ -145,13 +145,13 @@ public class MessageServiceTest {
             MessageMutators.author(author),
             MessageMutators.chat(chat));
     Mockito
-        .when(repository.findByIdAndAuthor(1L, author))
+        .when(messageRepository.findByIdAndAuthor(1L, author))
         .thenReturn(Optional.of(entity));
 
-    service.delete(1L, author);
+    messageService.delete(1L, author);
 
     Mockito
-        .verify(repository)
+        .verify(messageRepository)
         .delete(entity);
   }
 
@@ -163,7 +163,7 @@ public class MessageServiceTest {
         .createModelMutating(PrivateChatType.DEFAULT,
             ChatMutators.members(author));
     Mockito
-        .when(repository.findAllByChat(chat, Pageable.unpaged()))
+        .when(messageRepository.findAllByChat(chat, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModelMutating(MessageType.WHATS_UP,
@@ -172,7 +172,7 @@ public class MessageServiceTest {
         ));
 
     Assertions
-        .assertThat(service.findAll(chat, Pageable.unpaged()))
+        .assertThat(messageService.findAll(chat, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(Message.class))
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")

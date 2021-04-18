@@ -12,21 +12,21 @@ import com.social.model.chat.Chat;
 import com.social.model.chat.GroupChat;
 import com.social.model.chat.PrivateChat;
 import com.social.model.user.User;
-import com.social.repository.spring.SpringChatRepositoryBase;
-import com.social.repository.spring.SpringChatRepositoryGroup;
-import com.social.repository.spring.SpringChatRepositoryPrivate;
+import com.social.repository.spring.ChatRepositoryBaseSpring;
+import com.social.repository.spring.ChatRepositoryGroupSpring;
+import com.social.repository.spring.ChatRepositoryPrivateSpring;
 
 @Repository
 public class ChatRepositoryImpl implements ChatRepository {
 
-  private final SpringChatRepositoryBase<Chat> baseDelegate;
-  private final SpringChatRepositoryPrivate privateDelegate;
-  private final SpringChatRepositoryGroup groupDelegate;
+  private final ChatRepositoryBaseSpring<Chat> baseDelegate;
+  private final ChatRepositoryPrivateSpring privateDelegate;
+  private final ChatRepositoryGroupSpring groupDelegate;
 
   @Autowired
-  public ChatRepositoryImpl(SpringChatRepositoryBase<Chat> baseDelegate,
-                            SpringChatRepositoryPrivate privateDelegate,
-                            SpringChatRepositoryGroup groupDelegate) {
+  public ChatRepositoryImpl(ChatRepositoryBaseSpring<Chat> baseDelegate,
+                            ChatRepositoryPrivateSpring privateDelegate,
+                            ChatRepositoryGroupSpring groupDelegate) {
     this.baseDelegate = baseDelegate;
     this.privateDelegate = privateDelegate;
     this.groupDelegate = groupDelegate;

@@ -3,12 +3,12 @@ package com.social.util;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class NullableUtilTest {
+public class NullableUtilsTest {
 
   @Test
   public void set_whenNullSetter_expectException() {
     Assertions
-        .assertThatThrownBy(() -> NullableUtil.set(null, "new value"))
+        .assertThatThrownBy(() -> NullableUtils.set(null, "new value"))
         .isExactlyInstanceOf(NullPointerException.class)
         .hasMessage("Setter must not be null");
   }
@@ -19,7 +19,7 @@ public class NullableUtilTest {
     object.setField("value");
 
     Assertions
-        .assertThat(NullableUtil.set(object::setField, null))
+        .assertThat(NullableUtils.set(object::setField, null))
         .isFalse();
     Assertions
         .assertThat(object.getField())
@@ -32,7 +32,7 @@ public class NullableUtilTest {
     object.setField("value");
 
     Assertions
-        .assertThat(NullableUtil.set(object::setField, "new value"))
+        .assertThat(NullableUtils.set(object::setField, "new value"))
         .isTrue();
     Assertions
         .assertThat(object.getField())

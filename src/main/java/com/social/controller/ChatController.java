@@ -76,11 +76,7 @@ public class ChatController {
   public GroupChatDto createGroup(@Valid @RequestBody GroupCreateDto dto) {
     User creator = userService.find(PrincipalHolder.getUserId());
     Set<User> members = findUsersByIds(dto.getMembers());
-    GroupChat chat = chatService.createGroup(
-        creator,
-        dto.getName(),
-        members
-    );
+    GroupChat chat = chatService.createGroup(creator, dto.getName(), members);
     return ChatMapper.INSTANCE.toDto(chat);
   }
 
@@ -88,11 +84,7 @@ public class ChatController {
   public GroupChatDto updateGroup(@PathVariable Long id,
                                   @Valid @RequestBody GroupUpdateDto dto) {
     User member = userService.find(PrincipalHolder.getUserId());
-    GroupChat chat = chatService.updateGroup(
-        id,
-        member,
-        dto.getName()
-    );
+    GroupChat chat = chatService.updateGroup(id, member, dto.getName());
     return ChatMapper.INSTANCE.toDto(chat);
   }
 

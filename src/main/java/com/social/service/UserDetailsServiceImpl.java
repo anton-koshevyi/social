@@ -29,14 +29,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   }
 
   @Override
-  public UserDetails loadUserByUsername(String username) {
-    User entity = userRepository.findByEmail(username)
-        .orElseGet(() -> userRepository.findByUsername(username)
+  public UserDetails loadUserByUsername(String emailOrUsername) {
+    User entity = userRepository.findByEmail(emailOrUsername)
+        .orElseGet(() -> userRepository.findByUsername(emailOrUsername)
             .orElseThrow(() -> new UsernameNotFoundException(
-                "No user with email or username: " + username)));
+                "No user with email or username: " + emailOrUsername)));
     return new IdentifiedUserDetails(
         entity.getId(),
-        username,
+        entity.getUsername(),
         entity.getPassword(),
         collectAuthorities(entity)
     );

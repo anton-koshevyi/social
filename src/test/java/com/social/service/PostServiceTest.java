@@ -27,12 +27,12 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
 
-  private @Mock PostRepository repository;
-  private PostService service;
+  private @Mock PostRepository postRepository;
+  private PostService postService;
 
   @BeforeEach
   public void setUp() {
-    service = new PostServiceImpl(repository);
+    postService = new PostServiceImpl(postRepository);
   }
 
   @Test
@@ -40,7 +40,7 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(postRepository.save(Mockito.any()))
         .then(i -> {
           Post entity = i.getArgument(0);
           PostMutators.id(1L).accept(entity);
@@ -48,7 +48,7 @@ public class PostServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(
+        .assertThat(postService.create(
             author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
@@ -69,7 +69,7 @@ public class PostServiceTest {
 
     Assertions
         .assertThatThrownBy(() ->
-            service.update(0L, author, "Favorite books", "My personal must-read fiction"))
+            postService.update(0L, author, "Favorite books", "My personal must-read fiction"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -80,17 +80,17 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findByIdAndAuthor(2L, author))
+        .when(postRepository.findByIdAndAuthor(2L, author))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(PostType.COOKING,
                 PostMutators.author(author))
         ));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(postRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.update(
+        .assertThat(postService.update(
             2L, author, "Favorite books", "My personal must-read fiction"))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(
@@ -110,7 +110,7 @@ public class PostServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.delete(0L, author))
+        .assertThatThrownBy(() -> postService.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byIdAndAuthor"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -124,20 +124,20 @@ public class PostServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(author));
     Mockito
-        .when(repository.findByIdAndAuthor(1L, author))
+        .when(postRepository.findByIdAndAuthor(1L, author))
         .thenReturn(Optional.of(entity));
 
-    service.delete(1L, author);
+    postService.delete(1L, author);
 
     Mockito
-        .verify(repository)
+        .verify(postRepository)
         .delete(entity);
   }
 
   @Test
   public void find_byId_whenNoEntityWithId_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.find(1L))
+        .assertThatThrownBy(() -> postService.find(1L))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.post.byId"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{1L});
@@ -148,14 +148,14 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findById(1L))
+        .when(postRepository.findById(1L))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(PostType.READING,
                 PostMutators.author(author))
         ));
 
     Assertions
-        .assertThat(service.find(1L))
+        .assertThat(postService.find(1L))
         .usingComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
@@ -170,7 +170,7 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findAll(Pageable.unpaged()))
+        .when(postRepository.findAll(Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModelMutating(PostType.READING,
@@ -178,7 +178,7 @@ public class PostServiceTest {
         ));
 
     Assertions
-        .assertThat(service.findAll(Pageable.unpaged()))
+        .assertThat(postService.findAll(Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")
@@ -194,7 +194,7 @@ public class PostServiceTest {
     User author = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findAllByAuthor(author, Pageable.unpaged()))
+        .when(postRepository.findAllByAuthor(author, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModelMutating(PostType.READING,
@@ -202,7 +202,7 @@ public class PostServiceTest {
         ));
 
     Assertions
-        .assertThat(service.findAll(author, Pageable.unpaged()))
+        .assertThat(postService.findAll(author, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(Post.class))
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")

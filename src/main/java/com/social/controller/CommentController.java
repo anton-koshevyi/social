@@ -52,11 +52,7 @@ public class CommentController {
                            @Validated(ContentDto.CreateGroup.class) @RequestBody ContentDto dto) {
     Post post = postService.find(postId);
     User author = userService.find(PrincipalHolder.getUserId());
-    Comment comment = commentService.create(
-        post,
-        author,
-        dto.getBody()
-    );
+    Comment comment = commentService.create(post, author, dto.getBody());
     return CommentMapper.INSTANCE.toDto(comment);
   }
 
@@ -64,11 +60,7 @@ public class CommentController {
   public CommentDto update(@PathVariable Long id,
                            @Validated(ContentDto.UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(PrincipalHolder.getUserId());
-    Comment comment = commentService.update(
-        id,
-        author,
-        dto.getBody()
-    );
+    Comment comment = commentService.update(id, author, dto.getBody());
     return CommentMapper.INSTANCE.toDto(comment);
   }
 

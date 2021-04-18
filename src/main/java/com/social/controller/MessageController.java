@@ -53,11 +53,7 @@ public class MessageController {
                            @Validated(ContentDto.CreateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(PrincipalHolder.getUserId());
     Chat chat = chatService.find(chatId, author);
-    Message message = messageService.create(
-        chat,
-        author,
-        dto.getBody()
-    );
+    Message message = messageService.create(chat, author, dto.getBody());
     return MessageMapper.INSTANCE.toDto(message);
   }
 
@@ -65,11 +61,7 @@ public class MessageController {
   public MessageDto update(@PathVariable Long id,
                            @Validated(ContentDto.UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(PrincipalHolder.getUserId());
-    Message message = messageService.update(
-        id,
-        author,
-        dto.getBody()
-    );
+    Message message = messageService.update(id, author, dto.getBody());
     return MessageMapper.INSTANCE.toDto(message);
   }
 

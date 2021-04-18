@@ -3,9 +3,9 @@ package com.social.util;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public final class NullableUtil {
+public final class NullableUtils {
 
-  private NullableUtil() {
+  private NullableUtils() {
   }
 
   public static <T> boolean set(Consumer<T> setter, T value) {

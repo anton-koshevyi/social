@@ -42,11 +42,7 @@ public class PostController {
   @PostMapping("/posts")
   public PostDto create(@Validated(ContentDto.CreateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(PrincipalHolder.getUserId());
-    Post post = postService.create(
-        author,
-        dto.getTitle(),
-        dto.getBody()
-    );
+    Post post = postService.create(author, dto.getTitle(), dto.getBody());
     return PostMapper.INSTANCE.toDto(post);
   }
 
@@ -60,12 +56,7 @@ public class PostController {
   public PostDto update(@PathVariable Long id,
                         @Validated(ContentDto.UpdateGroup.class) @RequestBody ContentDto dto) {
     User author = userService.find(PrincipalHolder.getUserId());
-    Post post = postService.update(
-        id,
-        author,
-        dto.getTitle(),
-        dto.getBody()
-    );
+    Post post = postService.update(id, author, dto.getTitle(), dto.getBody());
     return PostMapper.INSTANCE.toDto(post);
   }
 

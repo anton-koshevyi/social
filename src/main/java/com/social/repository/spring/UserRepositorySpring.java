@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.social.model.user.User;
 
-public interface SpringUserRepository extends JpaRepository<User, Long> {
+public interface UserRepositorySpring extends JpaRepository<User, Long> {
 
   Optional<User> findByEmail(String email);
 

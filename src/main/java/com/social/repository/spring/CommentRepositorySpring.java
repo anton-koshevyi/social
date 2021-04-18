@@ -6,13 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.social.model.post.Comment;
 import com.social.model.post.Post;
 import com.social.model.user.User;
 
-public interface SpringPostRepository extends JpaRepository<Post, Long> {
+public interface CommentRepositorySpring extends JpaRepository<Comment, Long> {
 
-  Optional<Post> findByIdAndAuthor(Long id, User author);
+  Optional<Comment> findByIdAndAuthor(Long id, User author);
 
-  Page<Post> findAllByAuthor(User author, Pageable pageable);
+  Page<Comment> findAllByPost(Post post, Pageable pageable);
 
 }

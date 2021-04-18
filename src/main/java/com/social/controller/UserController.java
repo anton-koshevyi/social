@@ -59,10 +59,7 @@ public class UserController {
   @PatchMapping("/users/{id}/roles")
   public UserDto updateRole(@PathVariable Long id,
                             @Valid @RequestBody RoleDto dto) {
-    User user = userService.updateRole(
-        id,
-        dto.getModer()
-    );
+    User user = userService.updateRole(id, dto.getModer());
     return UserMapper.INSTANCE.toDto(user);
   }
 

@@ -33,12 +33,12 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class CommentServiceTest {
 
-  private @Mock CommentRepository repository;
-  private CommentService service;
+  private @Mock CommentRepository commentRepository;
+  private CommentService commentService;
 
   @BeforeEach
   public void setUp() {
-    service = new CommentServiceImpl(repository);
+    commentService = new CommentServiceImpl(commentRepository);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class CommentServiceTest {
         .createModel(UserType.FRED_BLOGGS);
 
     Assertions
-        .assertThatThrownBy(() -> service.create(post, author, "Like"))
+        .assertThatThrownBy(() -> commentService.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.comment.privatePost"});
@@ -71,7 +71,7 @@ public class CommentServiceTest {
         .createModel(UserType.FRED_BLOGGS);
 
     Assertions
-        .assertThatThrownBy(() -> service.create(post, author, "Like"))
+        .assertThatThrownBy(() -> commentService.create(post, author, "Like"))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.comment.internalPost"});
@@ -86,7 +86,7 @@ public class CommentServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(postAuthor));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(commentRepository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
           CommentMutators.id(1L).accept(entity);
@@ -94,7 +94,7 @@ public class CommentServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(post, postAuthor, "Like"))
+        .assertThat(commentService.create(post, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
@@ -125,7 +125,7 @@ public class CommentServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(postAuthor));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(commentRepository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
           CommentMutators.id(1L).accept(entity);
@@ -133,7 +133,7 @@ public class CommentServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(post, author, "Like"))
+        .assertThat(commentService.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
@@ -162,7 +162,7 @@ public class CommentServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(postAuthor));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(commentRepository.save(Mockito.any()))
         .then(i -> {
           Comment entity = i.getArgument(0);
           CommentMutators.id(1L).accept(entity);
@@ -170,7 +170,7 @@ public class CommentServiceTest {
         });
 
     Assertions
-        .assertThat(service.create(post, author, "Like"))
+        .assertThat(commentService.create(post, author, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(NotNullComparator.leftNotNull(), "createdAt")
         .isEqualTo(ModelFactory
@@ -194,7 +194,7 @@ public class CommentServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.update(0L, author, "Like"))
+        .assertThatThrownBy(() -> commentService.update(0L, author, "Like"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.comment.byIdAndAuthor"})
@@ -209,18 +209,18 @@ public class CommentServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(postAuthor));
     Mockito
-        .when(repository.findByIdAndAuthor(2L, postAuthor))
+        .when(commentRepository.findByIdAndAuthor(2L, postAuthor))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(CommentType.BADLY,
                 CommentMutators.author(postAuthor),
                 CommentMutators.post(post))
         ));
     Mockito
-        .when(repository.save(Mockito.any()))
+        .when(commentRepository.save(Mockito.any()))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.update(2L, postAuthor, "Like"))
+        .assertThat(commentService.update(2L, postAuthor, "Like"))
         .usingComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForFields(
             NotNullComparator.leftNotNull(), "createdAt", "updatedAt")
@@ -243,7 +243,7 @@ public class CommentServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.delete(0L, author))
+        .assertThatThrownBy(() -> commentService.delete(0L, author))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.comment.byIdAndAuthor"})
@@ -262,13 +262,13 @@ public class CommentServiceTest {
             CommentMutators.author(postAuthor),
             CommentMutators.post(post));
     Mockito
-        .when(repository.findByIdAndAuthor(1L, postAuthor))
+        .when(commentRepository.findByIdAndAuthor(1L, postAuthor))
         .thenReturn(Optional.of(entity));
 
-    service.delete(1L, postAuthor);
+    commentService.delete(1L, postAuthor);
 
     Mockito
-        .verify(repository)
+        .verify(commentRepository)
         .delete(entity);
   }
 
@@ -280,7 +280,7 @@ public class CommentServiceTest {
         .createModelMutating(PostType.READING,
             PostMutators.author(postAuthor));
     Mockito
-        .when(repository.findAllByPost(post, Pageable.unpaged()))
+        .when(commentRepository.findAllByPost(post, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModelMutating(CommentType.LIKE,
@@ -289,7 +289,7 @@ public class CommentServiceTest {
         ));
 
     Assertions
-        .assertThat(service.findAll(post, Pageable.unpaged()))
+        .assertThat(commentService.findAll(post, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(Comment.class))
         .usingComparatorForElementFieldsWithNames(
             NotNullComparator.leftNotNull(), "createdAt")

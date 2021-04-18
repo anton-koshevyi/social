@@ -25,18 +25,18 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class UserDetailsServiceTest {
 
-  private @Mock UserRepository repository;
-  private UserDetailsService service;
+  private @Mock UserRepository userRepository;
+  private UserDetailsService userDetailsService;
 
   @BeforeEach
   public void setUp() {
-    service = new UserDetailsServiceImpl(repository);
+    userDetailsService = new UserDetailsServiceImpl(userRepository);
   }
 
   @Test
   public void loadUserByUsername_whenNoUserWithEmailOrUsername_expectException() {
     Assertions
-        .assertThatThrownBy(() -> service.loadUserByUsername("johnsmith@example.com"))
+        .assertThatThrownBy(() -> userDetailsService.loadUserByUsername("johnsmith@example.com"))
         .isExactlyInstanceOf(UsernameNotFoundException.class)
         .hasMessage("No user with email or username: johnsmith@example.com");
   }
@@ -44,19 +44,20 @@ public class UserDetailsServiceTest {
   @Test
   public void loadUserByUsername_whenUserFoundByEmail() {
     Mockito
-        .when(repository.findByEmail("johnsmith@example.com"))
+        .when(userRepository.findByEmail("johnsmith@example.com"))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.RAW,
                 UserMutators.id(1L),
                 UserMutators.email("johnsmith@example.com"),
+                UserMutators.username("johnsmith"),
                 UserMutators.password("{encoded}password"))
         ));
 
     Assertions
-        .assertThat(service.loadUserByUsername("johnsmith@example.com"))
+        .assertThat(userDetailsService.loadUserByUsername("johnsmith@example.com"))
         .isEqualToComparingFieldByField(new IdentifiedUserDetails(
             1L,
-            "johnsmith@example.com",
+            "johnsmith",
             "{encoded}password",
             Collections.emptySet()
         ));
@@ -65,7 +66,7 @@ public class UserDetailsServiceTest {
   @Test
   public void loadUserByUsername_whenUserFoundByUsername() {
     Mockito
-        .when(repository.findByUsername("johnsmith"))
+        .when(userRepository.findByUsername("johnsmith"))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(UserType.RAW,
                 UserMutators.id(1L),
@@ -76,7 +77,7 @@ public class UserDetailsServiceTest {
         ));
 
     Assertions
-        .assertThat(service.loadUserByUsername("johnsmith"))
+        .assertThat(userDetailsService.loadUserByUsername("johnsmith"))
         .isEqualTo(new IdentifiedUserDetails(
             1L,
             "johnsmith",

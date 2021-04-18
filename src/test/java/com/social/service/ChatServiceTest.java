@@ -35,12 +35,12 @@ import com.social.test.model.type.UserType;
 @ExtendWith(MockitoExtension.class)
 public class ChatServiceTest {
 
-  private @Mock ChatRepository repository;
-  private ChatService service;
+  private @Mock ChatRepository chatRepository;
+  private ChatService chatService;
 
   @BeforeEach
   public void setUp() {
-    service = new ChatServiceImpl(repository);
+    chatService = new ChatServiceImpl(chatRepository);
   }
 
   @Test
@@ -50,11 +50,11 @@ public class ChatServiceTest {
     User fredBloggs = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.existsPrivateByMembers(johnSmith, fredBloggs))
+        .when(chatRepository.existsPrivateByMembers(johnSmith, fredBloggs))
         .thenReturn(true);
 
     Assertions
-        .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
+        .assertThatThrownBy(() -> chatService.createPrivate(johnSmith, fredBloggs))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.private.alreadyExist"})
@@ -70,7 +70,7 @@ public class ChatServiceTest {
             UserMutators.publicity(Publicity.INTERNAL));
 
     Assertions
-        .assertThatThrownBy(() -> service.createPrivate(johnSmith, fredBloggs))
+        .assertThatThrownBy(() -> chatService.createPrivate(johnSmith, fredBloggs))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.private.createNotFriend"})
@@ -87,7 +87,7 @@ public class ChatServiceTest {
             UserMutators.friends(johnSmith));
     UserMutators.friends(fredBloggs).accept(johnSmith);
     Mockito
-        .when(repository.save(Mockito.any(PrivateChat.class)))
+        .when(chatRepository.save(Mockito.any(PrivateChat.class)))
         .then(i -> {
           Chat entity = i.getArgument(0);
           ChatMutators.id(1L).accept(entity);
@@ -95,7 +95,7 @@ public class ChatServiceTest {
         });
 
     Assertions
-        .assertThat(service.createPrivate(johnSmith, fredBloggs))
+        .assertThat(chatService.createPrivate(johnSmith, fredBloggs))
         .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(PrivateChatType.RAW,
@@ -118,7 +118,7 @@ public class ChatServiceTest {
         .createModelMutating(UserType.FRED_BLOGGS,
             UserMutators.publicity(Publicity.PUBLIC));
     Mockito
-        .when(repository.save(Mockito.any(PrivateChat.class)))
+        .when(chatRepository.save(Mockito.any(PrivateChat.class)))
         .then(i -> {
           Chat entity = i.getArgument(0);
           ChatMutators.id(1L).accept(entity);
@@ -126,7 +126,7 @@ public class ChatServiceTest {
         });
 
     Assertions
-        .assertThat(service.createPrivate(johnSmith, fredBloggs))
+        .assertThat(chatService.createPrivate(johnSmith, fredBloggs))
         .usingComparator(ComparatorFactory.getComparator(PrivateChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(PrivateChatType.RAW,
@@ -147,7 +147,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.deletePrivate(1L, member))
+        .assertThatThrownBy(() -> chatService.deletePrivate(1L, member))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.private.byIdAndMember"})
@@ -162,13 +162,13 @@ public class ChatServiceTest {
         .createModelMutating(PrivateChatType.DEFAULT,
             ChatMutators.members(johnSmith));
     Mockito
-        .when(repository.findPrivateByIdAndMember(1L, johnSmith))
+        .when(chatRepository.findPrivateByIdAndMember(1L, johnSmith))
         .thenReturn(Optional.of(entity));
 
-    service.deletePrivate(1L, johnSmith);
+    chatService.deletePrivate(1L, johnSmith);
 
     Mockito
-        .verify(repository)
+        .verify(chatRepository)
         .delete(entity);
   }
 
@@ -182,7 +182,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThatThrownBy(() ->
-            service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
+            chatService.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.addNotFriend"})
@@ -199,7 +199,7 @@ public class ChatServiceTest {
             UserMutators.friends(owner));
     UserMutators.friends(member).accept(owner);
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> {
           Chat entity = i.getArgument(0);
           ChatMutators.id(1L).accept(entity);
@@ -207,7 +207,7 @@ public class ChatServiceTest {
         });
 
     Assertions
-        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
+        .assertThat(chatService.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.RAW,
@@ -233,7 +233,7 @@ public class ChatServiceTest {
         .createModelMutating(UserType.FRED_BLOGGS,
             UserMutators.publicity(Publicity.PUBLIC));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> {
           Chat entity = i.getArgument(0);
           ChatMutators.id(1L).accept(entity);
@@ -241,7 +241,7 @@ public class ChatServiceTest {
         });
 
     Assertions
-        .assertThat(service.createGroup(owner, "Classmates", ImmutableSet.of(member)))
+        .assertThat(chatService.createGroup(owner, "Classmates", ImmutableSet.of(member)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.RAW,
@@ -265,7 +265,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.updateGroup(2L, member, "Classmates"))
+        .assertThatThrownBy(() -> chatService.updateGroup(2L, member, "Classmates"))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.group.byIdAndMember"})
@@ -277,7 +277,7 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findGroupByIdAndMember(2L, member))
+        .when(chatRepository.findGroupByIdAndMember(2L, member))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.SCIENTISTS,
                 ChatMutators.id(2L),
@@ -285,11 +285,11 @@ public class ChatServiceTest {
                 ChatMutators.owner(member))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.updateGroup(2L, member, "Classmates"))
+        .assertThat(chatService.updateGroup(2L, member, "Classmates"))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.SCIENTISTS,
@@ -307,7 +307,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.updateGroupMembers(1L, owner, ImmutableSet.of()))
+        .assertThatThrownBy(() -> chatService.updateGroupMembers(1L, owner, ImmutableSet.of()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.group.byIdAndOwner"})
@@ -319,7 +319,7 @@ public class ChatServiceTest {
     User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
@@ -328,7 +328,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThatThrownBy(() ->
-            service.updateGroupMembers(1L, owner, Collections.emptySet()))
+            chatService.updateGroupMembers(1L, owner, Collections.emptySet()))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.removeOwner"})
@@ -343,7 +343,7 @@ public class ChatServiceTest {
         .createModelMutating(UserType.FRED_BLOGGS,
             UserMutators.publicity(Publicity.INTERNAL));
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
@@ -352,7 +352,7 @@ public class ChatServiceTest {
 
     Assertions
         .assertThatThrownBy(() ->
-            service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+            chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.addNotFriend"})
@@ -369,18 +369,18 @@ public class ChatServiceTest {
             UserMutators.friends(owner));
     UserMutators.friends(newMember).accept(owner);
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
                 ChatMutators.owner(owner))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
@@ -404,18 +404,18 @@ public class ChatServiceTest {
         .createModelMutating(UserType.FRED_BLOGGS,
             UserMutators.publicity(Publicity.PUBLIC));
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
                 ChatMutators.owner(owner))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
+        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner, newMember)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
@@ -438,18 +438,18 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner, member),
                 ChatMutators.owner(owner))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
+        .assertThat(chatService.updateGroupMembers(1L, owner, ImmutableSet.of(owner)))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
@@ -468,7 +468,7 @@ public class ChatServiceTest {
         .createModel(UserType.FRED_BLOGGS);
 
     Assertions
-        .assertThatThrownBy(() -> service.changeOwner(0L, owner, newOwner))
+        .assertThatThrownBy(() -> chatService.changeOwner(0L, owner, newOwner))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.group.byIdAndOwner"})
@@ -482,7 +482,7 @@ public class ChatServiceTest {
     User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
@@ -490,7 +490,7 @@ public class ChatServiceTest {
         ));
 
     Assertions
-        .assertThatThrownBy(() -> service.changeOwner(1L, owner, newOwner))
+        .assertThatThrownBy(() -> chatService.changeOwner(1L, owner, newOwner))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.setOwnerNotMember"})
@@ -504,18 +504,18 @@ public class ChatServiceTest {
     User newOwner = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner, newOwner),
                 ChatMutators.owner(owner))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
     Assertions
-        .assertThat(service.changeOwner(1L, owner, newOwner))
+        .assertThat(chatService.changeOwner(1L, owner, newOwner))
         .usingComparator(ComparatorFactory.getComparator(GroupChat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
@@ -536,7 +536,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.leaveGroup(0L, member))
+        .assertThatThrownBy(() -> chatService.leaveGroup(0L, member))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.group.byIdAndMember"})
@@ -548,7 +548,7 @@ public class ChatServiceTest {
     User owner = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findGroupByIdAndMember(1L, owner))
+        .when(chatRepository.findGroupByIdAndMember(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner),
@@ -556,7 +556,7 @@ public class ChatServiceTest {
         ));
 
     Assertions
-        .assertThatThrownBy(() -> service.leaveGroup(1L, owner))
+        .assertThatThrownBy(() -> chatService.leaveGroup(1L, owner))
         .isExactlyInstanceOf(IllegalActionException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"illegalAction.chat.group.leaveOwner"})
@@ -570,21 +570,21 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.findGroupByIdAndMember(1L, member))
+        .when(chatRepository.findGroupByIdAndMember(1L, member))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner, member),
                 ChatMutators.owner(owner))
         ));
     Mockito
-        .when(repository.save(Mockito.any(GroupChat.class)))
+        .when(chatRepository.save(Mockito.any(GroupChat.class)))
         .then(i -> i.getArgument(0));
 
-    service.leaveGroup(1L, member);
+    chatService.leaveGroup(1L, member);
 
     ArgumentCaptor<GroupChat> captor = ArgumentCaptor.forClass(GroupChat.class);
     Mockito
-        .verify(repository)
+        .verify(chatRepository)
         .save(captor.capture());
     Assertions
         .assertThat(captor.getValue())
@@ -604,7 +604,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.deleteGroup(0L, owner))
+        .assertThatThrownBy(() -> chatService.deleteGroup(0L, owner))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes",
             new Object[]{"notFound.chat.group.byIdAndOwner"})
@@ -620,13 +620,13 @@ public class ChatServiceTest {
             ChatMutators.members(owner),
             ChatMutators.owner(owner));
     Mockito
-        .when(repository.findGroupByIdAndOwner(1L, owner))
+        .when(chatRepository.findGroupByIdAndOwner(1L, owner))
         .thenReturn(Optional.of(entity));
 
-    service.deleteGroup(1L, owner);
+    chatService.deleteGroup(1L, owner);
 
     Mockito
-        .verify(repository)
+        .verify(chatRepository)
         .delete(entity);
   }
 
@@ -636,7 +636,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.getMembers(0L, member, Pageable.unpaged()))
+        .assertThatThrownBy(() -> chatService.getMembers(0L, member, Pageable.unpaged()))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -649,7 +649,7 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.FRED_BLOGGS);
     Mockito
-        .when(repository.findByIdAndMember(1L, owner))
+        .when(chatRepository.findByIdAndMember(1L, owner))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(owner, member),
@@ -657,7 +657,7 @@ public class ChatServiceTest {
         ));
 
     Assertions
-        .assertThat(service.getMembers(1L, owner, Pageable.unpaged()))
+        .assertThat(chatService.getMembers(1L, owner, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(User.class))
         .containsExactlyInAnyOrder(
             ModelFactory
@@ -673,7 +673,7 @@ public class ChatServiceTest {
         .createModel(UserType.JOHN_SMITH);
 
     Assertions
-        .assertThatThrownBy(() -> service.find(0L, member))
+        .assertThatThrownBy(() -> chatService.find(0L, member))
         .isExactlyInstanceOf(NotFoundException.class)
         .hasFieldOrPropertyWithValue("getCodes", new Object[]{"notFound.chat.byIdAndMember"})
         .hasFieldOrPropertyWithValue("getArguments", new Object[]{0L, 1L});
@@ -684,7 +684,7 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findByIdAndMember(1L, member))
+        .when(chatRepository.findByIdAndMember(1L, member))
         .thenReturn(Optional.of(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
                 ChatMutators.members(member),
@@ -692,7 +692,7 @@ public class ChatServiceTest {
         ));
 
     Assertions
-        .assertThat(service.find(1L, member))
+        .assertThat(chatService.find(1L, member))
         .usingComparator(ComparatorFactory.getComparator(Chat.class))
         .isEqualTo(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
@@ -708,7 +708,7 @@ public class ChatServiceTest {
     User member = ModelFactory
         .createModel(UserType.JOHN_SMITH);
     Mockito
-        .when(repository.findAllByMember(member, Pageable.unpaged()))
+        .when(chatRepository.findAllByMember(member, Pageable.unpaged()))
         .thenReturn(new PageImpl<>(
             Lists.newArrayList(ModelFactory
                 .createModelMutating(GroupChatType.CLASSMATES,
@@ -717,7 +717,7 @@ public class ChatServiceTest {
         ));
 
     Assertions
-        .assertThat(service.findAll(member, Pageable.unpaged()))
+        .assertThat(chatService.findAll(member, Pageable.unpaged()))
         .usingElementComparator(ComparatorFactory.getComparator(Chat.class))
         .containsExactly(ModelFactory
             .createModelMutating(GroupChatType.CLASSMATES,
