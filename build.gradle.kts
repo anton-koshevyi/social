@@ -91,7 +91,6 @@ dependencies {
   // Integration Test: Scripting
   integrationTestImplementation("io.cucumber:cucumber-java:6.8.0")
   integrationTestImplementation("io.cucumber:cucumber-junit:6.8.0")
-  integrationTestImplementation("io.cucumber:cucumber-spring:6.8.0")
 
   // Integration Test: Startup
   integrationTestImplementation("org.testcontainers:postgresql:1.15.0")
